@@ -1,0 +1,7 @@
+{
+  "env": {
+    "DEBUG": "laa:*",
+    "AMQP_PROTOCOL": "amqps",
+    "API_URL": "api.chtwrs.com:5673"
+  }
+}

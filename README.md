@@ -44,7 +44,7 @@ The bot parses the forward and requests cwApi.sendGrantToken(userId, code) to co
 
 Alternate syntax is /wtb_itemCode_quantity_price
 
-Moreover, any underscore in the command syntax may be replaced with space.
+Moreover, any underscore in the command text may be replaced with space.
 
 Command does cwApi.wantToBy(userId, { itemCode, quantity, price })
 

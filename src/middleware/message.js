@@ -1,6 +1,8 @@
 import find from 'lodash/find';
 import { cw, CW_BOT_ID } from '../services/cw';
 
+const { PHRASE_NOT_IMPLEMENTED } = process.env || 'What ?';
+
 const debug = require('debug')('laa:cwb:message');
 
 export default async function ({ message, from: { id: userId }, reply }, next) {
@@ -13,7 +15,7 @@ export default async function ({ message, from: { id: userId }, reply }, next) {
   debug('from:', userId, message.text);
 
   if (!from || !codeEntity) {
-    reply('I don\'t understand this kind of messages');
+    reply(PHRASE_NOT_IMPLEMENTED);
     return;
   }
 

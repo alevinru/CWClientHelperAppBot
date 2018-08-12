@@ -12,6 +12,7 @@ debug('Started bot id:', BOT_TOKEN.match(/^[^:]*/)[0]);
 
 bot.command('auth', require('./middleware/auth').default);
 bot.command('profile', require('./middleware/profile').default);
+bot.command('stock', require('./middleware/stock').default);
 
 bot.hears(/^\/wtb[ _](.+)[ _](.+)[ _](.+)$/, require('./middleware/wtb').default);
 
@@ -23,5 +24,6 @@ bot.startPolling();
  * */
 
 bot.catch(err => {
+  Telegraf.reply('Something went wrong, i don\'t know how it happened');
   debug('catch:', err);
 });

@@ -2,7 +2,7 @@
 
 **ChatWars Telegram helper bot**
 
-This project demonstrates usage of [cw-rest-api](https://github.com/alevinru/CWClient) NPM package.
+This project demonstrates usage of [cw-rest-api](https://github.com/alevinru/CWClient#cwclient) NPM package.
 
 ## Install
 

@@ -10,6 +10,7 @@ debug('Started bot id:', BOT_TOKEN.match(/^[^:]*/)[0]);
 /** Middleware
  * */
 
+bot.command('start', require('./middleware/start').default);
 bot.command('auth', require('./middleware/auth').default);
 bot.command('profile', require('./middleware/profile').default);
 bot.command('stock', require('./middleware/stock').default);

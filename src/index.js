@@ -31,26 +31,19 @@ bot.command('auth', async ({ reply, from: { id: userId } }) => {
 
 });
 
-bot.on('message', async ({ message: { text }, from: { id: userId }, reply }, next) => {
+bot.hears(/^\/wtb[ _](.+)[ _](.+)[ _](.+)$/, async ({ match, from: { id: userId }, reply }) => {
 
-  await next();
+  debug('wtb', match);
 
-  const wtb = text.match(/^\/wtb[ _](.+)[ _](.+)[ _](.+)$/);
-
-  if (!wtb) {
-    return;
-  }
-
-  const [, itemCode, quantity, price] = wtb;
-
-  debug('wtb', userId, itemCode, quantity, price);
+  const [, itemCode, quantity, price] = match;
+  const wtb = `/wtb_${itemCode}_${quantity}_${price}`;
 
   try {
     const deal = await cw.wantToBy(userId, { itemCode, quantity, price });
     const { itemName, quantity: dealQuantity } = deal;
-    reply(`Success /wtb_${itemCode}_${quantity}_${price} got ${dealQuantity} of ${itemName}`);
+    reply(`Successfully did ${wtb} and got response of ${dealQuantity} of ${itemName}`);
   } catch (e) {
-    reply(e);
+    reply(`Tried ${wtb} but got "${e}" exception`);
   }
 
 });
@@ -65,6 +58,7 @@ bot.on('message', async ({ message, from: { id: userId }, reply }, next) => {
   const codeEntity = find(entities, { type: 'code' });
 
   if (!from || !codeEntity) {
+    reply('I don\'t understand this kind of messages');
     return;
   }
 

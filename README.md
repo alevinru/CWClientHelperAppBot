@@ -35,7 +35,7 @@ Commands and other chat hooks are exported from [src/middleware](src/middleware)
 
 Does async request to cwApi.sendAuth(userId) then responds with success or error message to the chat.
 
-### Handling onfirmation code
+### Authorization confirmation
 
 User should forward the entire message with confirmation code.
 The bot parses the forward and requests cwApi.sendGrantToken(userId, code) to comlete the authorization process.

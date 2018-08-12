@@ -3,6 +3,7 @@
     "DEBUG": "laa:*",
     "AMQP_PROTOCOL": "amqps",
     "API_URL": "api.chtwrs.com:5673",
-    "PHRASE_NOT_IMPLEMENTED": "I don't understand this kind of messages"
+    "PHRASE_NOT_IMPLEMENTED": "I don't understand this kind of messages",
+    "CW_TIMEOUT": 10000
   }
 }

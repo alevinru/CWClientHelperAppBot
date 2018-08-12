@@ -5,6 +5,6 @@ const debug = require('debug')('laa:cwb:cw');
 export const CW_BOT_ID = parseInt(process.env.CW_BOT_ID, 0);
 export const cw = new CWExchange();
 
-cw.connect();
+cw.connect({ timeout: process.env.CW_TIMEOUT });
 
 debug('Started CW API', CW_BOT_ID);

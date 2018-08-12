@@ -26,3 +26,29 @@ Also you need to export all the environment variables required by
 ```Shell
 npm run start
 ```
+
+## Bot functionality
+
+Commands and other chat hooks are exported from [src/middleware](src/middleware)
+
+### /auth
+
+Does async request to cwApi.sendAuth(userId) then responds with success or error message to the chat.
+
+### Handling onfirmation code
+
+User should forward the entire message with confirmation code.
+The bot parses the forward and requests cwApi.sendGrantToken(userId, code) to comlete the authorization process.
+
+### /wtb itemCode quantity price
+
+Alternate syntax is /wtb_itemCode_quantity_price
+
+Moreover, any underscore in the command syntax may be replaced with space.
+
+Command does cwApi.wantToBy(userId, { itemCode, quantity, price })
+
+
+
+
+

@@ -1,4 +1,4 @@
-import CWExchange from 'cw-rest-api/src/exchange/CWExchange';
+import CWExchange from 'cw-rest-api';
 
 const debug = require('debug')('laa:cwb:cw');
 

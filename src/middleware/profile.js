@@ -9,7 +9,7 @@ export default async function ({ reply, from: { id: userId } }) {
   try {
     const profile = await cw.requestProfile(userId);
     reply(profile);
-    debug(`GET /profile/${userId}`, profile);
+    debug(`GET /profile/${userId}`, Object.keys(profile));
   } catch (e) {
     reply(`Tried requestProfile, but got "${e}" exception`);
     throw new Error(e);

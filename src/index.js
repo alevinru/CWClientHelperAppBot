@@ -11,6 +11,7 @@ debug('Started bot id:', BOT_TOKEN.match(/^[^:]*/)[0]);
  * */
 
 bot.command('auth', require('./middleware/auth').default);
+bot.command('profile', require('./middleware/profile').default);
 
 bot.hears(/^\/wtb[ _](.+)[ _](.+)[ _](.+)$/, require('./middleware/wtb').default);
 

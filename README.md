@@ -31,22 +31,22 @@ npm run start
 
 Commands and other chat hooks are exported from [src/middleware](src/middleware)
 
-### /auth
+### `/auth`
 
-Does async request to cwApi.sendAuth(userId) then responds with success or error message to the chat.
+Does async request to `cwApi.sendAuth(userId)` then responds with success or error message to the chat.
 
 ### Authorization confirmation
 
 User should forward the entire message with confirmation code.
 The bot parses the forward and requests cwApi.sendGrantToken(userId, code) to comlete the authorization process.
 
-### /wtb itemCode quantity price
+### `/wtb itemCode quantity price`
 
-Alternate syntax is /wtb_itemCode_quantity_price
+Alternate syntax is `/wtb_itemCode_quantity_price`
 
 Moreover, any underscore in the command text may be replaced with space.
 
-Command does cwApi.wantToBy(userId, { itemCode, quantity, price })
+Command does `cwApi.wantToBy(userId, { itemCode, quantity, price })`
 
 
 

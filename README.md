@@ -19,7 +19,7 @@ BOT_TOKEN=Your_Telegram_Bot_Token
 ```
 
 Also you need to export all the environment variables required by 
-[alevinru/CWClient](https://github.com/alevinru/CWClient) ChatWars API.
+[alevinru/CWClient](https://github.com/alevinru/CWClient#setup) ChatWars API.
 
 ## Run
 

@@ -52,14 +52,21 @@ Does async request to `cwApi.sendAuth(userId)` then responds with success or err
 User should forward the entire message with confirmation code.
 The bot parses the forward and requests cwApi.sendGrantToken(userId, code) to complete the authorization process.
 
+### /profile
+
+Does async request to `cwApi.requestProfile(userId, token)` then responds with raw json data.
+
+### /stock
+
+Does async request to `cwApi.requestStock(userId, token)` then responds with raw json data.
+
 ### /wtb itemCode quantity price
 
 Alternate syntax is `/wtb_itemCode_quantity_price`
 
 Moreover, any underscore in the command text may be replaced with space.
 
-Command does `cwApi.wantToBy(userId, { itemCode, quantity, price })`
-
+Command does `cwApi.wantToBy(userId, { itemCode, quantity, price }, token)`
 
 ### Exception handling
 

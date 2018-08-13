@@ -14,15 +14,24 @@ cd CWClientHelperAppBot
 npm install
 ```
 
+## Perquisites
+
+Bot needs a connection to a (https://redis.io)[Redis] database to store authorization data.
+So you maybe need to build and run your own Redis instance.
+
+By default bot connects to local Redis at default port. You could specify this behaviour with environment variables:
+`REDIS_HOST`, `REDIS_PORT`, `REDIS_DB`
+
 ## Setup
 
 ```Shell
 CW_BOT_ID=ChatWars_Bot_ID
-BOT_TOKEN=Your_Telegram_Bot_Token 
+BOT_TOKEN=Your_Telegram_Bot_Token
 ```
 
-Also you need to export all the environment variables required by the
-[alevinru/CWClient setup section](https://github.com/alevinru/CWClient#setup) including those, specified in the API [nodemon.json](https://github.com/alevinru/CWClient/blob/master/nodemon.json).
+Also you need to export ChatWars API credentials as described in
+[alevinru/CWClient setup section](https://github.com/alevinru/CWClient#setup).
+
 
 ## Run
 
@@ -41,7 +50,7 @@ Does async request to `cwApi.sendAuth(userId)` then responds with success or err
 ### Authorization confirmation
 
 User should forward the entire message with confirmation code.
-The bot parses the forward and requests cwApi.sendGrantToken(userId, code) to comlete the authorization process.
+The bot parses the forward and requests cwApi.sendGrantToken(userId, code) to complete the authorization process.
 
 ### /wtb itemCode quantity price
 

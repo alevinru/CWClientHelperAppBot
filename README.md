@@ -16,7 +16,7 @@ npm install
 
 ## Perquisites
 
-Bot needs a connection to a (https://redis.io)[Redis] database to store authorization data.
+Bot needs a connection to a [https://redis.io](Redis) database to store authorization data.
 So you maybe need to build and run your own Redis instance.
 
 By default bot connects to local Redis at default port. You could specify this behaviour with environment variables:

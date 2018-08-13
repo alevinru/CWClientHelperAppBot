@@ -35,6 +35,7 @@ module.exports = {
     'no-param-reassign': ['error', {
       props: true,
       ignorePropertyModificationsFor: [
+        'session', // for context sessions
         'ctx', // for koa routes
         // 'state', // for vuex state
         // 'acc', // for reduce accumulators

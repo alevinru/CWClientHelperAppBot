@@ -1,12 +1,19 @@
 import find from 'lodash/find';
 import { cw, CW_BOT_ID } from '../services/cw';
+import { setAuth } from '../services/auth';
 
 const { PHRASE_NOT_IMPLEMENTED } = process.env || 'What ?';
 
 const debug = require('debug')('laa:cwb:message');
 
-export default async function ({ message, from: { id: userId }, reply }, next) {
+export default async function (ctx, next) {
 
+  const {
+    session,
+    message,
+    from: { id: userId },
+    reply,
+  } = ctx;
   await next();
 
   const { forward_from: from, entities, text } = message;
@@ -25,9 +32,10 @@ export default async function ({ message, from: { id: userId }, reply }, next) {
 
   if (fromId === CW_BOT_ID) {
     try {
-      const token = await cw.sendGrantToken(userId, code);
-      reply('Auth success!');
-      debug('token:', token);
+      const auth = await cw.sendGrantToken(parseInt(userId, 0), code);
+      reply('Authorization complete successfully! Try /profile and /stock commands');
+      setAuth(session, auth);
+      debug('token:', auth);
     } catch (e) {
       reply(e);
     }

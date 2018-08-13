@@ -7,7 +7,7 @@ export default async function ({ reply, from: { id: userId } }) {
   debug(userId);
 
   try {
-    await cw.sendAuth(userId);
+    await cw.sendAuth(parseInt(userId, 0));
     reply(`Auth sent to ${userId} forward this message back here to complete authorization`);
   } catch (err) {
     reply('Something went wrong, auth failed');

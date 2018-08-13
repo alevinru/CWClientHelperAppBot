@@ -1,11 +1,22 @@
 import Telegraf from 'telegraf';
+import RedisSession from 'telegraf-session-redis';
 
 const debug = require('debug')('laa:cwb:index');
 
 const { BOT_TOKEN } = process.env;
 const bot = new Telegraf(BOT_TOKEN);
 
-debug('Started bot id:', BOT_TOKEN.match(/^[^:]*/)[0]);
+const session = new RedisSession({
+  store: {
+    host: process.env.REDIS_HOST || '127.0.0.1',
+    port: process.env.REDIS_PORT || 6379,
+    db: process.env.REDIS_DB || 0,
+  },
+});
+
+bot.use(session.middleware());
+
+debug('Starting bot id:', BOT_TOKEN.match(/^[^:]*/)[0]);
 
 /** Middleware
  * */

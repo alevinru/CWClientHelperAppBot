@@ -50,7 +50,7 @@ Does async request to `cwApi.sendAuth(userId)` then responds with success or err
 ### Authorization confirmation
 
 User should forward the entire message with confirmation code.
-The bot parses the forward and requests cwApi.sendGrantToken(userId, code) to complete the authorization process.
+The bot parses the forward and requests `cwApi.sendGrantToken(userId, code)` to complete the authorization process.
 
 ### /profile
 

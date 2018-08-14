@@ -18,9 +18,9 @@ bot.command('start', require('./middleware/start').default);
 bot.command('auth', require('./middleware/auth').default);
 bot.command('profile', require('./middleware/profile').default);
 bot.command('stock', require('./middleware/stock').default);
-bot.on('message', require('./middleware/message').default);
 
 bot.hears(/^\/wtb[ _](.+)[ _](.+)[ _](.+)$/, require('./middleware/wtb').default);
+bot.on('message', require('./middleware/message').default);
 
 bot.startPolling();
 

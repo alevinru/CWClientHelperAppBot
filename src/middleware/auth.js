@@ -1,4 +1,4 @@
-import { cw } from '../services/cw';
+import { cw, errorReply } from '../services';
 
 const debug = require('debug')('laa:cwb:auth');
 
@@ -8,10 +8,13 @@ export default async function ({ reply, from: { id: userId } }) {
 
   try {
     await cw.sendAuth(parseInt(userId, 0));
-    reply(`Auth sent to ${userId} forward this message back here to complete authorization`);
-  } catch (err) {
-    reply('Something went wrong, auth failed');
-    debug('Error:', err);
+    const msg = [
+      `Auth code has been sent to your telegram account number ${userId}.`,
+      'Please forward this message back here to complete authorization',
+    ];
+    reply(msg.join(' '));
+  } catch (e) {
+    reply(errorReply('to send auth code', e));
   }
 
 }

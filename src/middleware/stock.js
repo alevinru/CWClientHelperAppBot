@@ -1,5 +1,4 @@
-import { cw } from '../services/cw';
-import { getAuthToken } from '../services/auth';
+import { cw, getAuthToken, errorReply } from '../services';
 
 const debug = require('debug')('laa:cwb:stock');
 
@@ -13,8 +12,7 @@ export default async function ({ session, reply, from: { id: userId } }) {
     reply(stock);
     debug(`GET /stock/${userId}`, Object.keys(stock));
   } catch (e) {
-    reply(`Tried "requestStock", but got "${e}" exception`);
-    throw new Error(e);
+    reply(errorReply('/stock', e));
   }
 
 }

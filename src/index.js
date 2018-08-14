@@ -21,6 +21,8 @@ debug('Starting bot id:', BOT_TOKEN.match(/^[^:]*/)[0]);
 /** Middleware
  * */
 
+bot.use(exceptionHandler);
+
 bot.command('start', require('./middleware/start').default);
 bot.command('auth', require('./middleware/auth').default);
 bot.command('profile', require('./middleware/profile').default);
@@ -30,12 +32,18 @@ bot.hears(/^\/wtb[ _](.+)[ _](.+)[ _](.+)$/, require('./middleware/wtb').default
 
 bot.on('message', require('./middleware/message').default);
 
+
 bot.startPolling();
 
 /** Exception handlers
  * */
 
-bot.catch(err => {
-  Telegraf.reply('Something went wrong, i don\'t know how it happened');
-  debug('catch:', err);
-});
+function exceptionHandler(ctx, next) {
+
+  next()
+    .catch(e => {
+      debug(e.name, e.message);
+      return ctx.reply(`Error: ${e.message}`);
+    });
+
+}

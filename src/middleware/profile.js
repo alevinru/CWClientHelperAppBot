@@ -1,5 +1,4 @@
-import { cw } from '../services/cw';
-import { getAuthToken } from '../services/auth';
+import { cw, getAuthToken, errorReply } from '../services';
 
 const debug = require('debug')('laa:cwb:profile');
 
@@ -13,8 +12,7 @@ export default async function ({ session, reply, from: { id: userId } }) {
     reply(profile);
     debug(`GET /profile/${userId}`, Object.keys(profile));
   } catch (e) {
-    reply(`Tried "requestProfile", but got ${e.toString()} exception`);
-    throw new Error(e);
+    reply(errorReply('/profile', e));
   }
 
 }

@@ -37,9 +37,9 @@ export default async function (ctx) {
 
   try {
     const auth = await cw.sendGrantToken(parseInt(userId, 0), code);
-    reply('Authorization complete successfully! Try /profile and /stock commands.');
     setAuth(session, auth);
     debug('token:', auth);
+    reply('Congratulations, authorization complete! Try /profile and /stock commands.');
   } catch (e) {
     reply(errorReply('to complete authorization', e));
   }

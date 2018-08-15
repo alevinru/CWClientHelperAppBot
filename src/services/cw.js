@@ -1,3 +1,4 @@
+// eslint-disable-next-line
 import CWExchange, * as CW from 'cw-rest-api';
 
 const debug = require('debug')('laa:cwb:cw');

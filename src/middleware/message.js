@@ -17,22 +17,22 @@ export default async function (ctx) {
 
   const { forward_from: from, entities, text } = message;
   const codeEntity = find(entities, { type: 'code' });
+  const { id: fromId } = from;
 
   debug('from:', userId, message.text);
+
+  if (fromId && fromId !== CW_BOT_ID) {
+    reply(`Forward from bot id ${fromId} ignored`);
+    return;
+  }
 
   if (!from || !codeEntity) {
     reply(PHRASE_NOT_IMPLEMENTED);
     return;
   }
 
-  const { id: fromId } = from;
   const { offset, length } = codeEntity;
   const code = text.substr(offset, length);
-
-  if (fromId === CW_BOT_ID) {
-    reply(`Forward from bot id ${fromId} ignored`);
-    return;
-  }
 
   try {
     const auth = await cw.sendGrantToken(parseInt(userId, 0), code);

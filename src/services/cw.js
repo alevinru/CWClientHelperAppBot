@@ -3,7 +3,7 @@ import CWExchange, * as CW from 'cw-rest-api';
 
 const debug = require('debug')('laa:cwb:cw');
 
-export const { CW_BOT_ID } = process.env;
+export const CW_BOT_ID = parseInt(process.env.CW_BOT_ID, 0);
 
 const fanouts = [
   // CW.QUEUE_DEALS,

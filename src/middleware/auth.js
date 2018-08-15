@@ -1,9 +1,10 @@
-import { cw, errorReply } from '../services';
+import { cw } from '../services';
 
 const debug = require('debug')('laa:cwb:auth');
 
-export default async function ({ reply, from: { id: userId } }) {
+export default async function (ctx) {
 
+  const { reply, from: { id: userId } } = ctx;
   debug(userId);
 
   try {
@@ -14,7 +15,7 @@ export default async function ({ reply, from: { id: userId } }) {
     ];
     reply(msg.join(' '));
   } catch (e) {
-    reply(errorReply('to send auth code', e));
+    ctx.replyError('to send auth code', e);
   }
 
 }

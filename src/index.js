@@ -8,6 +8,8 @@ const bot = new Telegraf(BOT_TOKEN);
 
 debug('Starting bot id:', BOT_TOKEN.match(/^[^:]*/)[0]);
 
+require('./config/context').default(bot);
+
 /** Middleware
  * */
 
@@ -31,10 +33,12 @@ function exceptionHandler(ctx, next) {
 
   debug('exceptionHandler', 'start');
 
-  next().catch(({ name, message }) => {
-    debug(name, message);
-    return ctx.reply(`Error: ${message}`);
-  });
+  return next()
+    .then(() => debug('exceptionHandler', 'end'))
+    .catch(({ name, message }) => {
+      debug(name, message);
+      return ctx.reply(`Error: ${message}`);
+    });
 
 }
 

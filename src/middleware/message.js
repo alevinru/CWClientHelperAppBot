@@ -1,7 +1,6 @@
 import find from 'lodash/find';
 import { cw, CW_BOT_ID } from '../services/cw';
 import { setAuth } from '../services/auth';
-import { errorReply } from '../services';
 
 const { PHRASE_NOT_IMPLEMENTED } = process.env || 'What ?';
 
@@ -41,7 +40,7 @@ export default async function (ctx) {
     debug('token:', auth);
     reply('Congratulations, authorization complete! Try /profile and /stock commands.');
   } catch (e) {
-    reply(errorReply('to complete authorization', e));
+    ctx.replyError('to complete authorization', e);
   }
 
 }

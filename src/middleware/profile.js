@@ -1,9 +1,10 @@
-import { cw, getAuthToken, errorReply } from '../services';
+import { cw, getAuthToken } from '../services';
 
 const debug = require('debug')('laa:cwb:profile');
 
-export default async function ({ session, reply, from: { id: userId } }) {
+export default async function (ctx) {
 
+  const { session, reply, from: { id: userId } } = ctx;
   debug(userId);
 
   try {
@@ -12,7 +13,7 @@ export default async function ({ session, reply, from: { id: userId } }) {
     reply(profile);
     debug(`GET /profile/${userId}`, Object.keys(profile));
   } catch (e) {
-    reply(errorReply('/profile', e));
+    ctx.replyError('/profile', e);
   }
 
 }

@@ -1,4 +1,4 @@
-import { cw, getAuthToken, errorReply } from '../services';
+import { cw, getAuthToken } from '../services';
 
 const debug = require('debug')('laa:cwb:wtb');
 
@@ -19,7 +19,7 @@ export default async function (ctx) {
     const { itemName, quantity: dealQuantity } = deal;
     reply(`Successfully did ${wtb} and got response of ${dealQuantity} of ${itemName}`);
   } catch (e) {
-    reply(errorReply(wtb, e));
+    ctx.replyError(wtb, e);
   }
 
 }

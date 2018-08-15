@@ -17,7 +17,7 @@ export default async function (ctx) {
 
   const { forward_from: from, entities, text } = message;
   const codeEntity = find(entities, { type: 'code' });
-  const { id: fromId } = from;
+  const { id: fromId } = from || {};
 
   debug('from:', userId, message.text);
 

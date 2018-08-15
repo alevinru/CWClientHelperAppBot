@@ -18,6 +18,7 @@ bot.use(exceptionHandler);
 bot.use(session.middleware());
 
 bot.command('start', require('./middleware/start').default);
+bot.command('hello', require('./middleware/hello').default);
 bot.command('auth', require('./middleware/auth').default);
 bot.command('profile', require('./middleware/profile').default);
 bot.command('stock', require('./middleware/stock').default);

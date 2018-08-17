@@ -9,6 +9,7 @@ const session = new RedisSession({
     db: process.env.REDIS_DB || 0,
     enable_offline_queue: false,
   },
+  getSessionKey: ctx => ctx.from && `${ctx.from.id}:${ctx.from.id}`,
 });
 
 export default session;

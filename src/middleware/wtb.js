@@ -10,7 +10,7 @@ export default async function (ctx) {
   const [, itemCode, quantity, price] = match;
   const wtb = `/wtb_${itemCode}_${quantity}_${price}`;
 
-  debug(wtb, match);
+  debug(wtb);
 
   try {
     const token = getAuthToken(session);

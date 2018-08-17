@@ -7,7 +7,8 @@ import { auth, authCode } from './middleware/auth';
 const debug = require('debug')('laa:cwb:index');
 
 const { BOT_TOKEN } = process.env;
-const bot = new Telegraf(BOT_TOKEN);
+const options = { username: process.env.BOT_USER_NAME };
+const bot = new Telegraf(BOT_TOKEN, options);
 
 debug('Starting bot id:', BOT_TOKEN.match(/^[^:]*/)[0]);
 

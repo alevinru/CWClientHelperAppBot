@@ -1,6 +1,7 @@
 import find from 'lodash/find';
 import { cw } from '../services';
 import { setAuth } from '../services/auth';
+import hello from './hello';
 
 const debug = require('debug')('laa:cwb:auth');
 
@@ -49,6 +50,7 @@ export async function authCode(ctx, next) {
     setAuth(session, token);
     debug('token:', token);
     reply('Congratulations, authorization complete! Try /profile and /stock commands.');
+    await hello(ctx);
   } catch (e) {
     ctx.replyError('to complete authorization', e);
   }

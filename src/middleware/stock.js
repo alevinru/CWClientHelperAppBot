@@ -10,7 +10,7 @@ export default async function (ctx) {
 
   try {
     const token = getAuthToken(session);
-    const stock = await cw.requestStock(parseInt(userId, 0), token);
+    const { stock } = await cw.requestStock(parseInt(userId, 0), token);
     ctx.replyJson(stock);
     debug(`GET /stock/${userId}`, Object.keys(stock));
   } catch (e) {

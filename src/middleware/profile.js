@@ -9,9 +9,9 @@ export default async function (ctx) {
 
   try {
     const token = getAuthToken(session);
-    const profile = await cw.requestProfile(parseInt(userId, 0), token);
+    const { profile } = await cw.requestProfile(parseInt(userId, 0), token);
     ctx.replyJson(profile);
-    debug(`GET /profile/${userId}`, Object.keys(profile));
+    debug(`GET /profile/${userId}`, profile.userName);
   } catch (e) {
     ctx.replyError('/profile', e);
   }

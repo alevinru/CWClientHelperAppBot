@@ -45,10 +45,7 @@ export async function pricesByItemCode(itemCode) {
 
   debug('pricesByItemCode', itemCode, itemName);
 
-  const key = itemKey(itemName);
-  const prices = await hgetAsync(CW.QUEUE_SEX, key);
-
-  return JSON.parse(prices);
+  return pricesByItemName(itemName);
 
 }
 

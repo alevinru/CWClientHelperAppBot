@@ -33,8 +33,7 @@ export async function dealLimit(itemCode) {
 
 export async function checkPrice(itemCode, price) {
 
-  const prices = await pricesByItemCode(itemCode);
-  const maxPrice = prices[0];
+  const maxPrice = await dealLimit(itemCode);
 
   if (maxPrice < price) {
     throw new Error(`Price is higher than limit of ${maxPrice}💰`);

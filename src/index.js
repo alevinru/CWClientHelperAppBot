@@ -4,12 +4,15 @@ import session from './services/session';
 import { fromCWFilter } from './config/filters';
 import { auth, authCode } from './middleware/auth';
 
+import trades from './middleware/trades';
+
 const debug = require('debug')('laa:cwb:index');
 
 const { BOT_TOKEN } = process.env;
 const options = { username: process.env.BOT_USER_NAME };
 const bot = new Telegraf(BOT_TOKEN, options);
 const BOT_ID = BOT_TOKEN.match(/^[^:]*/)[0];
+
 
 debug('Starting bot id:', BOT_ID);
 
@@ -22,6 +25,8 @@ bot.use(exceptionHandler);
 bot.use(session({ botId: BOT_ID }).middleware());
 
 bot.command('auth', auth);
+
+bot.hears(/^\/trades[ _]([a-z0-9]+)$/i, trades);
 
 bot.command('start', require('./middleware/start').default);
 bot.command('hello', require('./middleware/hello').default);

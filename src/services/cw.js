@@ -4,7 +4,7 @@ import map from 'lodash/map';
 import keyBy from 'lodash/keyBy';
 
 import {
-  hgetAsync, hsetAsync, lpushAsync, ltrimAsync,
+  hgetAsync, hsetAsync, lpushAsync, ltrimAsync, lrangeAsync, setAsync,
 } from './redis';
 
 const debug = require('debug')('laa:cwb:cw');
@@ -16,8 +16,8 @@ export const CW_BOT_ID = parseInt(process.env.CW_BOT_ID, 0);
 const fanouts = {
   [CW.QUEUE_DEALS]: onConsumeDeals,
   [CW.QUEUE_SEX]: consumeSEXDigest,
-  // CW.QUEUE_AU,
-  // CW.QUEUE_OFFERS,
+  [CW.QUEUE_OFFERS]: consumeOffers,
+  [CW.QUEUE_AU]: consumeAUDigest,
   // CW.QUEUE_YELLOW_PAGES,
 };
 
@@ -62,7 +62,7 @@ async function onConsumeDeals(msg, ack) {
   const id = itemKey(item);
   const listKey = `${CW.QUEUE_DEALS}_${id}`;
 
-  const deal = `${id} for "${buyerName}" ${qty} x ${price} from "${sellerName}"`;
+  const deal = `${id} for "${buyerName}" ${qty} x ${price}💰 from "${sellerName}"`;
 
   debug('Consumed', exchange, deliveryTag, ts, deal);
 
@@ -100,3 +100,54 @@ async function consumeSEXDigest(msg, ack) {
 function itemKey(name) {
   return name.replace(/ /g, '_').toLowerCase();
 }
+
+export function itemNameByCode(code) {
+  return itemsByCode[code].name;
+}
+
+async function consumeOffers(msg, ack) {
+
+  const { fields, properties, content } = msg;
+  const { deliveryTag } = fields;
+  const ts = new Date(properties.timestamp * 1000);
+  const data = content.toString();
+  const offer = JSON.parse(data);
+  const { item: itemName, price, qty } = offer;
+
+  debug('consumeOffers', deliveryTag, ts, itemName, `${qty} x ${price}💰`);
+
+
+  try {
+    const orders = await lrangeAsync(`orders_${itemKey(itemName)}`, 0, 1);
+    if (orders && orders.length) {
+      debug('consumeOffers got order:', orders[0]);
+    }
+    ack();
+  } catch ({ name, message }) {
+    debug(name, message);
+  }
+
+}
+
+export async function addOrder(userId, itemCode, qty, price) {
+
+  const order = [userId, price, qty].join('_');
+
+  debug('addOrder', itemCode, order);
+
+  const key = itemKey(itemNameByCode(itemCode));
+  await lpushAsync(`orders_${key}`, order);
+
+}
+
+export async function getOrdersByItemCode(itemCode) {
+
+  const key = itemKey(itemNameByCode(itemCode));
+  const res = await lrangeAsync(`orders_${key}`, 0, -1);
+
+  debug('getOrders', itemCode, res);
+
+  return res;
+
+}
+

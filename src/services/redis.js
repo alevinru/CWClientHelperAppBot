@@ -8,6 +8,8 @@ export const client = redis.createClient({
   enable_offline_queue: false,
 });
 
+export const setAsync = promisify(client.set).bind(client);
+export const lrangeAsync = promisify(client.lrange).bind(client);
 export const ltrimAsync = promisify(client.ltrim).bind(client);
 export const lpushAsync = promisify(client.lpush).bind(client);
 export const hgetAsync = promisify(client.hget).bind(client);

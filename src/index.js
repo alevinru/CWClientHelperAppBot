@@ -5,6 +5,7 @@ import { fromCWFilter } from './config/filters';
 import { auth, authCode } from './middleware/auth';
 
 import trades from './middleware/trades';
+import order, { orders } from './middleware/order';
 
 const debug = require('debug')('laa:cwb:index');
 
@@ -26,7 +27,9 @@ bot.use(session({ botId: BOT_ID }).middleware());
 
 bot.command('auth', auth);
 
-bot.hears(/^\/trades[ _]([a-z0-9]+)$/i, trades);
+bot.hears(/^\/trades[ _]([a-z0-9]+)$/, trades);
+bot.hears(/^\/order[ _]([a-z0-9]+)[ _](\d+)[ _](\d+)$/, order);
+bot.hears(/^\/orders[ _]([a-z0-9]+)$/, orders);
 
 bot.command('start', require('./middleware/start').default);
 bot.command('hello', require('./middleware/hello').default);

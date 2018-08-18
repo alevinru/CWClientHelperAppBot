@@ -9,8 +9,9 @@ const debug = require('debug')('laa:cwb:index');
 const { BOT_TOKEN } = process.env;
 const options = { username: process.env.BOT_USER_NAME };
 const bot = new Telegraf(BOT_TOKEN, options);
+const BOT_ID = BOT_TOKEN.match(/^[^:]*/)[0];
 
-debug('Starting bot id:', BOT_TOKEN.match(/^[^:]*/)[0]);
+debug('Starting bot id:', BOT_ID);
 
 require('./config/context').default(bot);
 
@@ -18,7 +19,7 @@ require('./config/context').default(bot);
  * */
 
 bot.use(exceptionHandler);
-bot.use(session.middleware());
+bot.use(session({ botId: BOT_ID }).middleware());
 
 bot.command('auth', auth);
 

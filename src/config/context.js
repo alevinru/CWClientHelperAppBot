@@ -10,8 +10,12 @@ export default function (bot) {
 }
 
 function replyError(tried, got) {
-  const msg = `Tried ${tried} and got <b>${got}</b>`;
-  return this.reply(msg, { parse_mode: 'HTML' });
+
+  const { message, name } = got;
+  const res = message && name ? `${name.toLocaleLowerCase()}: <b>${message}</b>` : got;
+
+  return replyHTML.call(this, `⚠️ Tried ${tried} and got ${res}`);
+
 }
 
 function replyJson(obj) {

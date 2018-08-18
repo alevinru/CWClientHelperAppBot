@@ -33,7 +33,7 @@ export default async function (ctx) {
     const deal = await cw.wantToBy(parseInt(userId, 0), dealParams, token);
 
     const { itemName, quantity: dealQuantity } = deal;
-    const tried = `I have done ${wtb} for <b>${userName}</b>`;
+    const tried = `✅ I have done ${wtb} for <b>${userName}</b>`;
     const got = `response of <b>${dealQuantity}</b> x <b>${itemName}</b>`;
 
     await ctx.replyHTML(`${tried} and got ${got}`);

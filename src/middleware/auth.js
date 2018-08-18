@@ -49,7 +49,7 @@ export async function authCode(ctx, next) {
     const token = await cw.sendGrantToken(parseInt(userId, 0), code);
     setAuth(session, token);
     debug('token:', token);
-    reply('Congratulations, authorization complete! Try /profile and /stock commands.');
+    reply('✅ Congratulations, authorization complete! Try /profile and /stock commands.');
     await hello(ctx);
   } catch (e) {
     ctx.replyError('to complete authorization', e);

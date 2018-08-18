@@ -30,7 +30,7 @@ export default async function (ctx) {
 
     await checkPrice(itemCode, price);
 
-    const deal = await cw.wantToBy(parseInt(userId, 0), dealParams, token);
+    const deal = await cw.wantToBuy(parseInt(userId, 0), dealParams, token);
 
     const { itemName, quantity: dealQuantity } = deal;
     const tried = `✅ I have done ${wtb} for <b>${userName}</b>`;

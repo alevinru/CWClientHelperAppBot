@@ -7,7 +7,7 @@ export default async function (ctx) {
   const {
     match,
     from: { id: userId },
-    session: { profile },
+    session: { profile, auth: { token } },
   } = ctx;
   const [, itemCode, quantity, price] = match;
   const command = `/order_${itemCode}_${quantity}_${price}`;
@@ -26,7 +26,7 @@ export default async function (ctx) {
     // const token = getAuthToken(session);
     // const dealParams = { itemCode, quantity, price };
 
-    await cw.addOrder(userId, itemCode, quantity, price);
+    await cw.addOrder(userId, itemCode, quantity, price, token);
 
     const res = [
       `✅ I have added an order for <b>${userName}</b>:\n`,
@@ -55,8 +55,12 @@ export async function orders(ctx) {
   debug(command);
 
   try {
-    const res = await cw.getOrdersByItemCode(itemCode);
-    ctx.reply(res);
+    const items = await cw.getOrdersByItemCode(itemCode);
+    const res = items.map((item, i) => `${i}: ${item}`);
+    if (!res.length) {
+      res.push('No active orders found');
+    }
+    ctx.replyHTML(res.join('\n'));
   } catch (e) {
     ctx.replyError(command, e);
   }

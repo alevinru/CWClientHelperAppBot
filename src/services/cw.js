@@ -4,7 +4,7 @@ import map from 'lodash/map';
 import keyBy from 'lodash/keyBy';
 
 import {
-  hgetAsync, hsetAsync, lpushAsync, ltrimAsync, lrangeAsync, setAsync,
+  hgetAsync, hsetAsync, lpushAsync, ltrimAsync, lrangeAsync, setAsync, lremAsync,
 } from './redis';
 
 const debug = require('debug')('laa:cwb:cw');
@@ -112,26 +112,57 @@ async function consumeOffers(msg, ack) {
   const ts = new Date(properties.timestamp * 1000);
   const data = content.toString();
   const offer = JSON.parse(data);
-  const { item: itemName, price, qty } = offer;
+  const {
+    item: itemName,
+    price: offerPrice,
+    qty: offerQty,
+    sellerName,
+  } = offer;
 
-  debug('consumeOffers', deliveryTag, ts, itemName, `${qty} x ${price}💰`);
-
+  debug('consumeOffers', deliveryTag, ts, `"${sellerName}" offers`, itemName, `${offerQty} x ${offerPrice}💰`);
 
   try {
-    const orders = await lrangeAsync(`orders_${itemKey(itemName)}`, 0, 1);
+
+    const hashKey = `orders_${itemKey(itemName)}`;
+    const orders = await lrangeAsync(hashKey, 0, 1);
+
     if (orders && orders.length) {
-      debug('consumeOffers got order:', orders[0]);
+
+      const order = orders[0];
+      const match = order.match(/(.+)_(.+)_(.+)_(.+)/);
+
+      if (!match) {
+        debug('invalid order', order);
+        await lremAsync(hashKey, 0, order);
+      } else {
+        // eslint-disable-next-line
+        const [, userId, orderQty, orderPrice, token] = match;
+        if (offerPrice <= orderPrice) {
+          debug('consumeOffers got order:', userId, `${orderQty} x ${orderPrice}💰`);
+          const dealParams = { itemCode: itemsByName[itemName], quantity: 1, price: offerPrice };
+          await cw.wantToBuy(parseInt(userId, 0), dealParams, token);
+          debug('consumeOffers deal:', dealParams);
+          debug('consumeOffers processed order:', userId, `${orderQty} x ${orderPrice}💰`);
+          await lremAsync(hashKey, 0, order);
+        } else {
+          debug('consumeOffers ignore price', offerPrice, 'of', itemName, 'since requested', orderPrice);
+        }
+      }
+
     }
+
     ack();
-  } catch ({ name, message }) {
-    debug(name, message);
+
+  } catch (e) {
+    const { name = 'Error', message = e } = e;
+    debug('consumeOffers', name, message);
   }
 
 }
 
-export async function addOrder(userId, itemCode, qty, price) {
+export async function addOrder(userId, itemCode, qty, price, token) {
 
-  const order = [userId, price, qty].join('_');
+  const order = [userId, qty, price, token].join('_');
 
   debug('addOrder', itemCode, order);
 

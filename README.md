@@ -66,7 +66,7 @@ Alternate syntax is `/wtb_itemCode_quantity_price`
 
 Moreover, any underscore in the command text may be replaced with space.
 
-Command does `cwApi.wantToBy(userId, { itemCode, quantity, price }, token)`
+Command does `cwApi.wantToBuy(userId, { itemCode, quantity, price }, token)`
 
 ### Exception handling
 

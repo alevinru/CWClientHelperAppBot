@@ -1,5 +1,11 @@
 import CWExchange, * as CW from 'cw-rest-api';
-import { hsetAsync, lpushAsync, ltrimAsync } from './redis';
+import itemsByName from 'cw-rest-api/src/db/itemsByName';
+import map from 'lodash/map';
+import keyBy from 'lodash/keyBy';
+
+import {
+  hgetAsync, hsetAsync, lpushAsync, ltrimAsync,
+} from './redis';
 
 const debug = require('debug')('laa:cwb:cw');
 
@@ -17,7 +23,34 @@ const fanouts = {
 
 export const cw = new CWExchange({ fanouts });
 
+const itemsByCode = keyBy(map(itemsByName, (code, name) => ({ name, code })), 'code');
+
 debug('Started CW API', CW_BOT_ID);
+
+export async function pricesByItemName(itemName) {
+
+  const prices = await hgetAsync(CW.QUEUE_SEX, itemKey(itemName));
+
+  return JSON.parse(prices);
+
+}
+
+export async function pricesByItemCode(itemCode) {
+
+  const { name: itemName } = itemsByCode[itemCode] || {};
+
+  if (!itemName) {
+    throw new Error(`No itemKey for code "${itemCode}"`);
+  }
+
+  debug('pricesByItemCode', itemCode, itemName);
+
+  const key = itemKey(itemName);
+  const prices = await hgetAsync(CW.QUEUE_SEX, key);
+
+  return JSON.parse(prices);
+
+}
 
 async function onConsumeDeals(msg, ack) {
 
@@ -49,12 +82,12 @@ async function onConsumeDeals(msg, ack) {
 async function consumeSEXDigest(msg, ack) {
 
   const { fields, properties, content } = msg;
-  const { exchange, deliveryTag } = fields;
+  const { deliveryTag } = fields;
   const ts = new Date(properties.timestamp * 1000);
   const data = content.toString();
   const digest = JSON.parse(data);
 
-  debug('consumeSEXDigest', exchange, deliveryTag, ts);
+  debug('consumeSEXDigest', deliveryTag, ts);
 
   try {
     await digest.map(async ({ name, prices }) => {

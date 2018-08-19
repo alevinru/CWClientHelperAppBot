@@ -43,7 +43,12 @@ export async function addOrder(userId, itemCode, qty, price, token) {
   const id = await getId();
 
   const order = {
-    id, userId, qty, price, token, itemCode,
+    id,
+    userId,
+    itemCode,
+    qty,
+    price,
+    token,
   };
 
   const itemName = itemNameByCode(itemCode);
@@ -105,7 +110,7 @@ async function onGotOffer(offer) {
     }
 
     const {
-      userId, orderQty, orderPrice, token,
+      userId, qty: orderQty, price: orderPrice, token,
     } = order;
 
     if (offerPrice > orderPrice) {
@@ -119,7 +124,7 @@ async function onGotOffer(offer) {
     await cw.wantToBuy(parseInt(userId, 0), dealParams, token);
 
     debug('onGotOffer deal:', dealParams);
-    debug('onGotOffer processed order:', userId, `${orderQty} x ${orderPrice}💰`);
+    debug('onGotOffer processed order:', orderId, `${orderQty} x ${orderPrice}💰`);
 
     await removeOrder(orderId);
 

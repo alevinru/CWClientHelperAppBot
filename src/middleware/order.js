@@ -62,13 +62,12 @@ export async function orders(ctx) {
     const items = await ordering.getOrdersByItemCode(itemCode);
 
 
-    if (!res.length) {
+    if (!items.length) {
       res.push(' not found.');
     } else {
       res.push('\n');
+      res.push(items.map(formatOrder).join('\n'));
     }
-
-    res.push(items.map(formatOrder).join('\n'));
 
     ctx.replyHTML(res.join(''));
 

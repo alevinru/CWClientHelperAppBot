@@ -25,7 +25,11 @@ function orderKey(id) {
 }
 
 export async function getOrderById(id) {
-  return redis.hgetallAsync(orderKey(id));
+  return redis.hgetallAsync(orderKey(id))
+    .then(order => Object.assign(order, {
+      qty: parseInt(order.qty, 0),
+      price: parseInt(order.price, 0),
+    }));
 }
 
 export async function removeOrder(id) {
@@ -46,8 +50,8 @@ export async function addOrder(userId, itemCode, qty, price, token) {
     id,
     userId,
     itemCode,
-    qty,
-    price,
+    qty: parseInt(qty, 0),
+    price: parseInt(price, 0),
     token,
   };
 
@@ -65,7 +69,7 @@ export async function addOrder(userId, itemCode, qty, price, token) {
 export async function getOrdersByItemCode(itemCode) {
 
   const ids = await redis.lrangeAsync(ordersQueueKey(itemCode), 0, -1);
-  const promises = ids.map(id => redis.hgetallAsync(orderKey(id)));
+  const promises = ids.map(id => getOrderById(id));
   const orders = await Promise.all(promises);
 
   debug('getOrdersByItemCode', itemCode, orders);
@@ -118,9 +122,14 @@ async function onGotOffer(offer) {
       return;
     }
 
-    debug('onGotOffer got order:', userId, `${orderQty} x ${orderPrice}💰`);
+    debug('onGotOffer got order:', orderId, `${orderQty} x ${orderPrice}💰`);
 
-    const dealParams = { itemCode: itemsByName[itemName], quantity: 1, price: offerPrice };
+    const dealParams = {
+      itemCode: itemsByName[itemName],
+      quantity: 1,
+      price: offerPrice,
+    };
+
     await cw.wantToBuy(parseInt(userId, 0), dealParams, token);
 
     debug('onGotOffer deal:', dealParams);

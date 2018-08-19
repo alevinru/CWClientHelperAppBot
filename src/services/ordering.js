@@ -1,5 +1,7 @@
 import filter from 'lodash/filter';
 import * as redis from './redis';
+import bot from './bot';
+
 import {
   itemNameByCode, addOfferHook, cw, itemsByName,
 } from './cw';
@@ -10,7 +12,7 @@ const ID_TO_ITEM_CODE_HASH = 'orders_idx_itemCode';
 
 const debug = require('debug')('laa:cwb:ordering');
 
-redis.client.on('connect', hookOffers);
+redis.client.on('connect', () => setTimeout(hookOffers, 1000));
 
 function getId() {
   return redis.hincrbyAsync(IDS_HASH, ORDERS_PREFIX, 1);
@@ -80,38 +82,45 @@ export async function getOrdersByItemCode(itemCode) {
 
 function hookOffers() {
 
-  addOfferHook('Stick', onGotOffer);
+  const itemCode = '02';
+  const itemName = 'Stick';
+
+  getOrdersByItemCode(itemCode)
+    .then(orders => orders[0])
+    .then(order => {
+      addOfferHook('Stick', offer => onGotOffer(offer, itemCode, itemName, order));
+    });
 
 }
 
 
-async function onGotOffer(offer) {
+async function onGotOffer(offer, itemCode, itemName, order) {
+
+  if (itemName !== offer.item) {
+    return;
+  }
 
   const {
-    item: itemName,
     price: offerPrice,
     // qty: offerQty,
   } = offer;
 
-  const itemCode = itemsByName[itemName];
-
   try {
 
-    const hashKey = ordersQueueKey(itemCode);
-    const orders = await redis.lrangeAsync(hashKey, 0, 1);
+    // const hashKey = ordersQueueKey(itemCode);
+    // const orders = await redis.lrangeAsync(hashKey, 0, 1);
 
-    if (!orders || !orders.length) {
-      return;
-    }
-
-    const orderId = orders[0];
-    const order = await getOrderById(orderId);
-
+    // if (!orders || !orders.length) {
+    //   return;
+    // }
     if (!order) {
-      debug('invalid order id', orderId);
+      debug('invalid order id', order);
       // await redis.lremAsync(hashKey, 0, order);
       return;
     }
+
+    const orderId = order.id;
+    // const order = await getOrderById(orderId);
 
     const {
       userId, qty: orderQty, price: orderPrice, token,
@@ -133,12 +142,22 @@ async function onGotOffer(offer) {
     await cw.wantToBuy(parseInt(userId, 0), dealParams, token);
 
     debug('onGotOffer deal:', dealParams);
-    debug('onGotOffer processed order:', orderId, `${orderQty} x ${orderPrice}💰`);
+
+    const reply = [
+      '✅',
+      orderId,
+      `${orderQty} x ${offerPrice}💰`,
+    ];
+
+    debug('onGotOffer processed order:', reply);
 
     await removeOrder(orderId);
+    await bot.telegram.sendMessage(userId, reply.join(' '));
 
   } catch (e) {
     const { name = 'Error', message = e } = e;
+    bot.telegram.sendMessage(order.userId, message)
+      .catch(errBot => debug('consumeOffers', errBot.message));
     debug('consumeOffers', name, message);
   }
 

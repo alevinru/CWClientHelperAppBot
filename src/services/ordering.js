@@ -3,30 +3,52 @@ import {
   itemNameByCode, itemKey, addOfferHook, cw, itemsByName,
 } from './cw';
 
+const ORDERS_PREFIX = 'orders';
+const IDS_HASH = 'ids';
 
 const debug = require('debug')('laa:cwb:ordering');
 
 redis.client.on('connect', hookOffers);
 
+function getId() {
+  return redis.hincrbyAsync(IDS_HASH, ORDERS_PREFIX, 1);
+}
+
+function ordersQueueKey(code) {
+  return `${ORDERS_PREFIX}_${code}`;
+}
+
+function orderKey(itemCode, id) {
+  return `${ORDERS_PREFIX}_${itemCode}_${id}`;
+}
+
 export async function addOrder(userId, itemCode, qty, price, token) {
 
-  const order = [userId, qty, price, token].join('_');
+  const id = await getId();
 
-  debug('addOrder', itemCode, order);
+  const order = {
+    id, userId, qty, price, token, itemCode,
+  };
 
-  const key = itemKey(itemNameByCode(itemCode));
-  await redis.lpushAsync(`orders_${key}`, order);
+  const itemName = itemNameByCode(itemCode);
+  debug('addOrder', itemName, order);
+
+  await redis.rpushAsync(ordersQueueKey(itemCode), id);
+  await redis.hmsetAsync(orderKey(itemCode, id), order);
+
+  return order;
 
 }
 
 export async function getOrdersByItemCode(itemCode) {
 
-  const key = itemKey(itemNameByCode(itemCode));
-  const res = await redis.lrangeAsync(`orders_${key}`, 0, -1);
+  const ids = await redis.lrangeAsync(ordersQueueKey(itemCode), 0, -1);
+  const promises = ids.map(id => redis.hgetallAsync(orderKey(itemCode, id)));
+  const orders = await Promise.all(promises);
 
-  debug('getOrders', itemCode, res);
+  debug('getOrdersByItemCode', itemCode, orders);
 
-  return res;
+  return orders;
 
 }
 
@@ -59,7 +81,7 @@ async function onGotOffer(offer) {
 
     if (match.length !== 4) {
       debug('invalid order', order);
-      await redis.lremAsync(hashKey, 0, order);
+      // await redis.lremAsync(hashKey, 0, order);
       return;
     }
 

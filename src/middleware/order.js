@@ -27,10 +27,10 @@ export default async function (ctx) {
     // const token = getAuthToken(session);
     // const dealParams = { itemCode, quantity, price };
 
-    await addOrder(userId, itemCode, quantity, price, token);
+    const { id } = await addOrder(userId, itemCode, quantity, price, token);
 
     const res = [
-      `✅ I have added an order for <b>${userName}</b>:\n`,
+      `✅ I have added an order id <b>${id}</b> for <b>${userName}</b>:\n`,
       `to buy <b>${quantity}</b> of <b>${itemNameByCode(itemCode)}</b>`,
       `by max price of <b>${price}</b>💰\n`,
       `and the total sum is <b>${price * quantity}</b>💰`,
@@ -57,7 +57,7 @@ export async function orders(ctx) {
 
   try {
     const items = await getOrdersByItemCode(itemCode);
-    const res = items.map((item, i) => `${i}: ${item}`);
+    const res = items.map(formatOrder);
     if (!res.length) {
       res.push('No active orders found');
     }
@@ -66,4 +66,11 @@ export async function orders(ctx) {
     ctx.replyError(command, e);
   }
 
+}
+
+function formatOrder(order) {
+  const {
+    id, userId, qty, price,
+  } = order;
+  return `#${id} : ${userId} ${qty} x ${price}💰`;
 }

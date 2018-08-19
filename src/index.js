@@ -1,6 +1,7 @@
 import Telegraf from 'telegraf';
 import { cw } from './services';
 import session from './services/session';
+import bot, { BOT_ID } from './services/bot';
 import { fromCWFilter } from './config/filters';
 import { auth, authCode } from './middleware/auth';
 
@@ -8,14 +9,6 @@ import trades from './middleware/trades';
 import order, { orders, orderById, rmById } from './middleware/order';
 
 const debug = require('debug')('laa:cwb:index');
-
-const { BOT_TOKEN } = process.env;
-const options = { username: process.env.BOT_USER_NAME };
-const bot = new Telegraf(BOT_TOKEN, options);
-const BOT_ID = BOT_TOKEN.match(/^[^:]*/)[0];
-
-
-debug('Starting bot id:', BOT_ID);
 
 require('./config/context').default(bot);
 

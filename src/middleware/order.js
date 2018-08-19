@@ -1,4 +1,5 @@
-import * as cw from '../services/cw';
+import { addOrder, getOrdersByItemCode } from '../services/ordering';
+import { itemNameByCode } from '../services/cw';
 
 const debug = require('debug')('laa:cwb:wtb');
 
@@ -26,11 +27,11 @@ export default async function (ctx) {
     // const token = getAuthToken(session);
     // const dealParams = { itemCode, quantity, price };
 
-    await cw.addOrder(userId, itemCode, quantity, price, token);
+    await addOrder(userId, itemCode, quantity, price, token);
 
     const res = [
       `✅ I have added an order for <b>${userName}</b>:\n`,
-      `to buy <b>${quantity}</b> of <b>${cw.itemNameByCode(itemCode)}</b>`,
+      `to buy <b>${quantity}</b> of <b>${itemNameByCode(itemCode)}</b>`,
       `by max price of <b>${price}</b>💰\n`,
       `and the total sum is <b>${price * quantity}</b>💰`,
     ];
@@ -55,7 +56,7 @@ export async function orders(ctx) {
   debug(command);
 
   try {
-    const items = await cw.getOrdersByItemCode(itemCode);
+    const items = await getOrdersByItemCode(itemCode);
     const res = items.map((item, i) => `${i}: ${item}`);
     if (!res.length) {
       res.push('No active orders found');

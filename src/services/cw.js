@@ -1,15 +1,19 @@
 import CWExchange, * as CW from 'cw-rest-api';
-import itemsByName from 'cw-rest-api/src/db/itemsByName';
 import map from 'lodash/map';
 import keyBy from 'lodash/keyBy';
 
 import {
-  hgetAsync, hsetAsync, lpushAsync, ltrimAsync, lrangeAsync, setAsync, lremAsync,
+  hgetAsync, hsetAsync, lpushAsync, ltrimAsync, setAsync,
 } from './redis';
 
 const debug = require('debug')('laa:cwb:cw');
 
 const MAX_DEALS = 1000;
+
+let minOfferDate;
+
+setMinOfferDate();
+setInterval(setMinOfferDate, 1000);
 
 export const CW_BOT_ID = parseInt(process.env.CW_BOT_ID, 0);
 
@@ -23,7 +27,8 @@ const fanouts = {
 
 export const cw = new CWExchange({ fanouts });
 
-const itemsByCode = keyBy(map(itemsByName, (code, name) => ({ name, code })), 'code');
+export const itemsByName = CW.allItemsByName();
+export const itemsByCode = keyBy(map(itemsByName, (code, name) => ({ name, code })), 'code');
 
 debug('Started CW API', CW_BOT_ID);
 
@@ -97,12 +102,27 @@ async function consumeSEXDigest(msg, ack) {
 
 }
 
-function itemKey(name) {
+export function itemKey(name) {
   return name.replace(/ /g, '_').toLowerCase();
 }
 
 export function itemNameByCode(code) {
   return itemsByCode[code].name;
+}
+
+function setMinOfferDate() {
+  const now = new Date();
+  now.setSeconds(now.getSeconds() - 2);
+  minOfferDate = now;
+  // debug('setMinOfferDate', minOfferDate);
+}
+
+const offerHooks = {};
+
+export function addOfferHook(itemName, callback) {
+
+  offerHooks[itemName] = callback;
+
 }
 
 async function consumeOffers(msg, ack) {
@@ -120,67 +140,18 @@ async function consumeOffers(msg, ack) {
   } = offer;
 
   debug('consumeOffers', deliveryTag, ts, `"${sellerName}" offers`, itemName, `${offerQty} x ${offerPrice}💰`);
+  const hook = offerHooks[itemName];
 
-  try {
-
-    const hashKey = `orders_${itemKey(itemName)}`;
-    const orders = await lrangeAsync(hashKey, 0, 1);
-
-    if (orders && orders.length) {
-
-      const order = orders[0];
-      const match = order.match(/(.+)_(.+)_(.+)_(.+)/);
-
-      if (!match) {
-        debug('invalid order', order);
-        await lremAsync(hashKey, 0, order);
-      } else {
-        // eslint-disable-next-line
-        const [, userId, orderQty, orderPrice, token] = match;
-        if (offerPrice <= orderPrice) {
-          debug('consumeOffers got order:', userId, `${orderQty} x ${orderPrice}💰`);
-          const dealParams = { itemCode: itemsByName[itemName], quantity: 1, price: offerPrice };
-          await cw.wantToBuy(parseInt(userId, 0), dealParams, token);
-          debug('consumeOffers deal:', dealParams);
-          debug('consumeOffers processed order:', userId, `${orderQty} x ${orderPrice}💰`);
-          await lremAsync(hashKey, 0, order);
-        } else {
-          debug('consumeOffers ignore price', offerPrice, 'of', itemName, 'since requested', orderPrice);
-        }
-      }
-
-    }
-
-    ack();
-
-  } catch (e) {
-    const { name = 'Error', message = e } = e;
-    debug('consumeOffers', name, message);
+  if (ts < minOfferDate) {
+    debug('consumeOffers ignore old');
+  } else if (hook) {
+    hook(offer);
   }
 
-}
-
-export async function addOrder(userId, itemCode, qty, price, token) {
-
-  const order = [userId, qty, price, token].join('_');
-
-  debug('addOrder', itemCode, order);
-
-  const key = itemKey(itemNameByCode(itemCode));
-  await lpushAsync(`orders_${key}`, order);
+  ack();
 
 }
 
-export async function getOrdersByItemCode(itemCode) {
-
-  const key = itemKey(itemNameByCode(itemCode));
-  const res = await lrangeAsync(`orders_${key}`, 0, -1);
-
-  debug('getOrders', itemCode, res);
-
-  return res;
-
-}
 
 async function consumeAUDigest(msg, ack) {
 

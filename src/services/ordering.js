@@ -28,6 +28,16 @@ export async function getOrderById(id) {
   return redis.hgetallAsync(orderKey(id));
 }
 
+export async function removeOrder(id) {
+  const itemCode = await redis.hgetAsync(ID_TO_ITEM_CODE_HASH, id);
+  if (itemCode) {
+    await redis.hdelAsync(ID_TO_ITEM_CODE_HASH, id);
+    await redis.lremAsync(ordersQueueKey(itemCode), 0, id);
+    await redis.delAsync(orderKey(id));
+  }
+  return !!itemCode;
+}
+
 export async function addOrder(userId, itemCode, qty, price, token) {
 
   const id = await getId();

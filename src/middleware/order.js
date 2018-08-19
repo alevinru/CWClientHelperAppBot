@@ -33,7 +33,8 @@ export default async function (ctx) {
       `✅ I have added an order id <b>${id}</b> for <b>${userName}</b>:\n`,
       `to buy <b>${quantity}</b> of <b>${itemNameByCode(itemCode)}</b>`,
       `by max price of <b>${price}</b>💰\n`,
-      `and the total sum is <b>${price * quantity}</b>💰`,
+      `so the total sum is <b>${price * quantity}</b>💰.`,
+      `\nTo remove it issue /rmorder_${id} command.`,
     ];
 
     await ctx.replyHTML(res.join(' '));
@@ -89,6 +90,29 @@ export async function orderById(ctx) {
       formatOrder(order),
     ];
     ctx.replyHTML(res.join('\n'));
+  } catch (e) {
+    ctx.replyError(command, e);
+  }
+
+}
+
+export async function rmById(ctx) {
+
+  const {
+    match,
+  } = ctx;
+  const [, id] = match;
+  const command = `/rmorder_${id}`;
+
+  debug(command);
+
+  try {
+    const order = await ordering.removeOrder(id);
+    if (!order) {
+      ctx.replyHTML(`No active orders found with id #<b>${id}</b>`);
+      return;
+    }
+    ctx.replyHTML(`Order id #<b>${id}</b> removed`);
   } catch (e) {
     ctx.replyError(command, e);
   }

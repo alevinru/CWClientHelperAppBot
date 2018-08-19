@@ -1,4 +1,4 @@
-import { addOrder, getOrdersByItemCode } from '../services/ordering';
+import * as ordering from '../services/ordering';
 import { itemNameByCode } from '../services/cw';
 
 const debug = require('debug')('laa:cwb:wtb');
@@ -27,7 +27,7 @@ export default async function (ctx) {
     // const token = getAuthToken(session);
     // const dealParams = { itemCode, quantity, price };
 
-    const { id } = await addOrder(userId, itemCode, quantity, price, token);
+    const { id } = await ordering.addOrder(userId, itemCode, quantity, price, token);
 
     const res = [
       `✅ I have added an order id <b>${id}</b> for <b>${userName}</b>:\n`,
@@ -56,11 +56,38 @@ export async function orders(ctx) {
   debug(command);
 
   try {
-    const items = await getOrdersByItemCode(itemCode);
+    const items = await ordering.getOrdersByItemCode(itemCode);
     const res = items.map(formatOrder);
     if (!res.length) {
-      res.push('No active orders found');
+      res.push(`No active orders found for <b>${itemNameByCode(itemCode)}</b>`);
     }
+    ctx.replyHTML(res.join('\n'));
+  } catch (e) {
+    ctx.replyError(command, e);
+  }
+
+}
+
+export async function orderById(ctx) {
+
+  const {
+    match,
+  } = ctx;
+  const [, id] = match;
+  const command = `/order_${id}`;
+
+  debug(command);
+
+  try {
+    const order = await ordering.getOrderById(id);
+    if (!order) {
+      ctx.replyHTML(`No active orders found with id #<b>${id}</b>`);
+      return;
+    }
+    const res = [
+      `To buy <b>${itemNameByCode(order.itemCode)}</b>:`,
+      formatOrder(order),
+    ];
     ctx.replyHTML(res.join('\n'));
   } catch (e) {
     ctx.replyError(command, e);

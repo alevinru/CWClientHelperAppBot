@@ -1,3 +1,4 @@
+import filter from 'lodash/filter';
 import * as redis from './redis';
 import {
   itemNameByCode, itemKey, addOfferHook, cw, itemsByName,
@@ -5,6 +6,7 @@ import {
 
 const ORDERS_PREFIX = 'orders';
 const IDS_HASH = 'ids';
+const ID_TO_ITEM_CODE_HASH = 'orders_idx_itemCode';
 
 const debug = require('debug')('laa:cwb:ordering');
 
@@ -15,11 +17,15 @@ function getId() {
 }
 
 function ordersQueueKey(code) {
-  return `${ORDERS_PREFIX}_${code}`;
+  return `${ORDERS_PREFIX}_queue_${code}`;
 }
 
-function orderKey(itemCode, id) {
-  return `${ORDERS_PREFIX}_${itemCode}_${id}`;
+function orderKey(id) {
+  return `order_${id}`;
+}
+
+export async function getOrderById(id) {
+  return redis.hgetallAsync(orderKey(id));
 }
 
 export async function addOrder(userId, itemCode, qty, price, token) {
@@ -33,8 +39,9 @@ export async function addOrder(userId, itemCode, qty, price, token) {
   const itemName = itemNameByCode(itemCode);
   debug('addOrder', itemName, order);
 
+  await redis.hsetAsync(ID_TO_ITEM_CODE_HASH, id, itemCode);
   await redis.rpushAsync(ordersQueueKey(itemCode), id);
-  await redis.hmsetAsync(orderKey(itemCode, id), order);
+  await redis.hmsetAsync(orderKey(id), order);
 
   return order;
 
@@ -43,12 +50,12 @@ export async function addOrder(userId, itemCode, qty, price, token) {
 export async function getOrdersByItemCode(itemCode) {
 
   const ids = await redis.lrangeAsync(ordersQueueKey(itemCode), 0, -1);
-  const promises = ids.map(id => redis.hgetallAsync(orderKey(itemCode, id)));
+  const promises = ids.map(id => redis.hgetallAsync(orderKey(id)));
   const orders = await Promise.all(promises);
 
   debug('getOrdersByItemCode', itemCode, orders);
 
-  return orders;
+  return filter(orders);
 
 }
 

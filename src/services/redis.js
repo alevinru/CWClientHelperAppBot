@@ -8,13 +8,13 @@ export const client = redis.createClient({
   enable_offline_queue: false,
 });
 
-export const setAsync = promisify(client.set).bind(client);
-export const lrangeAsync = promisify(client.lrange).bind(client);
-export const lremAsync = promisify(client.lrem).bind(client);
-export const ltrimAsync = promisify(client.ltrim).bind(client);
-export const lpushAsync = promisify(client.lpush).bind(client);
-export const hgetAsync = promisify(client.hget).bind(client);
-export const hsetAsync = promisify(client.hset).bind(client);
+export const setAsync = promisifyClient('set');
+export const lrangeAsync = promisifyClient('lrange');
+export const lremAsync = promisifyClient('lrem');
+export const ltrimAsync = promisifyClient('ltrim');
+export const lpushAsync = promisifyClient('lpush');
+export const hgetAsync = promisifyClient('hget');
+export const hsetAsync = promisifyClient('hset');
 
 const debug = require('debug')('laa:cwc:redis');
 
@@ -25,3 +25,8 @@ client.on('error', err => {
 client.on('connect', () => {
   debug('Redis connected');
 });
+
+
+function promisifyClient(cmd) {
+  return promisify(client[cmd]).bind(client);
+}

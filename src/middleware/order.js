@@ -34,7 +34,7 @@ export default async function (ctx) {
       `to buy <b>${quantity}</b> of <b>${itemNameByCode(itemCode)}</b>`,
       `by max price of <b>${price}</b>💰\n`,
       `so the total sum is <b>${price * quantity}</b>💰.`,
-      `\nTo remove it issue /rmorder_${id} command.`,
+      `\n\nTo remove it issue /rmorder_${id} command.`,
     ];
 
     await ctx.replyHTML(res.join(' '));
@@ -57,12 +57,21 @@ export async function orders(ctx) {
   debug(command);
 
   try {
+
+    const res = [`Active orders for <b>${itemNameByCode(itemCode)}</b>`];
     const items = await ordering.getOrdersByItemCode(itemCode);
-    const res = items.map(formatOrder);
+
+
     if (!res.length) {
-      res.push(`No active orders found for <b>${itemNameByCode(itemCode)}</b>`);
+      res.push(' not found.');
+    } else {
+      res.push('\n');
     }
-    ctx.replyHTML(res.join('\n'));
+
+    res.push(items.map(formatOrder).join('\n'));
+
+    ctx.replyHTML(res.join(''));
+
   } catch (e) {
     ctx.replyError(command, e);
   }

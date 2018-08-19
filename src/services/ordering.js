@@ -1,7 +1,7 @@
 import filter from 'lodash/filter';
 import * as redis from './redis';
 import {
-  itemNameByCode, itemKey, addOfferHook, cw, itemsByName,
+  itemNameByCode, addOfferHook, cw, itemsByName,
 } from './cw';
 
 const ORDERS_PREFIX = 'orders';
@@ -84,25 +84,29 @@ async function onGotOffer(offer) {
     // qty: offerQty,
   } = offer;
 
+  const itemCode = itemsByName[itemName];
+
   try {
 
-    const hashKey = `orders_${itemKey(itemName)}`;
+    const hashKey = ordersQueueKey(itemCode);
     const orders = await redis.lrangeAsync(hashKey, 0, 1);
 
     if (!orders || !orders.length) {
       return;
     }
 
-    const order = orders[0];
-    const match = order.split('_');
+    const orderId = orders[0];
+    const order = await getOrderById(orderId);
 
-    if (match.length !== 4) {
-      debug('invalid order', order);
+    if (!order) {
+      debug('invalid order id', orderId);
       // await redis.lremAsync(hashKey, 0, order);
       return;
     }
 
-    const [userId, orderQty, orderPrice, token] = match;
+    const {
+      userId, orderQty, orderPrice, token,
+    } = order;
 
     if (offerPrice > orderPrice) {
       debug('onGotOffer ignore price', offerPrice, 'of', itemName, 'since requested', orderPrice);
@@ -117,7 +121,7 @@ async function onGotOffer(offer) {
     debug('onGotOffer deal:', dealParams);
     debug('onGotOffer processed order:', userId, `${orderQty} x ${orderPrice}💰`);
 
-    await redis.lremAsync(hashKey, 0, order);
+    await removeOrder(orderId);
 
   } catch (e) {
     const { name = 'Error', message = e } = e;

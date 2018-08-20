@@ -145,7 +145,7 @@ async function consumeOffers(msg, ack) {
   if (ts < minOfferDate) {
     debug('consumeOffers ignore old');
   } else if (hook) {
-    hook(offer);
+    await hook(offer);
   }
 
   ack();

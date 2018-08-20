@@ -88,7 +88,11 @@ function hookOffers() {
   getOrdersByItemCode(itemCode)
     .then(orders => orders[0])
     .then(order => {
-      addOfferHook('Stick', offer => onGotOffer(offer, itemCode, itemName, order));
+      if (order) {
+        addOfferHook('Stick', offer => onGotOffer(offer, itemCode, itemName, order));
+      } else {
+        addOfferHook('Stick', false);
+      }
     });
 
 }
@@ -102,7 +106,7 @@ async function onGotOffer(offer, itemCode, itemName, order) {
 
   const {
     price: offerPrice,
-    // qty: offerQty,
+    qty: offerQty,
   } = offer;
 
   try {
@@ -135,7 +139,7 @@ async function onGotOffer(offer, itemCode, itemName, order) {
 
     const dealParams = {
       itemCode: itemsByName[itemName],
-      quantity: 1,
+      quantity: orderQty > offerQty ? offerQty : orderQty,
       price: offerPrice,
     };
 

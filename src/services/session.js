@@ -11,7 +11,7 @@ export default function (config) {
       db: process.env.REDIS_DB || 0,
       enable_offline_queue: false,
     },
-    getSessionKey: ctx => ctx.from && `${config.botId}:${ctx.from.id}`,
+    getSessionKey: ctx => ctx.from && sessionKey(config.botId, ctx.from.id),
   });
 
   const { client } = session;
@@ -26,4 +26,9 @@ export default function (config) {
 
   return session;
 
+}
+
+
+function sessionKey(botId, userId) {
+  return `session_${botId}_${userId}`;
 }

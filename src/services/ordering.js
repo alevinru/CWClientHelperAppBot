@@ -149,18 +149,23 @@ async function onGotOffer(offer, itemCode, itemName, order) {
 
     const reply = [
       '✅',
-      orderId,
-      `${orderQty} x ${offerPrice}💰`,
+      `/order_${orderId} deal success`,
+      `${dealParams.quantity} x ${dealParams.price}💰`,
     ];
 
     debug('onGotOffer processed order:', reply);
 
-    await removeOrder(orderId);
+    // await removeOrder(orderId);
     await bot.telegram.sendMessage(userId, reply.join(' '));
 
   } catch (e) {
     const { name = 'Error', message = e } = e;
-    bot.telegram.sendMessage(order.userId, message)
+    const errMsg = [
+      `⚠️ /order_${order.id} deal failed with`,
+      `${name.toLocaleLowerCase()}: <b>${message}</b>.\n`,
+      `Missed offer of ${offerQty} of <b>${itemName}</b>`,
+    ];
+    bot.telegram.sendMessage(order.userId, errMsg.join(' '), { parse_mode: 'HTML' })
       .catch(errBot => debug('consumeOffers', errBot.message));
     debug('consumeOffers', name, message);
   }

@@ -91,7 +91,7 @@ async function hookOffers() {
     top.forEach(order => {
       const { itemCode } = order;
       const itemName = itemNameByCode(itemCode);
-      addOfferHook('Stick', offer => onGotOffer(offer, itemCode, itemName, order));
+      addOfferHook(itemName, offer => onGotOffer(offer, itemCode, itemName, order));
       debug('hookOffers', itemName, order.id);
     });
 

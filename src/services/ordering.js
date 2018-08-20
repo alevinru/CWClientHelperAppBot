@@ -1,4 +1,7 @@
 import filter from 'lodash/filter';
+import keyBy from 'lodash/keyBy';
+import map from 'lodash/map';
+
 import * as redis from './redis';
 import bot from './bot';
 
@@ -98,6 +101,20 @@ function hookOffers() {
 }
 
 
+export async function getTopOrders() {
+
+  const index = await redis.hgetallAsync(ID_TO_ITEM_CODE_HASH);
+  debug('getTopOrders index:', index);
+  const itemCodes = map(keyBy(index, itemCode => itemCode));
+  debug('getTopOrders itemCodes:', itemCodes);
+  const promises = map(itemCodes, itemCode => redis.lrangeAsync(ordersQueueKey(itemCode), 0, 0));
+
+  return Promise.all(promises)
+    .then(res => map(res, getOrderById))
+    .then(res => Promise.all(res));
+
+}
+
 async function onGotOffer(offer, itemCode, itemName, order) {
 
   if (itemName !== offer.item) {
@@ -107,7 +124,7 @@ async function onGotOffer(offer, itemCode, itemName, order) {
   const {
     price: offerPrice,
     qty: offerQty,
-    sellerName
+    sellerName,
   } = offer;
 
   try {
@@ -151,7 +168,8 @@ async function onGotOffer(offer, itemCode, itemName, order) {
     const reply = [
       '✅',
       `/order_${orderId} deal success`,
-      `${dealParams.quantity} x ${dealParams.price}💰 from <b>${sellerName}</b>`,
+      `${dealParams.quantity} x ${dealParams.price}💰 from `,
+      `those <b>${offerQty}</b> offered by <b>${sellerName}</b>`,
     ];
 
     debug('onGotOffer processed order:', reply);
@@ -162,11 +180,11 @@ async function onGotOffer(offer, itemCode, itemName, order) {
   } catch (e) {
     const { name = 'Error', message = e } = e;
     const errMsg = [
-      `⚠️ /order_${order.id} deal failed with`,
+      `⚠️ /order_${order.id} deal failed with `,
       `${name.toLocaleLowerCase()}: <b>${message}</b>.\n`,
       `Missed offer of ${offerQty} of <b>${itemName}</b> from <b>${sellerName}</b>`,
     ];
-    bot.telegram.sendMessage(order.userId, errMsg.join(' '), { parse_mode: 'HTML' })
+    bot.telegram.sendMessage(order.userId, errMsg.join(''), { parse_mode: 'HTML' })
       .catch(errBot => debug('consumeOffers', errBot.message));
     debug('consumeOffers', name, message);
   }

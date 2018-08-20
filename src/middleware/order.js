@@ -3,7 +3,7 @@ import { itemNameByCode } from '../services/cw';
 
 const debug = require('debug')('laa:cwb:wtb');
 
-export default async function (ctx) {
+export async function createOrder(ctx) {
 
   const {
     match,
@@ -66,7 +66,7 @@ export async function orders(ctx) {
       res.push(' not found.');
     } else {
       res.push('\n');
-      res.push(items.map(formatOrder).join('\n'));
+      res.push(items.map(o => formatOrder(o)).join('\n'));
     }
 
     ctx.replyHTML(res.join(''));
@@ -94,8 +94,8 @@ export async function orderById(ctx) {
       return;
     }
     const res = [
-      `To buy <b>${itemNameByCode(order.itemCode)}</b>:`,
-      formatOrder(order),
+      // `To buy <b>${itemNameByCode(order.itemCode)}</b>:`,
+      formatOrder(order, true),
     ];
     ctx.replyHTML(res.join('\n'));
   } catch (e) {
@@ -127,9 +127,41 @@ export async function rmById(ctx) {
 
 }
 
-function formatOrder(order) {
+function formatOrder(order, withItem = false) {
   const {
-    id, userId, qty, price,
+    id, userId, qty, price, itemCode,
   } = order;
-  return `#${id} : ${userId} ${qty} x ${price}💰`;
+  debug('formatOrder', order);
+  return [
+    `/order_${id} `,
+    withItem ? `<b>${itemNameByCode(itemCode)}</b> ` : '',
+    `${qty} x ${price}💰 for userId <code>${userId}</code>`,
+  ].join('');
+}
+
+export async function ordersTop(ctx) {
+
+  const command = '/orders_top';
+
+  debug(command);
+
+  try {
+
+    const res = ['Active orders'];
+    const items = await ordering.getTopOrders();
+
+    if (!items.length) {
+      res.push(' not found.');
+    } else {
+      res.push(' so far:\n');
+      res.push(items.map(o => formatOrder(o, true)).join('\n'));
+    }
+
+    ctx.replyHTML(res.join(''));
+
+  } catch (e) {
+    debug(e);
+    ctx.replyError(command, e);
+  }
+
 }

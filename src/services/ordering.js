@@ -6,7 +6,7 @@ import * as redis from './redis';
 import bot from './bot';
 
 import {
-  itemNameByCode, addOfferHook, cw, itemsByName,
+  itemNameByCode, addOfferHook, dropOfferHooks, cw, itemsByName,
 } from './cw';
 
 const ORDERS_PREFIX = 'orders';
@@ -83,10 +83,13 @@ export async function getOrdersByItemCode(itemCode) {
 
 }
 
-async function hookOffers() {
+export async function hookOffers() {
 
   try {
+
     const top = await getTopOrders();
+
+    dropOfferHooks();
 
     top.forEach(order => {
       const { itemCode } = order;

@@ -1,6 +1,7 @@
 import CWExchange, * as CW from 'cw-rest-api';
 import map from 'lodash/map';
 import keyBy from 'lodash/keyBy';
+import filter from 'lodash/filter';
 
 import {
   hgetAsync, hsetAsync, lpushAsync, ltrimAsync, setAsync,
@@ -122,6 +123,20 @@ const offerHooks = {};
 export function addOfferHook(itemName, callback) {
 
   offerHooks[itemName] = callback;
+
+}
+
+export function getOfferHooks() {
+
+  return filter(map(offerHooks, (val, itemCode) => val && itemCode));
+
+}
+
+export function dropOfferHooks() {
+
+  map(offerHooks, (val, key) => {
+    offerHooks[key] = false;
+  });
 
 }
 

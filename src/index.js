@@ -5,7 +5,7 @@ import bot, { BOT_ID } from './services/bot';
 import { fromCWFilter } from './config/filters';
 import { auth, authCode } from './middleware/auth';
 
-import trades from './middleware/trades';
+import trades, * as trading from './middleware/trades';
 import * as ord from './middleware/order';
 
 const debug = require('debug')('laa:cwb:index');
@@ -20,7 +20,9 @@ bot.use(session({ botId: BOT_ID }).middleware());
 
 bot.command('auth', auth);
 
+bot.hears(/^\/trading[ _](on|off|status)$/, trading.trading);
 bot.hears(/^\/trades[ _]([a-z0-9]+)$/, trades);
+
 bot.hears(/^\/orders_top$/, ord.ordersTop);
 bot.hears(/^\/order[ _]([a-z0-9]+)[ _](\d+)[ _](\d+)$/, ord.createOrder);
 bot.hears(/^\/orders[ _]([a-z0-9]+)$/, ord.orders);

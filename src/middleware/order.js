@@ -30,7 +30,7 @@ export default async function (ctx) {
     const { id } = await ordering.addOrder(userId, itemCode, quantity, price, token);
 
     const res = [
-      `✅ I have added an order id <b>${id}</b> for <b>${userName}</b>:\n`,
+      `✅ I have added an /order_${id} for <b>${userName}</b>:\n`,
       `to buy <b>${quantity}</b> of <b>${itemNameByCode(itemCode)}</b>`,
       `by max price of <b>${price}</b>💰\n`,
       `so the total sum is <b>${price * quantity}</b>💰.`,

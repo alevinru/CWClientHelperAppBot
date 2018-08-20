@@ -83,20 +83,21 @@ export async function getOrdersByItemCode(itemCode) {
 
 }
 
-function hookOffers() {
+async function hookOffers() {
 
-  const itemCode = '02';
-  const itemName = 'Stick';
+  try {
+    const top = await getTopOrders();
 
-  getOrdersByItemCode(itemCode)
-    .then(orders => orders[0])
-    .then(order => {
-      if (order) {
-        addOfferHook('Stick', offer => onGotOffer(offer, itemCode, itemName, order));
-      } else {
-        addOfferHook('Stick', false);
-      }
+    top.forEach(order => {
+      const { itemCode } = order;
+      const itemName = itemNameByCode(itemCode);
+      addOfferHook('Stick', offer => onGotOffer(offer, itemCode, itemName, order));
+      debug('hookOffers', itemName, order.id);
     });
+
+  } catch (e) {
+    debug(e);
+  }
 
 }
 
@@ -104,9 +105,9 @@ function hookOffers() {
 export async function getTopOrders() {
 
   const index = await redis.hgetallAsync(ID_TO_ITEM_CODE_HASH);
-  debug('getTopOrders index:', index);
+  // debug('getTopOrders index:', index);
   const itemCodes = map(keyBy(index, itemCode => itemCode));
-  debug('getTopOrders itemCodes:', itemCodes);
+  // debug('getTopOrders itemCodes:', itemCodes);
   const promises = map(itemCodes, itemCode => redis.lrangeAsync(ordersQueueKey(itemCode), 0, 0));
 
   return Promise.all(promises)
@@ -167,9 +168,9 @@ async function onGotOffer(offer, itemCode, itemName, order) {
 
     const reply = [
       '✅',
-      `/order_${orderId} deal success`,
-      `${dealParams.quantity} x ${dealParams.price}💰 from `,
-      `those <b>${offerQty}</b> offered by <b>${sellerName}</b>`,
+      `/order_${orderId} deal success!\n`,
+      `Got <b>${itemName}</b> ${dealParams.quantity} x ${dealParams.price}💰 from `,
+      `<b>${offerQty}</b> offered by <b>${sellerName}</b>`,
     ];
 
     debug('onGotOffer processed order:', reply);

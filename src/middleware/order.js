@@ -131,7 +131,7 @@ function formatOrder(order, withItem = false) {
   const {
     id, userId, qty, price, itemCode,
   } = order;
-  debug('formatOrder', order);
+  // debug('formatOrder', order);
   return [
     `/order_${id} `,
     withItem ? `<b>${itemNameByCode(itemCode)}</b> ` : '',

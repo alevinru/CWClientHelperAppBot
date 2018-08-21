@@ -32,7 +32,7 @@ function orderKey(id) {
 
 export async function getOrderById(id) {
   return redis.hgetallAsync(orderKey(id))
-    .then(order => Object.assign(order, {
+    .then(order => order && Object.assign(order, {
       qty: parseInt(order.qty, 0),
       price: parseInt(order.price, 0),
     }));

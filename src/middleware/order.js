@@ -94,8 +94,8 @@ export async function orderById(ctx) {
       return;
     }
     const res = [
-      // `To buy <b>${itemNameByCode(order.itemCode)}</b>:`,
       formatOrder(order, true),
+      `To remove the order issue /rmorder_${id} command`,
     ];
     ctx.replyHTML(res.join('\n'));
   } catch (e) {
@@ -129,13 +129,14 @@ export async function rmById(ctx) {
 
 function formatOrder(order, withItem = false) {
   const {
-    id, userId, qty, price, itemCode,
+    id, userId, qty, price, itemCode, userName,
   } = order;
   // debug('formatOrder', order);
   return [
     `/order_${id} `,
     withItem ? `<b>${itemNameByCode(itemCode)}</b> ` : '',
-    `${qty} x ${price}💰 for userId <code>${userId}</code>`,
+    `${qty} x ${price}💰 for `,
+    userName ? `<b>${userName}</b>` : `userId <code>${userId}</code>`,
   ].join('');
 }
 

@@ -4,6 +4,7 @@ import map from 'lodash/map';
 
 import * as redis from './redis';
 import bot from './bot';
+import { getProfile } from './profile';
 
 import {
   itemNameByCode, addOfferHook, dropOfferHooks, cw, itemsByName,
@@ -51,6 +52,8 @@ export async function addOrder(userId, itemCode, qty, price, token) {
 
   const id = await getId();
 
+  const { userName } = await getProfile(userId);
+
   const order = {
     id,
     userId,
@@ -58,6 +61,7 @@ export async function addOrder(userId, itemCode, qty, price, token) {
     qty: parseInt(qty, 0),
     price: parseInt(price, 0),
     token,
+    userName,
   };
 
   const itemName = itemNameByCode(itemCode);

@@ -29,6 +29,6 @@ export default function (config) {
 }
 
 
-function sessionKey(botId, userId) {
+export function sessionKey(botId, userId) {
   return `session_${botId}_${userId}`;
 }

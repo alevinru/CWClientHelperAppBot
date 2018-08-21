@@ -9,6 +9,7 @@ export const client = redis.createClient({
 });
 
 export const setAsync = promisifyClient('set');
+export const getAsync = promisifyClient('get');
 export const delAsync = promisifyClient('del');
 export const lrangeAsync = promisifyClient('lrange');
 export const lremAsync = promisifyClient('lrem');

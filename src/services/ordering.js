@@ -182,7 +182,7 @@ async function onGotOffer(offer, itemCode, itemName, order) {
     debug('onGotOffer processed order:', reply);
 
     // await removeOrder(orderId);
-    await bot.telegram.sendMessage(userId, reply.join(' '), { parse_mode: 'HTML' });
+    await bot.telegram.sendMessage(userId, reply.join(''), { parse_mode: 'HTML' });
 
   } catch (e) {
     const { name = 'Error', message = e } = e;

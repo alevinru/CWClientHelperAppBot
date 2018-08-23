@@ -25,8 +25,8 @@ By default bot connects to local Redis at default port. You could specify this b
 ## Setup
 
 ```Shell
-CW_BOT_ID=ChatWars_Bot_ID
-BOT_TOKEN=Your_Telegram_Bot_Token
+export CW_BOT_ID=ChatWars_Bot_ID
+export BOT_TOKEN=Your_Telegram_Bot_Token
 ```
 
 Also you need to export ChatWars API credentials as described in

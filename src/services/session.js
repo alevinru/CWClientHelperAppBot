@@ -1,4 +1,5 @@
 import RedisSession from 'telegraf-session-redis';
+import { getAsync } from './redis';
 
 const debug = require('debug')('laa:cwb:session');
 
@@ -31,4 +32,9 @@ export default function (config) {
 
 export function sessionKey(botId, userId) {
   return `session_${botId}_${userId}`;
+}
+
+export function getSession(botId, userId) {
+  return getAsync(sessionKey(botId, userId))
+    .then(json => JSON.parse(json));
 }

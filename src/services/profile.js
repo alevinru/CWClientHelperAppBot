@@ -1,9 +1,14 @@
 import { BOT_ID } from './bot';
-import { sessionKey } from './session';
-import { getAsync } from './redis';
+import { getSession } from './session';
+import { getAuthToken } from './auth';
 
 // eslint-disable-next-line
 export async function getProfile(userId) {
-  return getAsync(sessionKey(BOT_ID, userId))
-    .then(res => JSON.parse(res).profile);
+  return getSession(BOT_ID, userId)
+    .then(res => res.profile);
+}
+
+export async function getToken(userId) {
+  return getSession(BOT_ID, userId)
+    .then(res => getAuthToken(res));
 }

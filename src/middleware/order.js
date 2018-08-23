@@ -1,5 +1,7 @@
 import * as ordering from '../services/ordering';
 import { itemNameByCode } from '../services/cw';
+import { getProfile, getToken } from '../services/profile';
+import { getAuthToken } from '../services';
 
 const debug = require('debug')('laa:cwb:wtb');
 
@@ -8,26 +10,26 @@ export async function createOrder(ctx) {
   const {
     match,
     from: { id: userId },
-    session: { profile, auth: { token } },
+    session,
   } = ctx;
-  const [, itemCode, quantity, price] = match;
+  const [, itemCode, quantity, price, matchUserId] = match;
   const command = `/order_${itemCode}_${quantity}_${price}`;
 
   debug(command);
 
-  if (!profile) {
+  if (!session.profile) {
     ctx.reply('You are not authorized yet, do /auth prior to trading.');
     return;
   }
 
-  const { userName } = profile;
 
   try {
 
-    // const token = getAuthToken(session);
-    // const dealParams = { itemCode, quantity, price };
+    const token = matchUserId ? await getToken(matchUserId) : getAuthToken(session);
+    const profile = matchUserId ? await getProfile(matchUserId) : session.profile;
 
-    const { id } = await ordering.addOrder(userId, itemCode, quantity, price, token);
+    const { userName } = profile;
+    const { id } = await ordering.addOrder(matchUserId || userId, itemCode, quantity, price, token);
 
     const res = [
       `✅ I have added an /order_${id} for <b>${userName}</b>:\n`,

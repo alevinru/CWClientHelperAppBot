@@ -4,6 +4,8 @@ import { hookOffers } from '../services/ordering';
 
 const debug = require('debug')('laa:cwb:trades');
 
+const PRICE_LIMIT_PERCENT = 1.2;
+
 export default async function (ctx) {
 
   const {
@@ -16,9 +18,10 @@ export default async function (ctx) {
 
   try {
     const prices = await pricesByItemCode(itemCode);
+    const priceLimit = minPriceForPrices(prices);
     const reply = [
       `Last digest prices are: <b>${JSON.stringify(prices)}</b>`,
-      `So, max wtb price is <b>${prices[0] || 'unknown'}</b>💰`,
+      `So, max wtb price is <b>${priceLimit || 'unknown'}</b>💰`,
     ];
     await ctx.replyHTML(reply.join('\n'));
   } catch (e) {
@@ -27,9 +30,19 @@ export default async function (ctx) {
 
 }
 
+/**
+ * Returns higher limit calculated on given sex_digest data
+ * @param {Array} prices
+ * @returns {Number}
+ */
+
+function minPriceForPrices(prices) {
+  return Math.floor(prices[0] * PRICE_LIMIT_PERCENT);
+}
+
 export async function dealLimit(itemCode) {
   const prices = await pricesByItemCode(itemCode);
-  return prices && prices[0];
+  return prices && minPriceForPrices(prices);
 }
 
 export async function checkPrice(itemCode, price) {

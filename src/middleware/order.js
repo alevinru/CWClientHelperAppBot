@@ -41,6 +41,8 @@ export async function createOrder(ctx) {
 
     await ctx.replyHTML(res.join(' '));
 
+    await ordering.hookOffers();
+
   } catch (e) {
     ctx.replyError(command, e);
   }
@@ -117,12 +119,18 @@ export async function rmById(ctx) {
   debug(command);
 
   try {
+
     const order = await ordering.removeOrder(id);
+
     if (!order) {
       ctx.replyHTML(`No active orders found with id #<b>${id}</b>`);
       return;
     }
+
     ctx.replyHTML(`Order id #<b>${id}</b> removed`);
+
+    await ordering.hookOffers();
+
   } catch (e) {
     ctx.replyError(command, e);
   }
@@ -150,7 +158,7 @@ export async function ordersTop(ctx) {
 
   try {
 
-    const res = ['Active orders'];
+    const res = new Array('Active orders');
     const items = await ordering.getTopOrders();
 
     if (!items.length) {

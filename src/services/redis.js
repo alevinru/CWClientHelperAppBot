@@ -27,6 +27,12 @@ export const execAsync = promisifyClient('exec');
 
 const debug = require('debug')('laa:cwc:redis');
 
+const IDS_HASH = 'ids';
+
+export function getId(name) {
+  return hincrbyAsync(IDS_HASH, name, 1);
+}
+
 client.on('error', err => {
   debug('Error', err);
 });

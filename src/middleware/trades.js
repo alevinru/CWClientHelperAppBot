@@ -6,7 +6,7 @@ const debug = require('debug')('laa:cwb:trades');
 
 const PRICE_LIMIT_PERCENT = 1.2;
 
-export default async function (ctx) {
+export async function itemTrades(ctx) {
 
   const {
     match,

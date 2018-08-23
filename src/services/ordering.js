@@ -11,7 +11,6 @@ import {
 } from './cw';
 
 const ORDERS_PREFIX = 'orders';
-const IDS_HASH = 'ids';
 const ID_TO_ITEM_CODE_HASH = 'orders_idx_itemCode';
 
 const debug = require('debug')('laa:cwb:ordering');
@@ -19,7 +18,7 @@ const debug = require('debug')('laa:cwb:ordering');
 redis.client.on('connect', () => setTimeout(hookOffers, 1000));
 
 function getId() {
-  return redis.hincrbyAsync(IDS_HASH, ORDERS_PREFIX, 1);
+  return redis.getId(ORDERS_PREFIX);
 }
 
 function ordersQueueKey(code) {

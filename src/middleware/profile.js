@@ -6,7 +6,7 @@ const debug = require('debug')('laa:cwb:profile');
 export default async function (ctx) {
 
   const { session, from: { id: userId }, message } = ctx;
-  const match = message.text.match(/\/profile[ _]?(\d*)$/);
+  const { match } = ctx;
   const [, matchUserId] = match;
 
   debug(userId, message.text, match);

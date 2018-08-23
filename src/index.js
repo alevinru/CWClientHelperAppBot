@@ -6,8 +6,9 @@ import { fromCWFilter } from './config/filters';
 import { auth, authCode } from './middleware/auth';
 import wtb from './middleware/wtb';
 
-import trades, * as trading from './middleware/trades';
+import * as trades from './middleware/trades';
 import * as ord from './middleware/order';
+import * as traders from './middleware/traders';
 
 const debug = require('debug')('laa:cwb:index');
 
@@ -21,8 +22,11 @@ bot.use(session({ botId: BOT_ID }).middleware());
 
 bot.command('auth', auth);
 
-bot.hears(/^\/trading[ _](on|off|status)$/, trading.trading);
-bot.hears(/^\/trades[ _]([a-z0-9]+)$/, trades);
+bot.hears(/^\/trading[ _](on|off|status)$/, trades.trading);
+bot.hears(/^\/trades[ _]([a-z0-9]+)$/, trades.itemTrades);
+
+bot.hears(/^\/traders$/, traders.traders);
+bot.hears(/^\/grant_trading[ _](\d*)$/, traders.grantTrading);
 
 bot.hears(/^\/orders_top$/, ord.ordersTop);
 bot.hears(/^\/order[ _]([a-z0-9]+)[ _](\d+)[ _](\d+)[ ]?(\d*)$/, ord.createOrder);
@@ -34,8 +38,10 @@ bot.hears(/^\/rmorder[ _]([a-z0-9]+)$/, ord.rmById);
 
 bot.command('start', require('./middleware/start').default);
 bot.command('hello', require('./middleware/hello').default);
-bot.command('profile', require('./middleware/profile').default);
+// bot.command('profile', require('./middleware/profile').default);
 bot.command('stock', require('./middleware/stock').default);
+
+bot.hears(/^\/profile[ _]?(\d*)$/, require('./middleware/profile').default);
 
 bot.hears(/^\/wtb[ _]([a-z0-9]+)[ _](\d+)[ _](\d+)[ ]?(\d*)$/, wtb);
 

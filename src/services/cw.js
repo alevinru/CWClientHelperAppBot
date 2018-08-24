@@ -4,7 +4,7 @@ import keyBy from 'lodash/keyBy';
 import filter from 'lodash/filter';
 
 import {
-  hgetAsync, hsetAsync, lpushAsync, ltrimAsync, setAsync,
+  hgetAsync, hsetAsync, lpushAsync, ltrimAsync,
 } from './redis';
 
 const debug = require('debug')('laa:cwb:cw');
@@ -22,11 +22,10 @@ const fanouts = {
   [CW.QUEUE_DEALS]: onConsumeDeals,
   [CW.QUEUE_SEX]: consumeSEXDigest,
   [CW.QUEUE_OFFERS]: consumeOffers,
-  [CW.QUEUE_AU]: consumeAUDigest,
   // CW.QUEUE_YELLOW_PAGES,
 };
 
-export const cw = new CWExchange({ fanouts });
+export const cw = new CWExchange({ bindIO: true, fanouts });
 
 export const itemsByName = CW.allItemsByName();
 export const itemsByCode = keyBy(map(itemsByName, (code, name) => ({ name, code })), 'code');
@@ -164,25 +163,5 @@ async function consumeOffers(msg, ack) {
   }
 
   ack();
-
-}
-
-
-async function consumeAUDigest(msg, ack) {
-
-  const { fields, properties, content } = msg;
-  const { deliveryTag } = fields;
-  const ts = new Date(properties.timestamp * 1000);
-  const data = content.toString();
-  const digest = JSON.parse(data);
-
-  debug('consumeAUDigest', deliveryTag, ts);
-
-  try {
-    await setAsync(CW.QUEUE_AU, JSON.stringify(digest));
-    ack();
-  } catch ({ name, message }) {
-    debug(name, message);
-  }
 
 }

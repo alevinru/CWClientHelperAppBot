@@ -135,23 +135,17 @@ async function onGotOffer(offer, itemCode, itemName, order) {
 
   try {
 
-    // const hashKey = ordersQueueKey(itemCode);
-    // const orders = await redis.lrangeAsync(hashKey, 0, 1);
-
-    // if (!orders || !orders.length) {
-    //   return;
-    // }
     if (!order) {
-      debug('invalid order id', order);
-      // await redis.lremAsync(hashKey, 0, order);
+      debug('invalid order', order);
       return;
     }
 
-    const orderId = order.id;
-    // const order = await getOrderById(orderId);
-
     const {
-      userId, qty: orderQty, price: orderPrice, token,
+      id: orderId,
+      userId,
+      qty: orderQty,
+      price: orderPrice,
+      token,
     } = order;
 
     if (offerPrice > orderPrice) {
@@ -185,8 +179,8 @@ async function onGotOffer(offer, itemCode, itemName, order) {
   } catch (e) {
     const { name = 'Error', message = e } = e;
     const errMsg = [
-      `⚠️ /order_${order.id} deal failed with `,
-      `${name.toLocaleLowerCase()}: <b>${message}</b>.\n`,
+      `⚠️ /order_${order.id} deal failed with`,
+      ` ${name.toLocaleLowerCase()}: <b>${message}</b>.\n`,
       `Missed offer of ${offerQty} x ${offerPrice}💰`,
       ` of <b>${itemName}</b> from <b>${sellerName}</b>`,
     ];

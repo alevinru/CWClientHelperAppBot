@@ -1,5 +1,4 @@
-import { cw, getAuthToken } from '../services';
-
+import { refreshProfile } from '../services/auth';
 
 export default async function (ctx) {
 
@@ -11,12 +10,24 @@ export default async function (ctx) {
   }
 
   try {
-    const { profile } = await cw.requestProfile(userId, getAuthToken(session));
+
+    const { profile } = await refreshProfile(userId, session);
+
     session.profile = profile;
-    const msg = `Hi there, *${firstName}*! Your user id is *${userId}* and CW name *${profile.userName}*`;
-    reply(msg, { parse_mode: 'Markdown' });
+    replyResults(profile);
+
   } catch (e) {
-    ctx.replyError('requestProfile', e);
+    replyResults(session.profile);
+    ctx.replyError('to refresh your profile', e);
+  }
+
+  function replyResults(profile) {
+
+    ctx.replyMD([
+      `Hi there, *${firstName}*!\n`,
+      `Your user id is *${userId}* and CatWars name *${profile.userName}*`,
+    ]);
+
   }
 
 }

@@ -6,9 +6,8 @@ import * as redis from './redis';
 import bot from './bot';
 import { getProfile } from './profile';
 
-import {
-  itemNameByCode, addOfferHook, dropOfferHooks, cw, itemsByName,
-} from './cw';
+import { itemNameByCode, itemsByName, cw } from './cw';
+import { addOfferHook, dropOfferHooks } from '../consumers/offersConsumer';
 
 const ORDERS_PREFIX = 'orders';
 const ID_TO_ITEM_CODE_HASH = 'orders_idx_itemCode';

@@ -1,7 +1,13 @@
-import EX from './exConsumer';
-import AU from './au/auConsumer';
+import EXConsumer from './exConsumer';
+import AUConsumer from './auConsumer';
 import DealsConsumer from './dealsConsumer';
 
-export const ex = new EX();
-export const au = new AU();
+/**
+ *
+ * This module should be run as a separate process
+ *
+ */
+
+export const ex = new EXConsumer();
+export const au = new AUConsumer();
 export const deals = new DealsConsumer();

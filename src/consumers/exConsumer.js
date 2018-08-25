@@ -4,7 +4,7 @@ import { itemKey } from '../services/cw';
 
 const debug = require('debug')('laa:cwb:ex');
 
-export default class AUConsumer {
+export default class {
 
   constructor() {
 

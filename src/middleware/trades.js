@@ -1,5 +1,6 @@
 // import { cw, getAuthToken } from '../services';
-import { pricesByItemCode, dropOfferHooks, getOfferHooks } from '../services/cw';
+import { pricesByItemCode } from '../services/cw';
+import { dropOfferHooks, getOfferHooks } from '../consumers/offersConsumer';
 import { hookOffers } from '../services/ordering';
 
 const debug = require('debug')('laa:cwb:trades');

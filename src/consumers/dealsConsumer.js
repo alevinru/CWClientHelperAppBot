@@ -6,7 +6,7 @@ const debug = require('debug')('laa:cwb:deals');
 
 const MAX_DEALS = 1000;
 
-export default class DealsConsumer {
+export default class {
 
   constructor() {
 

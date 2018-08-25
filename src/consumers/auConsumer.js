@@ -1,9 +1,9 @@
 import CWExchange, * as CW from 'cw-rest-api';
-import { hsetAsync } from '../../services/redis';
+import { hsetAsync } from '../services/redis';
 
 const debug = require('debug')('laa:cwb:au');
 
-export default class AUConsumer {
+export default class {
 
   constructor() {
 

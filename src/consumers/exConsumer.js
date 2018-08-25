@@ -1,14 +1,15 @@
 import CWExchange, * as CW from 'cw-rest-api';
-import { hsetAsync } from '../../services/redis';
+import { hsetAsync } from '../services/redis';
+import { itemKey } from '../services/cw';
 
-const debug = require('debug')('laa:cwb:au');
+const debug = require('debug')('laa:cwb:ex');
 
 export default class AUConsumer {
 
   constructor() {
 
     const cw = new CWExchange({
-      fanouts: { [CW.QUEUE_AU]: consumeAUDigest },
+      fanouts: { [CW.QUEUE_SEX]: consumeSEXDigest },
       bindIO: false,
     });
 
@@ -19,8 +20,7 @@ export default class AUConsumer {
 
 }
 
-
-async function consumeAUDigest(msg, ack) {
+async function consumeSEXDigest(msg, ack) {
 
   const { fields, properties, content } = msg;
   const { deliveryTag } = fields;
@@ -28,11 +28,13 @@ async function consumeAUDigest(msg, ack) {
   const data = content.toString();
   const digest = JSON.parse(data);
 
-  debug('consumed', deliveryTag, ts, digest.length);
+  debug('consumed', `#${deliveryTag}`, ts, `(${digest.length})`);
 
   try {
-    await hsetAsync(CW.QUEUE_AU, 'data', JSON.stringify(data));
-    await hsetAsync(CW.QUEUE_AU, 'ts', ts.toISOString());
+    await digest.map(async ({ name, prices }) => {
+      // prices.ts = ts.toISOString();
+      await hsetAsync(CW.QUEUE_SEX, itemKey(name), JSON.stringify(prices));
+    });
     ack();
   } catch ({ name, message }) {
     debug(name, message);

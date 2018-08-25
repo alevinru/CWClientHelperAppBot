@@ -1,26 +1,9 @@
-import CWExchange, * as CW from 'cw-rest-api';
+import * as CW from 'cw-rest-api';
 import { hsetAsync } from '../services/redis';
 
 const debug = require('debug')('laa:cwb:au');
 
-export default class {
-
-  constructor() {
-
-    const cw = new CWExchange({
-      fanouts: { [CW.QUEUE_AU]: consumeAUDigest },
-      bindIO: false,
-    });
-
-    this.cw = cw.connect({ timeout: process.env.CW_TIMEOUT })
-      .then(() => debug('Start polling'));
-
-  }
-
-}
-
-
-async function consumeAUDigest(msg, ack) {
+export default async function (msg, ack) {
 
   const { fields, properties, content } = msg;
   const { deliveryTag } = fields;

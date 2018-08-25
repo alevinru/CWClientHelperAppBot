@@ -1,6 +1,10 @@
-import EXConsumer from './exConsumer';
-import AUConsumer from './auConsumer';
-import DealsConsumer from './dealsConsumer';
+import CWExchange, * as CW from 'cw-rest-api';
+
+import consumeSEXDigest from './exConsumer';
+import consumeAUDigest from './auConsumer';
+import onConsumeDeals from './dealsConsumer';
+
+const debug = require('debug')('laa:cwb:consumers');
 
 /**
  *
@@ -8,6 +12,14 @@ import DealsConsumer from './dealsConsumer';
  *
  */
 
-export const ex = new EXConsumer();
-export const au = new AUConsumer();
-export const deals = new DealsConsumer();
+const cw = new CWExchange({
+  fanouts: {
+    [CW.QUEUE_AU]: consumeAUDigest,
+    [CW.QUEUE_DEALS]: onConsumeDeals,
+    [CW.QUEUE_SEX]: consumeSEXDigest,
+  },
+  bindIO: false,
+});
+
+cw.connect({ timeout: process.env.CW_TIMEOUT })
+  .then(() => debug('Start polling'));

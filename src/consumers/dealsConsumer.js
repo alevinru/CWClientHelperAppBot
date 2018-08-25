@@ -1,4 +1,4 @@
-import CWExchange, * as CW from 'cw-rest-api';
+import * as CW from 'cw-rest-api';
 import { lpushAsync, ltrimAsync } from '../services/redis';
 import { itemKey } from '../services/cw';
 
@@ -6,23 +6,7 @@ const debug = require('debug')('laa:cwb:deals');
 
 const MAX_DEALS = 1000;
 
-export default class {
-
-  constructor() {
-
-    const cw = new CWExchange({
-      fanouts: { [CW.QUEUE_DEALS]: onConsumeDeals },
-      bindIO: false,
-    });
-
-    this.cw = cw.connect({ timeout: process.env.CW_TIMEOUT })
-      .then(() => debug('Start polling'));
-
-  }
-
-}
-
-async function onConsumeDeals(msg, ack) {
+export default async function (msg, ack) {
 
   const { fields: { deliveryTag }, properties, content } = msg;
   const ts = new Date(properties.timestamp * 1000);

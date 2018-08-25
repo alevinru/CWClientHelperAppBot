@@ -179,10 +179,10 @@ async function onGotOffer(offer, itemCode, itemName, order) {
   } catch (e) {
     const { name = 'Error', message = e } = e;
     const errMsg = [
-      `⚠️ /order_${order.id} deal failed with`,
-      ` ${name.toLocaleLowerCase()}: <b>${message}</b>.\n`,
-      `Missed offer of ${offerQty} x ${offerPrice}💰`,
-      ` of <b>${itemName}</b> from <b>${sellerName}</b>`,
+      `⚠️ Missed ${offerQty} x ${offerPrice}💰`,
+      ` of <b>${itemName}</b> offered by <b>${sellerName}</b>\n`,
+      `/order_${order.id} deal failed with`,
+      ` ${name.toLocaleLowerCase()}: <b>${message}</b>.`,
     ];
     bot.telegram.sendMessage(order.userId, errMsg.join(''), { parse_mode: 'HTML' })
       .catch(errBot => debug('consumeOffers', errBot.message));

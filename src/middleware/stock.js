@@ -1,5 +1,5 @@
 import { cw, getAuthToken } from '../services';
-import { getToken } from '../services/profile';
+import { getToken } from '../services/auth';
 
 const debug = require('debug')('laa:cwb:stock');
 

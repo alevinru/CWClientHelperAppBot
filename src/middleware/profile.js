@@ -1,20 +1,20 @@
-import { refreshProfile, getAuthToken } from '../services/auth';
-import { getToken } from '../services/profile';
+import { refreshProfile } from '../services/auth';
 
 const debug = require('debug')('laa:cwb:profile');
 
 export default async function (ctx) {
 
-  const { session, from: { id: userId }, message } = ctx;
+  const { session, from: { id: fromUserId }, message } = ctx;
   const { match } = ctx;
   const [, matchUserId] = match;
 
-  debug(userId, message.text, match);
+  debug(fromUserId, message.text, match);
 
   try {
 
-    const token = matchUserId ? await getToken(matchUserId) : getAuthToken(session);
-    const profile = await refreshProfile(matchUserId || userId, token);
+    const userId = matchUserId || fromUserId;
+
+    const profile = await refreshProfile(userId, !matchUserId && session);
 
     ctx.replyJson(profile);
 

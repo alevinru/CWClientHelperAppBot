@@ -1,6 +1,7 @@
 import { cw, getAuthToken } from '../services';
 import { checkPrice } from './trades';
-import { getToken, getProfile } from '../services/profile';
+import { getProfile } from '../services/profile';
+import { getToken } from '../services/auth';
 
 const debug = require('debug')('laa:cwb:wtb');
 

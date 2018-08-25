@@ -9,6 +9,7 @@ import wtb from './middleware/wtb';
 import * as trades from './middleware/trades';
 import * as ord from './middleware/order';
 import * as traders from './middleware/traders';
+import * as users from './middleware/hello';
 
 const debug = require('debug')('laa:cwb:index');
 
@@ -37,7 +38,10 @@ bot.hears(/^\/rmorder[ _]([a-z0-9]+)$/, ord.rmById);
 
 
 bot.command('start', require('./middleware/start').default);
-bot.command('hello', require('./middleware/hello').default);
+
+bot.command('hello', users.hello);
+bot.command('users', users.list);
+
 // bot.command('profile', require('./middleware/profile').default);
 bot.command('stock', require('./middleware/stock').default);
 

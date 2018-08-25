@@ -1,7 +1,7 @@
 import * as ordering from '../services/ordering';
 import { itemNameByCode } from '../services/cw';
-import { getProfile, getToken } from '../services/profile';
-import { getAuthToken } from '../services';
+import { getProfile } from '../services/profile';
+import { getAuthToken, getToken } from '../services/auth';
 
 const debug = require('debug')('laa:cwb:wtb');
 

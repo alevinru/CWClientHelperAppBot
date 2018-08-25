@@ -1,17 +1,20 @@
-import { refreshProfile } from '../services/auth';
+import { refreshProfile, getUsers } from '../services/auth';
 
-export default async function (ctx) {
+export async function hello(ctx) {
 
-  const { session, reply, from: { id: userId, first_name: firstName } } = ctx;
+  const { session, from: { id: userId, first_name: firstName } } = ctx;
 
   if (!session.auth) {
-    reply('We\'re not familiar yet. You should /auth first to start talking.');
+    ctx.replyPlain([
+      'We\'re not familiar yet.',
+      ' You should /auth first to start talking.',
+    ]);
     return;
   }
 
   try {
 
-    const { profile } = await refreshProfile(userId, session);
+    const profile = await refreshProfile(userId, session);
 
     session.profile = profile;
     replyResults(profile);
@@ -25,9 +28,36 @@ export default async function (ctx) {
 
     ctx.replyMD([
       `Hi there, *${firstName}*!\n`,
-      `Your user id is *${userId}* and CatWars name *${profile.userName}*`,
+      `Your user id is *${userId}* and ChatWars name *${profile.userName}*`,
     ]);
 
   }
 
+}
+
+
+export async function list(ctx) {
+
+  try {
+
+    const users = await getUsers(ctx.session);
+
+    if (users.length) {
+      await ctx.replyHTML(users.map(formatUser).join('\n'));
+    } else {
+      await ctx.replyHTML([
+        'There\'s no users for your session.',
+        ' Try /hello to update your profile',
+      ]);
+    }
+
+  } catch (e) {
+    ctx.replyError('to list users', e);
+  }
+
+}
+
+
+function formatUser({ userId, profile, teamId }) {
+  return `/profile_${userId} <b>${profile.userName}</b> from <b>${teamId}</b>`;
 }

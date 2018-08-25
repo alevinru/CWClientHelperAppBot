@@ -12,7 +12,6 @@ function setMinOfferDate() {
   const now = new Date();
   now.setSeconds(now.getSeconds() - 2);
   minOfferDate = now;
-  // debug('setMinOfferDate', minOfferDate);
 }
 
 const offerHooks = {};
@@ -51,11 +50,11 @@ export async function consumeOffers(msg, ack) {
     sellerName,
   } = offer;
 
-  debug('consumeOffers', deliveryTag, ts, `"${sellerName}" offers`, itemName, `${offerQty} x ${offerPrice}💰`);
+  debug('consume', deliveryTag, ts, `"${sellerName}" offers`, itemName, `${offerQty} x ${offerPrice}💰`);
   const hook = offerHooks[itemName];
 
   if (ts < minOfferDate) {
-    debug('consumeOffers ignore old');
+    debug('consume ignore old');
   } else if (hook) {
     await hook(offer);
   }

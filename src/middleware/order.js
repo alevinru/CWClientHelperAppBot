@@ -127,7 +127,7 @@ export async function rmById(ctx) {
       return;
     }
 
-    ctx.replyHTML(`Order id #<b>${id}</b> removed`);
+    ctx.replyHTML(`Order #<b>${id}</b> removed`);
 
     await ordering.hookOffers();
 

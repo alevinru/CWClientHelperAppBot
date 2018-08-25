@@ -5,6 +5,7 @@ export default function (bot) {
     replyJson,
     replyMD,
     replyHTML,
+    replyPlain,
   });
 
 }
@@ -18,15 +19,23 @@ function replyError(tried, got) {
 
 }
 
+function replyPlain(plain) {
+  return this.reply(arrayToText(plain));
+}
+
 function replyJson(obj) {
-  const msg = `${JSON.stringify(obj, ' ', 2)}`;
-  return this.reply(msg, { parse_mode: 'HTML' });
+  return this.reply(JSON.stringify(obj, ' ', 2), { parse_mode: 'HTML' });
 }
 
 function replyMD(markdown) {
-  return this.reply(markdown, { parse_mode: 'Markdown' });
+  return this.reply(arrayToText(markdown), { parse_mode: 'Markdown' });
 }
 
 function replyHTML(html) {
-  return this.reply(html, { parse_mode: 'HTML' });
+  return this.reply(arrayToText(html), { parse_mode: 'HTML' });
+}
+
+
+function arrayToText(arrayOrString) {
+  return Array.isArray(arrayOrString) ? arrayOrString.join('') : arrayOrString;
 }

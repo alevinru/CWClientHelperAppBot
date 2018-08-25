@@ -166,9 +166,9 @@ async function onGotOffer(offer, itemCode, itemName, order) {
     debug('onGotOffer deal:', dealParams);
 
     const reply = [
-      `✅ /order_${orderId} success!\n`,
-      `Got <b>${itemName}</b> ${dealParams.quantity} x ${dealParams.price}💰 from`,
-      ` <b>${offerQty}</b> offered by <b>${sellerName}</b>`,
+      `✅ Got <b>${itemName}</b> ${dealParams.quantity} x ${dealParams.price}💰 from`,
+      ` <b>${offerQty}</b> from <b>${sellerName}</b>`,
+      ` by /order_${orderId}`,
     ];
 
     debug('onGotOffer processed order:', reply);
@@ -180,7 +180,7 @@ async function onGotOffer(offer, itemCode, itemName, order) {
     const { name = 'Error', message = e } = e;
     const errMsg = [
       `⚠️ Missed ${offerQty} x ${offerPrice}💰`,
-      ` of <b>${itemName}</b> offered by <b>${sellerName}</b>\n`,
+      ` of <b>${itemName}</b> from <b>${sellerName}</b>\n`,
       `/order_${order.id} deal failed with`,
       ` ${name.toLocaleLowerCase()}: <b>${message}</b>.`,
     ];

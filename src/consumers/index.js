@@ -19,6 +19,7 @@ const cw = new CWExchange({
     [CW.QUEUE_SEX]: consumeSEXDigest,
   },
   bindIO: false,
+  noAck: true,
 });
 
 cw.connect({ timeout: process.env.CW_TIMEOUT })

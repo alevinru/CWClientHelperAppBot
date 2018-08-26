@@ -27,7 +27,7 @@ export function dropOfferHooks() {
 
 }
 
-export async function consumeOffers(msg, ack) {
+export async function consumeOffers(msg) {
 
   const { properties, content } = msg;
   const { timestamp } = properties;
@@ -53,6 +53,8 @@ export async function consumeOffers(msg, ack) {
     await hook(offer);
   }
 
-  ack();
+  // if (ack) {
+  //   ack();
+  // }
 
 }

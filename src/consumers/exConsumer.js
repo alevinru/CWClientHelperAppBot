@@ -19,7 +19,9 @@ export default async function (msg, ack) {
       // prices.ts = ts.toISOString();
       await hsetAsync(CW.QUEUE_SEX, itemKey(name), JSON.stringify(prices));
     });
-    ack();
+    if (ack) {
+      ack();
+    }
   } catch ({ name, message }) {
     debug(name, message);
   }

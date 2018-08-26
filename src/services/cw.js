@@ -12,7 +12,7 @@ export const CW_BOT_ID = parseInt(process.env.CW_BOT_ID, 0);
 
 const fanouts = { [CW.QUEUE_OFFERS]: consumeOffers };
 
-export const cw = new CWExchange({ bindIO: true, fanouts });
+export const cw = new CWExchange({ bindIO: true, fanouts, noAck: true });
 
 export const itemsByName = CW.allItemsByName();
 export const itemsByCode = keyBy(map(itemsByName, (code, name) => ({ name, code })), 'code');

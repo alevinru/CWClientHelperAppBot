@@ -28,7 +28,9 @@ export default async function (msg, ack) {
   try {
     await lpushAsync(listKey, JSON.stringify(deal));
     await ltrimAsync(listKey, 0, MAX_DEALS - 1);
-    ack();
+    if (ack) {
+      ack();
+    }
   } catch ({ name, message }) {
     debug(name, message);
   }

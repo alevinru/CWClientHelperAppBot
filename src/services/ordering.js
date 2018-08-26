@@ -53,17 +53,19 @@ export async function addOrder(userId, itemCode, qty, price, token) {
 
   const { userName } = await getProfile(userId);
 
+  const itemName = itemNameByCode(itemCode);
+
   const order = {
     id,
-    userId,
     itemCode,
+    itemName,
     qty: parseInt(qty, 0),
     price: parseInt(price, 0),
-    token,
+    userId: parseInt(userId, 0),
     userName,
+    token,
   };
 
-  const itemName = itemNameByCode(itemCode);
   debug('addOrder', itemName, order);
 
   await redis.hsetAsync(ID_TO_ITEM_CODE_HASH, id, itemCode);
@@ -97,8 +99,8 @@ export async function hookOffers() {
     top.forEach(order => {
       const { itemCode } = order;
       const itemName = itemNameByCode(itemCode);
-      addOfferHook(itemName, offer => onGotOffer(offer, itemCode, itemName, order));
-      debug('hookOffers', itemName, order.id);
+      addOfferHook(itemName, offer => onGotOffer(offer, order, itemCode));
+      debug('hookOffers', itemName, `/order_${order.id}`);
     });
 
   } catch (e) {
@@ -111,9 +113,7 @@ export async function hookOffers() {
 export async function getTopOrders() {
 
   const index = await redis.hgetallAsync(ID_TO_ITEM_CODE_HASH);
-  // debug('getTopOrders index:', index);
   const itemCodes = map(keyBy(index, itemCode => itemCode));
-  // debug('getTopOrders itemCodes:', itemCodes);
   const promises = map(itemCodes, itemCode => redis.lrangeAsync(ordersQueueKey(itemCode), 0, 0));
 
   return Promise.all(promises)
@@ -124,42 +124,34 @@ export async function getTopOrders() {
 
 async function onGotOffer(offer, itemCode, itemName, order) {
 
-  if (itemName !== offer.item) {
+  const {
+    price: offerPrice,
+    qty: offerQty
+  } = offer;
+
+  const {
+    price: orderPrice,
+    qty: orderQty,
+    userId,
+    token,
+  } = order;
+
+  if (offerPrice > orderPrice) {
     return;
   }
 
-  const { price: offerPrice, qty: offerQty } = offer;
-
   try {
 
-    if (!order) {
-      debug('invalid order', order);
-      return;
-    }
-
-    const {
-      userId,
-      qty: orderQty,
-      price: orderPrice,
-      token,
-    } = order;
-
-    if (offerPrice > orderPrice) {
-      debug('onGotOffer ignore price', offerPrice, 'of', itemName, 'since requested', orderPrice);
-      return;
-    }
-
-    // debug('onGotOffer got order:', orderId, `${orderQty} x ${orderPrice}💰`);
-
-    const dealParams = {
+    const deal = {
       itemCode,
       quantity: orderQty > offerQty ? offerQty : orderQty,
       price: offerPrice,
+      exactPrice: true,
     };
 
-    await cw.wantToBuy(userId, dealParams, token);
+    await cw.wantToBuy(userId, deal, token);
 
-    replyOrderSuccess(offer, order, dealParams);
+    replyOrderSuccess(offer, order, deal);
 
   } catch (e) {
 
@@ -196,8 +188,8 @@ function replyOrderSuccess(offer, order, dealParams) {
   const { item: itemName, sellerName, qty } = offer;
 
   const reply = [
-    `✅ Got <b>${itemName}</b> ${dealParams.quantity} x ${dealParams.price}💰 from`,
-    ` <b>${qty}</b> from <b>${sellerName}</b>`,
+    `✅ Got <b>${itemName}</b> ${dealParams.quantity} x ${dealParams.price}💰`,
+    ` of <b>${qty}</b> from <b>${sellerName}</b>`,
     ` by /order_${order.id}`,
   ];
   bot.telegram.sendMessage(order.userId, reply.join(''), { parse_mode: 'HTML' })

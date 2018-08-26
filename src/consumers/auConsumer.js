@@ -16,7 +16,9 @@ export default async function (msg, ack) {
   try {
     await hsetAsync(CW.QUEUE_AU, 'data', JSON.stringify(data));
     await hsetAsync(CW.QUEUE_AU, 'ts', ts.toISOString());
-    ack();
+    if (ack) {
+      ack();
+    }
   } catch ({ name, message }) {
     debug(name, message);
   }

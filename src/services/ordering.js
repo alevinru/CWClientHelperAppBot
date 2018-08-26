@@ -126,7 +126,7 @@ async function onGotOffer(offer, itemCode, itemName, order) {
 
   const {
     price: offerPrice,
-    qty: offerQty
+    qty: offerQty,
   } = offer;
 
   const {
@@ -137,6 +137,7 @@ async function onGotOffer(offer, itemCode, itemName, order) {
   } = order;
 
   if (offerPrice > orderPrice) {
+    debug('ignore:offer:', itemName, offerPrice, orderPrice);
     return;
   }
 

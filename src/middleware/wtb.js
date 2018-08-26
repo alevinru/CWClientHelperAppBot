@@ -30,7 +30,11 @@ export default async function (ctx) {
     const { userName } = profile;
 
     // const token = getAuthToken(session);
-    const dealParams = { itemCode, quantity, price };
+    const dealParams = {
+      itemCode,
+      quantity: parseInt(quantity, 0),
+      price: parseInt(price, 0),
+    };
 
     await checkPrice(itemCode, price);
 

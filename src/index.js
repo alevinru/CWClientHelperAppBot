@@ -30,6 +30,8 @@ bot.use(session({ botId: BOT_ID }).middleware());
 Trading
  */
 
+bot.command('trading', traders.tradingStatus);
+
 bot.hears(/^\/trading[ _](on|off|status)$/, trades.trading);
 bot.hears(/^\/trades[ _]([a-z0-9]+)$/, trades.itemTrades);
 

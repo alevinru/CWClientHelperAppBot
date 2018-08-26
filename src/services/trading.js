@@ -85,7 +85,6 @@ function checkDeal(offer, order) {
 
 export async function onGotOffer(offer, order) {
 
-
   try {
 
     const deal = checkDeal(offer, order);
@@ -94,14 +93,59 @@ export async function onGotOffer(offer, order) {
       return;
     }
 
-    await cw.wantToBuy(order.userId, deal, order.token);
+    const { userId } = order;
+
+    await cw.wantToBuy(userId, deal, order.token);
 
     replyOrderSuccess(offer, order, deal);
+
+    postUpdate(userId, 5);
 
   } catch (e) {
 
     replyOrderFail(e, offer, order);
 
+    if (e === cw.CW_RESPONSE_NO_FUNDS) {
+      postUpdate(offer.userId, 0);
+    }
+
+  }
+
+}
+
+const pendingUpdates = {};
+
+function postUpdate(userId, seconds) {
+
+  const pending = pendingUpdates[userId];
+
+  if (pending) {
+    clearTimeout(pending);
+  }
+
+  const update = () => reportUpdatedFunds(userId)
+    .then(() => delete pendingUpdates[userId]);
+
+  pendingUpdates[userId] = setTimeout(update, seconds * 1000);
+
+}
+
+async function reportUpdatedFunds(userId) {
+
+  try {
+
+    const trader = await refreshTraderCache(userId);
+
+    if (trader) {
+
+      const reply = `You have ${trader.funds}💰 now`;
+
+      await bot.telegram.sendMessage(userId, reply, { parse_mode: 'HTML' });
+
+    }
+
+  } catch ({ name, message }) {
+    debug('reportUpdatedFunds', name, message);
   }
 
 }
@@ -137,6 +181,7 @@ function replyOrderSuccess(offer, order, dealParams) {
     ` of <b>${qty}</b> from <b>${sellerName}</b>`,
     ` by /order_${order.id}`,
   ];
+
   bot.telegram.sendMessage(order.userId, reply.join(''), { parse_mode: 'HTML' })
     .catch(({ name, message }) => debug('onGotOffer', name, message));
 

@@ -3,10 +3,11 @@ import keyBy from 'lodash/keyBy';
 import map from 'lodash/map';
 
 import * as redis from './redis';
-import bot from './bot';
-import { getProfile } from './profile';
 
-import { itemNameByCode, cw } from './cw';
+import { getProfile } from './profile';
+import { onGotOffer, refreshTraderCache } from './trading';
+
+import { itemNameByCode } from './cw';
 import { addOfferHook, dropOfferHooks } from '../consumers/offersConsumer';
 
 const ORDERS_PREFIX = 'orders';
@@ -54,6 +55,12 @@ export async function addOrder(userId, itemCode, qty, price, token) {
   const { userName } = await getProfile(userId);
 
   const itemName = itemNameByCode(itemCode);
+
+  if (!itemName) {
+    const res = `Unknown item code "${itemCode}"`;
+    debug('addOrder', res);
+    throw Error(res);
+  }
 
   const order = {
     id,
@@ -110,92 +117,21 @@ export async function hookOffers() {
 
     dropOfferHooks();
 
-    top.forEach(order => {
-      const { itemCode } = order;
+    top.forEach(async order => {
+
+      const { itemCode, userId } = order;
       const itemName = itemNameByCode(itemCode);
-      addOfferHook(itemName, offer => onGotOffer(offer, order, itemCode));
+
+      await refreshTraderCache(userId);
+
+      addOfferHook(itemName, offer => onGotOffer(offer, order));
+
       debug('hookOffers', itemName, `/order_${order.id}`);
+
     });
 
   } catch (e) {
     debug(e);
   }
-
-}
-
-
-async function onGotOffer(offer, order, itemCode) {
-
-  const {
-    price: offerPrice,
-    qty: offerQty,
-  } = offer;
-
-  const {
-    price: orderPrice,
-    qty: orderQty,
-    userId,
-    token,
-  } = order;
-
-  if (offerPrice > orderPrice) {
-    debug('ignore:offer:', offer.item, offerPrice, orderPrice);
-    return;
-  }
-
-  try {
-
-    const deal = {
-      itemCode,
-      quantity: orderQty > offerQty ? offerQty : orderQty,
-      price: offerPrice,
-      exactPrice: true,
-    };
-
-    await cw.wantToBuy(userId, deal, token);
-
-    replyOrderSuccess(offer, order, deal);
-
-  } catch (e) {
-
-    replyOrderFail(e, offer, order);
-
-  }
-
-}
-
-
-function replyOrderFail(e, offer, order) {
-
-  const { name = 'Error', message = e } = e;
-  const { item: itemName, sellerName, qty } = offer;
-
-  const errMsg = [
-    `⚠️ Missed ${qty} x ${offer.price}💰`,
-    ` of <b>${itemName}</b> from <b>${sellerName}</b>\n`,
-    `/order_${order.id} deal failed with`,
-    ` ${name.toLocaleLowerCase()}: <b>${message}</b>.`,
-  ];
-
-  bot.telegram.sendMessage(order.userId, errMsg.join(''), { parse_mode: 'HTML' })
-    .catch(errBot => debug('replyOrderFail', errBot.message));
-
-  debug('consumeOffers', name, message);
-
-}
-
-function replyOrderSuccess(offer, order, dealParams) {
-
-  debug('replyOrderSuccess:', dealParams);
-
-  const { item: itemName, sellerName, qty } = offer;
-
-  const reply = [
-    `✅ Got <b>${itemName}</b> ${dealParams.quantity} x ${dealParams.price}💰`,
-    ` of <b>${qty}</b> from <b>${sellerName}</b>`,
-    ` by /order_${order.id}`,
-  ];
-  bot.telegram.sendMessage(order.userId, reply.join(''), { parse_mode: 'HTML' })
-    .catch(({ name, message }) => debug('onGotOffer', name, message));
 
 }

@@ -29,14 +29,19 @@ export async function createOrder(ctx) {
     const profile = matchUserId ? await getProfile(matchUserId) : session.profile;
 
     const { userName } = profile;
-    const { id } = await ordering.addOrder(matchUserId || userId, itemCode, quantity, price, token);
+    const order = await ordering.addOrder(matchUserId || userId, itemCode, quantity, price, token);
+
+    if (order instanceof Error) {
+      ctx.replyError(command, order);
+      return;
+    }
 
     const res = [
-      `✅ I have added an /order_${id} for <b>${userName}</b>:\n`,
+      `✅ I have added an /order_${order.id} for <b>${userName}</b>:\n`,
       `to buy <b>${quantity}</b> of <b>${itemNameByCode(itemCode)}</b>`,
       `by max price of <b>${price}</b>💰\n`,
       `so the total sum is <b>${price * quantity}</b>💰.`,
-      `\n\nTo remove it issue /rmorder_${id} command.`,
+      `\n\nTo remove it issue /rmorder_${order.id} command.`,
     ];
 
     await ctx.replyHTML(res.join(' '));

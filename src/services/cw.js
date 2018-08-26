@@ -46,5 +46,6 @@ export function itemKey(name) {
 }
 
 export function itemNameByCode(code) {
-  return itemsByCode[code].name;
+  const item = itemsByCode[code];
+  return item && item.name;
 }

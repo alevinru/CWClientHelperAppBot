@@ -1,5 +1,5 @@
 import { refreshProfile } from '../services/auth';
-import { getUsers } from '../services/users';
+import { getAuthorizedUsers } from '../services/users';
 
 export async function hello(ctx) {
 
@@ -37,11 +37,11 @@ export async function hello(ctx) {
 }
 
 
-export async function list(ctx) {
+export async function listUsers(ctx) {
 
   try {
 
-    const users = await getUsers(ctx.session);
+    const users = await getAuthorizedUsers(ctx.session);
 
     if (users.length) {
       await ctx.replyHTML(users.map(formatUser).join('\n'));

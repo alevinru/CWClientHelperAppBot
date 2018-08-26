@@ -53,6 +53,6 @@ export async function grantTrading(ctx) {
 
 }
 
-function formatTrader({ id, profile }) {
-  return `<code>${id}</code> <b>${profile.userName}</b>`;
+function formatTrader({ id, profile, funds }) {
+  return `<code>${id}</code> <b>${profile.userName}</b> ${funds}💰`;
 }

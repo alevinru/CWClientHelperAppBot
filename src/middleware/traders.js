@@ -24,11 +24,11 @@ export async function tradingStatus(ctx) {
     trader = await trading.refreshTraderCache(userId);
 
     const { funds, profile } = trader;
-    const { userName, class: cls, castle } = profile;
+    const { userName } = profile;
 
     const reply = [
-      `<b>${userName}</b> is ${cls} from ${castle} with ${funds}💰`,
-      '\n',
+      `<b>${userName}</b> has ${funds || 'no '}💰 to trade by the orders:`,
+      '\n\n',
     ];
 
     const orders = await userOrderList(userId);

@@ -71,6 +71,7 @@ function checkDeal(offer, order) {
 
   if (quantity <= 0) {
     // debug('offer:ignore:funds', funds, offer.item, offer.price);
+    postUpdate(order.userId, 10);
     return false;
   }
 

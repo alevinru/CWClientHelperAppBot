@@ -1,4 +1,5 @@
-import { refreshProfile, getUsers } from '../services/auth';
+import { refreshProfile } from '../services/auth';
+import { getUsers } from '../services/users';
 
 export async function hello(ctx) {
 

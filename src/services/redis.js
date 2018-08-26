@@ -1,12 +1,24 @@
 import redis from 'redis';
 import { promisify } from 'util';
 
-export const client = redis.createClient({
-  host: process.env.REDIS_HOST || '127.0.0.1',
-  port: process.env.REDIS_PORT || 6379,
-  db: process.env.REDIS_DB || 0,
+
+const {
+  REDIS_HOST, REDIS_PORT, REDIS_DB, REDIS_SOCK,
+} = process.env;
+
+const clientConfig = {
+  db: REDIS_DB || 0,
   enable_offline_queue: false,
-});
+};
+
+if (REDIS_SOCK) {
+  clientConfig.path = REDIS_SOCK;
+} else {
+  clientConfig.host = REDIS_HOST || '127.0.0.1';
+  clientConfig.port = REDIS_PORT || 6379;
+}
+
+export const client = redis.createClient(clientConfig);
 
 export const setAsync = promisifyClient('set');
 export const getAsync = promisifyClient('get');

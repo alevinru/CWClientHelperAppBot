@@ -1,5 +1,5 @@
-// import { itemNameByCode } from "../services/cw";
 import * as trading from '../services/trading';
+import { userOrderList } from './order';
 
 const debug = require('debug')('laa:cwb:traders');
 
@@ -12,21 +12,34 @@ export async function tradingStatus(ctx) {
 
   try {
 
-    let trader = trading.getCachedTrader(ctx.from.id);
+    const userId = ctx.from.id;
+
+    let trader = trading.getCachedTrader(userId);
 
     if (!trader) {
       ctx.replyHTML(replyNotAuthorized());
       return;
     }
 
-    trader = await trading.refreshTraderCache(ctx.from.id);
+    trader = await trading.refreshTraderCache(userId);
 
     const { funds, profile } = trader;
     const { userName, class: cls, castle } = profile;
 
-    await ctx.replyHTML([
-      `<b>${userName}</b> is a ${cls}trader from ${castle} with ${funds}💰`,
-    ]);
+    const reply = [
+      `<b>${userName}</b> is ${cls} from ${castle} with ${funds}💰`,
+      '\n',
+    ];
+
+    const orders = await userOrderList(userId);
+
+    if (orders.length) {
+      reply.push(...orders);
+    } else {
+      reply.push(orders);
+    }
+
+    await ctx.replyHTML(reply);
 
   } catch (e) {
     ctx.replyError(command, e);

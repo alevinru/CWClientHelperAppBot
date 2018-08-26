@@ -1,6 +1,8 @@
 import filter from 'lodash/filter';
 import keyBy from 'lodash/keyBy';
 import map from 'lodash/map';
+import fpMap from 'lodash/fp/map';
+import fpFilter from 'lodash/fp/filter';
 
 import * as redis from './redis';
 
@@ -92,6 +94,32 @@ export async function getOrdersByItemCode(itemCode) {
   debug('getOrdersByItemCode', itemCode, orders);
 
   return filter(orders);
+
+}
+
+
+export async function getOrdersByUserId(theUserId) {
+
+  const idx = await redis.hgetallAsync(ID_TO_ITEM_CODE_HASH);
+
+  const getIdx = (itemCode, id) => redis
+    .hgetAsync(orderKey(id), 'userId')
+    .then(userId => {
+
+      debug('getOrdersByUserId', itemCode, id, userId);
+
+      return {
+        userId: parseInt(userId, 0),
+        id,
+        itemCode,
+      };
+
+    });
+
+  return Promise.all(map(idx, getIdx))
+    .then(fpFilter({ userId: theUserId }))
+    .then(fpMap(o => getOrderById(o.id)))
+    .then(res => Promise.all(res));
 
 }
 

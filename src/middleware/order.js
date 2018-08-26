@@ -1,3 +1,4 @@
+import fpMap from 'lodash/fp/map';
 import * as ordering from '../services/ordering';
 import { itemNameByCode } from '../services/cw';
 import { getProfile } from '../services/profile';
@@ -142,17 +143,24 @@ export async function rmById(ctx) {
 
 }
 
-function formatOrder(order, withItem = false) {
+export function formatOrder(order, withItem = false, withUser = true) {
+
   const {
-    id, userId, qty, price, itemCode, userName,
+    id, qty, price, itemCode, userName,
   } = order;
-  // debug('formatOrder', order);
-  return [
+
+  const res = [
     `/order_${id} `,
     withItem ? `<b>${itemNameByCode(itemCode)}</b> ` : '',
-    `${qty} x ${price}💰 for `,
-    userName ? `<b>${userName}</b>` : `userId <code>${userId}</code>`,
-  ].join('');
+    `${qty} x ${price}💰`,
+  ];
+
+  if (withUser) {
+    res.push(` for <b>${userName}</b>`);
+  }
+
+  return res.join('');
+
 }
 
 export async function ordersTop(ctx) {
@@ -180,4 +188,22 @@ export async function ordersTop(ctx) {
     ctx.replyError(command, e);
   }
 
+}
+
+
+export async function userOrders(ctx) {
+
+  try {
+    ctx.replyHTML(await userOrderList(ctx.from.id));
+  } catch (e) {
+    ctx.replyError('to list orders', e);
+  }
+
+}
+
+
+export async function userOrderList(userId) {
+  const res = await ordering.getOrdersByUserId(userId)
+    .then(fpMap(order => formatOrder(order, true, false)));
+  return Array.isArray(res) ? res.join('\n') : 'You have no orders';
 }

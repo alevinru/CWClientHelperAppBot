@@ -11,7 +11,7 @@ export default async function (msg, ack) {
   const data = content.toString();
   const digest = JSON.parse(data);
 
-  debug('consumed', `#${deliveryTag}`, ts, digest.length);
+  debug('consumed', `#${deliveryTag}`, ts, `${digest.length}`);
 
   try {
     await hsetAsync(CW.QUEUE_AU, 'data', JSON.stringify(data));

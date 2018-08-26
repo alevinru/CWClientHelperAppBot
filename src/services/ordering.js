@@ -88,6 +88,20 @@ export async function getOrdersByItemCode(itemCode) {
 
 }
 
+
+export async function getTopOrders() {
+
+  const index = await redis.hgetallAsync(ID_TO_ITEM_CODE_HASH);
+  const itemCodes = map(keyBy(index, itemCode => itemCode));
+  const promises = map(itemCodes, itemCode => redis.lrangeAsync(ordersQueueKey(itemCode), 0, 0));
+
+  return Promise.all(promises)
+    .then(res => map(res, getOrderById))
+    .then(res => Promise.all(res));
+
+}
+
+
 export async function hookOffers() {
 
   try {
@@ -110,19 +124,7 @@ export async function hookOffers() {
 }
 
 
-export async function getTopOrders() {
-
-  const index = await redis.hgetallAsync(ID_TO_ITEM_CODE_HASH);
-  const itemCodes = map(keyBy(index, itemCode => itemCode));
-  const promises = map(itemCodes, itemCode => redis.lrangeAsync(ordersQueueKey(itemCode), 0, 0));
-
-  return Promise.all(promises)
-    .then(res => map(res, getOrderById))
-    .then(res => Promise.all(res));
-
-}
-
-async function onGotOffer(offer, itemCode, itemName, order) {
+async function onGotOffer(offer, order, itemCode) {
 
   const {
     price: offerPrice,
@@ -137,7 +139,7 @@ async function onGotOffer(offer, itemCode, itemName, order) {
   } = order;
 
   if (offerPrice > orderPrice) {
-    debug('ignore:offer:', itemName, offerPrice, orderPrice);
+    debug('ignore:offer:', offer.item, offerPrice, orderPrice);
     return;
   }
 

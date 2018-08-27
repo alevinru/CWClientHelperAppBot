@@ -135,14 +135,17 @@ async function reportUpdatedFunds(userId) {
 
   try {
 
+    const { funds: currentFunds } = getCachedTrader(userId);
     const trader = await refreshTraderCache(userId);
 
-    if (trader) {
+    if (trader && trader.funds !== currentFunds) {
 
       const reply = `You have ${trader.funds}💰 now`;
 
       await bot.telegram.sendMessage(userId, reply, { parse_mode: 'HTML' });
 
+    } else {
+      debug('reportUpdatedFunds', `same ${currentFunds}💰`);
     }
 
   } catch ({ name, message }) {

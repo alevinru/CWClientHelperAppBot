@@ -83,12 +83,12 @@ Exception handlers
 
 function exceptionHandler(ctx, next) {
 
-  debug('exceptionHandler', 'start');
+  // debug('userId', 'start');
 
   return next()
-    .then(() => debug('exceptionHandler', 'end'))
+    // .then(() => debug('exceptionHandler', 'end'))
     .catch(({ name, message }) => {
-      debug(name, message);
+      debug('exceptionHandler', name, message);
       return ctx.reply(`Error: ${message}`);
     });
 

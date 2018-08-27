@@ -1,6 +1,6 @@
 import map from 'lodash/map';
 import fpMap from 'lodash/fp/map';
-
+import * as CW from 'cw-rest-api';
 import * as redis from './redis';
 import { refreshProfile } from './auth';
 import { cw } from './cw';
@@ -104,11 +104,16 @@ export async function onGotOffer(offer, order) {
 
   } catch (e) {
 
-    replyOrderFail(e, offer, order);
+    if (e === CW.CW_RESPONSE_USER_BUSY) {
+      debug('consumeOffers', `/order_${order.id}`, e);
+      return;
+    }
 
-    if (e === cw.CW_RESPONSE_NO_FUNDS) {
+    if (e === CW.CW_RESPONSE_NO_FUNDS) {
       postUpdate(offer.userId, 0);
     }
+
+    replyOrderFail(e, offer, order);
 
   }
 

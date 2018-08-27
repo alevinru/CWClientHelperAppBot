@@ -1,9 +1,10 @@
 import { cw } from './cw';
-import { hsetAsync } from './redis';
+import { hsetAsync, hgetAsync } from './redis';
 import { getSession } from './session';
 import { BOT_ID } from './bot';
 import { USERS_HASH } from './users';
 
+const debug = require('debug')('laa:cwb:auth');
 
 export async function getToken(userId) {
   return getSession(BOT_ID, userId)
@@ -33,17 +34,39 @@ export function requestAuth(userId) {
 
 export async function refreshProfile(userId, session) {
 
-  const token = session ? getAuthToken(session) : await getToken(userId);
-  const { profile } = await cw.requestProfile(safeUserId(userId), token);
+  let profile;
 
-  const teamId = profile.guild_tag || userId.toString();
-  const user = { userId, profile, teamId };
-
-  if (session) {
-    session.teamId = teamId;
+  try {
+    profile = await hgetAsync(USERS_HASH, userId)
+      .then(JSON.parse)
+      .then(res => res.profile);
+  } catch (e) {
+    throw e;
   }
 
-  await hsetAsync(USERS_HASH, userId, JSON.stringify(user));
+  try {
+
+    const token = session ? getAuthToken(session) : await getToken(userId);
+    const { profile: freshProfile } = await cw.requestProfile(safeUserId(userId), token);
+
+    if (freshProfile) {
+
+      profile = freshProfile;
+
+      const teamId = profile.guild_tag || userId.toString();
+      const user = { userId, profile, teamId };
+
+      if (session) {
+        session.teamId = teamId;
+      }
+
+      await hsetAsync(USERS_HASH, userId, JSON.stringify(user));
+
+    }
+
+  } catch (e) {
+    debug('refreshProfile', e.message || e);
+  }
 
   return profile;
 

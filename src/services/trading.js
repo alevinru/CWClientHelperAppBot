@@ -36,7 +36,7 @@ export async function getTraders() {
 
   const traders = await redis.hgetallAsync(TRADERS_PREFIX).then(fpMap(JSON.parse));
 
-  debug('getTraders', traders);
+  // debug('getTraders', traders);
 
   return Promise.all(map(traders, trader => refreshTraderCache(trader.id)));
 
@@ -110,7 +110,7 @@ export async function onGotOffer(offer, order) {
     }
 
     if (e === CW.CW_RESPONSE_NO_FUNDS) {
-      postUpdate(offer.userId, 0);
+      postUpdate(order.userId, 0);
     }
 
     replyOrderFail(e, offer, order);

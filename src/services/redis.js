@@ -36,8 +36,9 @@ export const hincrbyAsync = promisifyClient('hincrby');
 export const hmsetAsync = promisifyClient('hmset');
 export const execAsync = promisifyClient('exec');
 
+import log from '../services/log';
 
-const debug = require('debug')('laa:cwc:redis');
+const { debug, error } = log('redis');
 
 const IDS_HASH = 'ids';
 
@@ -46,7 +47,7 @@ export function getId(name) {
 }
 
 client.on('error', err => {
-  debug('Error', err);
+  error('Error', err);
 });
 
 client.on('connect', () => {

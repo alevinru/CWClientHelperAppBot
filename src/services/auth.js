@@ -3,8 +3,9 @@ import { hsetAsync, hgetAsync } from './redis';
 import { getSession } from './session';
 import { BOT_ID } from './bot';
 import { USERS_HASH } from './users';
+import log from '../services/log';
 
-const debug = require('debug')('laa:cwb:auth');
+const { error } = log('auth');
 
 export async function getToken(userId) {
   return getSession(BOT_ID, userId)
@@ -65,7 +66,7 @@ export async function refreshProfile(userId, session) {
     }
 
   } catch (e) {
-    debug('refreshProfile', e.message || e);
+    error('refreshProfile', e.message || e);
   }
 
   return profile;

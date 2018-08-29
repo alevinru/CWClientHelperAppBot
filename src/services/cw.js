@@ -5,8 +5,9 @@ import keyBy from 'lodash/keyBy';
 import { consumeOffers } from '../consumers/offersConsumer';
 
 import { hgetAsync } from './redis';
+import log from '../services/log';
 
-const debug = require('debug')('laa:cwb:cw');
+const { debug } = log('cw');
 
 export const CW_BOT_ID = parseInt(process.env.CW_BOT_ID, 0);
 

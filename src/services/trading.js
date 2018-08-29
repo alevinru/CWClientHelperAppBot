@@ -5,8 +5,9 @@ import * as redis from './redis';
 import { refreshProfile } from './auth';
 import { cw } from './cw';
 import bot from './bot';
+import log from '../services/log';
 
-const debug = require('debug')('laa:cwb:trading');
+const { debug, error } = log('trading');
 
 const TRADERS_PREFIX = 'traders';
 
@@ -154,7 +155,7 @@ async function reportUpdatedFunds(userId) {
     }
 
   } catch ({ name, message }) {
-    debug('reportUpdatedFunds', name, message);
+    error('reportUpdatedFunds', name, message);
   }
 
 }
@@ -173,9 +174,9 @@ function replyOrderFail(e, offer, order) {
   ];
 
   bot.telegram.sendMessage(order.userId, errMsg.join(''), { parse_mode: 'HTML' })
-    .catch(errBot => debug('replyOrderFail', errBot.message));
+    .catch(errBot => error('replyOrderFail', errBot.message));
 
-  debug('consumeOffers', name, message);
+  error('consumeOffers', name, message);
 
 }
 
@@ -192,6 +193,6 @@ function replyOrderSuccess(offer, order, dealParams) {
   ];
 
   bot.telegram.sendMessage(order.userId, reply.join(''), { parse_mode: 'HTML' })
-    .catch(({ name, message }) => debug('onGotOffer', name, message));
+    .catch(({ name, message }) => error('onGotOffer', name, message));
 
 }

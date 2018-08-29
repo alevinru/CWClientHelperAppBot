@@ -1,7 +1,8 @@
 import RedisSession from 'telegraf-session-redis';
 import { getAsync } from './redis';
+import log from '../services/log';
 
-const debug = require('debug')('laa:cwb:session');
+const { debug, error } = log('session');
 
 export default function (config) {
 
@@ -22,7 +23,7 @@ export default function (config) {
   });
 
   client.on('error', e => {
-    debug('Redis', e.name, e.message);
+    error('Redis', e.name, e.message);
   });
 
   return session;

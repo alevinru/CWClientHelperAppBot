@@ -4,6 +4,7 @@ import map from 'lodash/map';
 import fpMap from 'lodash/fp/map';
 import fpFilter from 'lodash/fp/filter';
 
+import log from '../services/log';
 import * as redis from './redis';
 
 import { getProfile } from './profile';
@@ -15,7 +16,7 @@ import { addOfferHook, dropOfferHooks } from '../consumers/offersConsumer';
 const ORDERS_PREFIX = 'orders';
 const ID_TO_ITEM_CODE_HASH = 'orders_idx_itemCode';
 
-const debug = require('debug')('laa:cwb:ordering');
+const { debug, error } = log('ordering');
 
 redis.client.on('connect', () => setTimeout(hookOffers, 1000));
 
@@ -159,7 +160,7 @@ export async function hookOffers() {
     });
 
   } catch (e) {
-    debug(e);
+    error(e);
   }
 
 }

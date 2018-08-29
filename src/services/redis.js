@@ -1,5 +1,6 @@
 import redis from 'redis';
 import { promisify } from 'util';
+import log from './log';
 
 
 const {
@@ -36,7 +37,6 @@ export const hincrbyAsync = promisifyClient('hincrby');
 export const hmsetAsync = promisifyClient('hmset');
 export const execAsync = promisifyClient('exec');
 
-import log from '../services/log';
 
 const { debug, error } = log('redis');
 

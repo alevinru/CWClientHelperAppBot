@@ -1,6 +1,6 @@
 import RedisSession from 'telegraf-session-redis';
 import { getAsync } from './redis';
-import log from '../services/log';
+import log from './log';
 
 const { debug, error } = log('session');
 

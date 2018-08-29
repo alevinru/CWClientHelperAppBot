@@ -5,7 +5,7 @@ import * as redis from './redis';
 import { refreshProfile } from './auth';
 import { cw } from './cw';
 import bot from './bot';
-import log from '../services/log';
+import log from './log';
 
 const { debug, error } = log('trading');
 

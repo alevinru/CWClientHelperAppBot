@@ -1,4 +1,4 @@
-import fmap from 'lodash/fp/map';
+import fpMap from 'lodash/fp/map';
 import filter from 'lodash/filter';
 
 import { hgetallAsync, hgetAsync } from './redis';
@@ -10,7 +10,7 @@ export async function getAuthorizedUsers(session) {
   const { teamId } = session;
 
   const users = await hgetallAsync(USERS_HASH)
-    .then(fmap(JSON.parse));
+    .then(fpMap(JSON.parse));
 
   return filter(users, user => user.teamId === teamId);
 
@@ -19,7 +19,7 @@ export async function getAuthorizedUsers(session) {
 export async function getUsers(predicate) {
 
   const users = await hgetallAsync(USERS_HASH)
-    .then(fmap(JSON.parse));
+    .then(fpMap(JSON.parse));
 
   return filter ? filter(users, predicate) : users;
 

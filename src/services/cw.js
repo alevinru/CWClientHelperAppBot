@@ -5,7 +5,7 @@ import keyBy from 'lodash/keyBy';
 import { consumeOffers } from '../consumers/offersConsumer';
 
 import { hgetAsync } from './redis';
-import log from '../services/log';
+import log from './log';
 
 const { debug } = log('cw');
 

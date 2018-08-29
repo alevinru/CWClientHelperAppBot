@@ -4,7 +4,7 @@ import map from 'lodash/map';
 import fpMap from 'lodash/fp/map';
 import fpFilter from 'lodash/fp/filter';
 
-import log from '../services/log';
+import log from './log';
 import * as redis from './redis';
 
 import { getProfile } from './profile';

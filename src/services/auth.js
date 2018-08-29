@@ -3,7 +3,7 @@ import { hsetAsync, hgetAsync } from './redis';
 import { getSession } from './session';
 import { BOT_ID } from './bot';
 import { USERS_HASH } from './users';
-import log from '../services/log';
+import log from './log';
 
 const { error } = log('auth');
 

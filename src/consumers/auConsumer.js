@@ -1,8 +1,9 @@
 import * as CW from 'cw-rest-api';
 import { hsetAsync } from '../services/redis';
 
-const debug = require('debug')('laa:cwb:au');
+import log from '../services/log';
 
+const { debug, error } = log('au');
 export default async function (msg, ack) {
 
   const { fields, properties, content } = msg;
@@ -11,7 +12,7 @@ export default async function (msg, ack) {
   const data = content.toString();
   const digest = JSON.parse(data);
 
-  debug('consumed', `#${deliveryTag}`, ts, `${digest.length}`);
+  debug('consumed', `#${deliveryTag}`, ts, `(${digest.length})`);
 
   try {
     await hsetAsync(CW.QUEUE_AU, 'data', JSON.stringify(data));
@@ -20,7 +21,7 @@ export default async function (msg, ack) {
       ack();
     }
   } catch ({ name, message }) {
-    debug(name, message);
+    error(name, message);
   }
 
 }

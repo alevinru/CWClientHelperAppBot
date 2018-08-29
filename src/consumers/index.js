@@ -1,10 +1,11 @@
 import CWExchange, * as CW from 'cw-rest-api';
+import log from '../services/log';
 
 import consumeSEXDigest from './exConsumer';
 import consumeAUDigest from './auConsumer';
 import onConsumeDeals from './dealsConsumer';
 
-const debug = require('debug')('laa:cwb:consumers');
+const { debug } = log('consumers');
 
 /**
  *

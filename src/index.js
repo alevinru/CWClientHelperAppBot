@@ -1,5 +1,6 @@
 import Telegraf from 'telegraf';
 import { cw } from './services';
+import log from './services/log';
 import session from './services/session';
 import bot, { BOT_ID } from './services/bot';
 import { fromCWFilter } from './config/filters';
@@ -15,7 +16,7 @@ import start from './middleware/start';
 import stock from './middleware/stock';
 import profile from './middleware/profile';
 
-const debug = require('debug')('laa:cwb:index');
+const { debug, error } = log('index');
 
 require('./config/context').default(bot);
 
@@ -86,9 +87,9 @@ function exceptionHandler(ctx, next) {
   // debug('userId', 'start');
 
   return next()
-    // .then(() => debug('exceptionHandler', 'end'))
+  // .then(() => debug('exceptionHandler', 'end'))
     .catch(({ name, message }) => {
-      debug('exceptionHandler', name, message);
+      error('exceptionHandler', name, message);
       return ctx.reply(`Error: ${message}`);
     });
 

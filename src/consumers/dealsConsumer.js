@@ -1,7 +1,6 @@
 import * as CW from 'cw-rest-api';
 import { lpushAsync, ltrimAsync } from '../services/redis';
 import { itemKey } from '../services/cw';
-
 import log from '../services/log';
 
 const { debug, error } = log('deals');

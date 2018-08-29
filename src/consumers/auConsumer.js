@@ -1,9 +1,9 @@
 import * as CW from 'cw-rest-api';
 import { hsetAsync } from '../services/redis';
-
 import log from '../services/log';
 
 const { debug, error } = log('au');
+
 export default async function (msg, ack) {
 
   const { fields, properties, content } = msg;

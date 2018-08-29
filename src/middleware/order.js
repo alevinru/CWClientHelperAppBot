@@ -3,8 +3,9 @@ import * as ordering from '../services/ordering';
 import { itemNameByCode } from '../services/cw';
 import { getProfile } from '../services/profile';
 import { getAuthToken, getToken } from '../services/auth';
+import log from '../services/log';
 
-const debug = require('debug')('laa:cwb:wtb');
+const { debug, error } = log('mw:order');
 
 export async function createOrder(ctx) {
 
@@ -184,7 +185,7 @@ export async function ordersTop(ctx) {
     ctx.replyHTML(res.join(''));
 
   } catch (e) {
-    debug(e);
+    error(e);
     ctx.replyError(command, e);
   }
 

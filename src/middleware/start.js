@@ -1,6 +1,7 @@
-import hello from './hello';
+import log from '../services/log';
+import { hello } from './hello';
 
-const debug = require('debug')('laa:cwb:start');
+const { debug } = log('mw:start');
 
 export default async function (ctx) {
 

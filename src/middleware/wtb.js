@@ -2,8 +2,9 @@ import { cw, getAuthToken } from '../services';
 import { checkPrice } from './trades';
 import { getProfile } from '../services/profile';
 import { getToken } from '../services/auth';
+import log from '../services/log';
 
-const debug = require('debug')('laa:cwb:wtb');
+const { debug } = log('mw:wtb');
 
 export default async function (ctx) {
 

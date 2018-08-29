@@ -1,8 +1,8 @@
 import * as trading from '../services/trading';
+import log from '../services/log';
 import { userOrderList } from './order';
 
-const debug = require('debug')('laa:cwb:traders');
-
+const { debug } = log('mw:traders');
 
 export async function tradingStatus(ctx) {
 

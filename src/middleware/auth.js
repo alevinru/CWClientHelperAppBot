@@ -1,8 +1,9 @@
 import find from 'lodash/find';
 import { setAuth, requestToken, requestAuth } from '../services/auth';
-import hello from './hello';
+import { hello } from './hello';
+import log from '../services/log';
 
-const debug = require('debug')('laa:cwb:auth');
+const { debug } = log('mw:auth');
 
 export async function auth(ctx) {
 

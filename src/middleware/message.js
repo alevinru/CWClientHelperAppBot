@@ -1,6 +1,8 @@
+import log from '../services/log';
+
 const { PHRASE_NOT_IMPLEMENTED } = process.env || 'What ?';
 
-const debug = require('debug')('laa:cwb:message');
+const { debug } = log('mw:message');
 
 export default async function (ctx, next) {
 

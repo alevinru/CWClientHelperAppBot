@@ -2,8 +2,9 @@
 import { pricesByItemCode } from '../services/cw';
 import { dropOfferHooks, getOfferHooks } from '../consumers/offersConsumer';
 import { hookOffers } from '../services/ordering';
+import log from '../services/log';
 
-const debug = require('debug')('laa:cwb:trades');
+const { debug } = log('mw:trades');
 
 const PRICE_LIMIT_PERCENT = 1.2;
 

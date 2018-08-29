@@ -1,7 +1,8 @@
 import { cw, getAuthToken } from '../services';
 import { getToken } from '../services/auth';
+import log from '../services/log';
 
-const debug = require('debug')('laa:cwb:stock');
+const { debug } = log('mw:stock');
 
 export default async function (ctx) {
 

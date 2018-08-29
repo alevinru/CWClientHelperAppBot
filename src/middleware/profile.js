@@ -1,6 +1,7 @@
 import { refreshProfile } from '../services/auth';
+import log from '../services/log';
 
-const debug = require('debug')('laa:cwb:profile');
+const { debug } = log('mw:profile');
 
 export default async function (ctx) {
 

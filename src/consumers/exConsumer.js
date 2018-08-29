@@ -1,8 +1,9 @@
 import * as CW from 'cw-rest-api';
 import { hsetAsync } from '../services/redis';
 import { itemKey } from '../services/cw';
+import log from '../services/log';
 
-const debug = require('debug')('laa:cwb:ex');
+const { debug, error } = log('ex');
 
 export default async function (msg, ack) {
 
@@ -23,7 +24,7 @@ export default async function (msg, ack) {
       ack();
     }
   } catch ({ name, message }) {
-    debug(name, message);
+    error(name, message);
   }
 
 }

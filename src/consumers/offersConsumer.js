@@ -1,7 +1,8 @@
 import filter from 'lodash/filter';
 import map from 'lodash/map';
+import log from '../services/log';
 
-const debug = require('debug')('laa:cwb:offers');
+const { debug, error } = log('offers');
 
 const MIN_OFFER_DELAY = 1000;
 
@@ -50,11 +51,11 @@ export async function consumeOffers(msg) {
   if (timestamp < now - MIN_OFFER_DELAY) {
     debug('consume ignore old');
   } else if (hook) {
-    await hook(offer);
+    try {
+      await hook(offer);
+    } catch ({ name, message }) {
+      error(name, message);
+    }
   }
-
-  // if (ack) {
-  //   ack();
-  // }
 
 }

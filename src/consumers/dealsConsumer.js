@@ -2,9 +2,11 @@ import * as CW from 'cw-rest-api';
 import { lpushAsync, ltrimAsync } from '../services/redis';
 import { itemKey } from '../services/cw';
 
-const debug = require('debug')('laa:cwb:deals');
+import log from '../services/log';
 
-const MAX_DEALS = 1000;
+const { debug, error } = log('deals');
+
+const MAX_DEALS = parseInt(process.env.MAX_DEALS, 0) || 1000;
 
 export default async function (msg, ack) {
 
@@ -32,7 +34,7 @@ export default async function (msg, ack) {
       ack();
     }
   } catch ({ name, message }) {
-    debug(name, message);
+    error(name, message);
   }
 
 }

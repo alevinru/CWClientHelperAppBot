@@ -6,6 +6,7 @@
     "PHRASE_NOT_IMPLEMENTED": "I don't understand this kind of messages",
     "CW_TIMEOUT": 15000,
     "REDIS_DB": 1,
-    "BOT_USER_NAME": "CWClientAppBot"
+    "BOT_USER_NAME": "CWClientAppBot",
+    "REST_PORT": "8800"
   }
 }

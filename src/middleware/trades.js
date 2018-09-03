@@ -1,7 +1,7 @@
 // import { cw, getAuthToken } from '../services';
 import { pricesByItemCode } from '../services/cw';
-import { dropOfferHooks, getOfferHooks } from '../consumers/offersConsumer';
-import { hookOffers } from '../services/ordering';
+// import { dropOfferHooks, getOfferHooks } from '../consumers/offersConsumer';
+// import { hookOffers } from '../services/ordering';
 import log from '../services/log';
 
 const { debug } = log('mw:trades');
@@ -53,45 +53,6 @@ export async function checkPrice(itemCode, price) {
 
   if (maxPrice < price) {
     throw new Error(`Price is higher than limit of ${maxPrice}💰`);
-  }
-
-}
-
-export async function trading(ctx) {
-
-  const {
-    match,
-  } = ctx;
-  const [, onOff] = match;
-  const command = `/trading_${onOff}`;
-
-  debug(command);
-
-  try {
-    switch (onOff) {
-      case 'on':
-        await hookOffers();
-        ctx.replyHTML('Trading started');
-        break;
-      case 'off':
-        dropOfferHooks();
-        ctx.replyHTML('Trading stopped');
-        break;
-      case 'status': {
-        const hooks = getOfferHooks();
-        if (hooks.length) {
-          ctx.replyHTML(hooks.join(', '));
-        } else {
-          ctx.replyHTML('Trading is stopped or no orders');
-        }
-        break;
-      }
-      default:
-        ctx.replyHTML('Unknown trading parameter');
-    }
-
-  } catch (e) {
-    ctx.replyError(command, e);
   }
 
 }

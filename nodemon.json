@@ -1,6 +1,6 @@
 {
   "env": {
-    "DEBUG": "laa:*,-telegraf:session-redis",
+    "DEBUG": "laa:cwb:*",
     "AMQP_PROTOCOL": "amqps",
     "API_URL": "api.chtwrs.com:5673",
     "PHRASE_NOT_IMPLEMENTED": "I don't understand this kind of messages",

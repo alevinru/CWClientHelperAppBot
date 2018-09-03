@@ -1,6 +1,8 @@
 import * as trading from '../services/trading';
 import log from '../services/log';
 import { userOrderList } from './order';
+import { hookOffers } from '../services/ordering';
+// import { dropOfferHooks, getOfferHooks } from "../consumers/offersConsumer";
 
 const { debug } = log('mw:traders');
 
@@ -23,11 +25,12 @@ export async function tradingStatus(ctx) {
 
     trader = await trading.refreshTraderCache(userId);
 
-    const { funds, profile } = trader;
+    const { funds, profile, isPaused } = trader;
     const { userName } = profile;
 
     const reply = [
-      `<b>${userName}</b> has ${funds || 'no '}💰 to trade by the orders:`,
+      isPaused ? '⏸' : '✅',
+      ` <b>${userName}</b> has ${funds || 'no '}💰 to trade by the orders:`,
       '\n\n',
     ];
 
@@ -38,6 +41,9 @@ export async function tradingStatus(ctx) {
     } else {
       reply.push(orders);
     }
+
+    reply.push(`\n\nIssue /trading_${isPaused ? 'on' : 'off'}`);
+    reply.push(` to ${isPaused ? 'continue' : 'pause'} trading`);
 
     await ctx.replyHTML(reply);
 
@@ -97,8 +103,20 @@ export async function grantTrading(ctx) {
 
 }
 
-function formatTrader({ id, profile, funds }) {
-  return `<code>${id}</code> <b>${profile.userName}</b> ${funds}💰`;
+function formatTrader(trader) {
+
+  const {
+    id,
+    profile,
+    funds,
+    isPaused = false,
+  } = trader;
+
+  return [
+    isPaused ? '⏸' : '✅',
+    `<code>${id}</code> <b>${profile.userName}</b> ${funds}💰`,
+  ].join(' ');
+
 }
 
 
@@ -108,4 +126,39 @@ function replyNotAuthorized() {
     'Try /request_trading',
     ' followed by some words you might want to say to the admin',
   ];
+}
+
+export async function tradingActive(ctx) {
+
+  const {
+    from: { id: userId },
+    match,
+  } = ctx;
+  const [, onOff] = match;
+  const command = `/trading_${onOff}`;
+
+  debug(command);
+
+  try {
+
+    switch (onOff) {
+      case 'on':
+        await trading.setTraderActive(userId, true);
+        await ctx.replyHTML('Trading started, issue /trading_off to pause');
+        break;
+      case 'off':
+        await trading.setTraderActive(userId, false);
+        await ctx.replyHTML('Trading paused, issue /trading_on to continue');
+        break;
+      default:
+        await ctx.replyHTML('Unknown trading parameter');
+        return;
+    }
+
+    await hookOffers();
+
+  } catch (e) {
+    ctx.replyError(command, e);
+  }
+
 }

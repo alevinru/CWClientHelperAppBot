@@ -151,7 +151,12 @@ export async function hookOffers() {
       const { itemCode, userId } = order;
       const itemName = itemNameByCode(itemCode);
 
-      await refreshTraderCache(userId);
+      const trader = await refreshTraderCache(userId);
+
+      if (trader.isPaused) {
+        debug('hookOffers', itemName, `/order_${order.id}`, 'trader is paused');
+        return;
+      }
 
       addOfferHook(itemName, offer => onGotOffer(offer, order));
 

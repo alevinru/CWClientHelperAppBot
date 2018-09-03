@@ -47,10 +47,15 @@ export async function grantTrading(userId) {
 
   const trader = await refreshTraderCache(userId);
 
-  await redis.hsetAsync(TRADERS_PREFIX, userId, JSON.stringify(trader));
+  return saveTrader(trader);
+
+}
+
+async function saveTrader(trader) {
+
+  await redis.hsetAsync(TRADERS_PREFIX, trader.id, JSON.stringify(trader));
 
   return trader;
-
 }
 
 function checkDeal(offer, order) {
@@ -194,5 +199,20 @@ function replyOrderSuccess(offer, order, dealParams) {
 
   bot.telegram.sendMessage(order.userId, reply.join(''), { parse_mode: 'HTML' })
     .catch(({ name, message }) => error('onGotOffer', name, message));
+
+}
+
+
+export async function setTraderActive(traderId, isActive) {
+
+  const trader = getCachedTrader(traderId);
+
+  if (!trader) {
+    return false;
+  }
+
+  trader.isPaused = !isActive;
+
+  return saveTrader(trader);
 
 }

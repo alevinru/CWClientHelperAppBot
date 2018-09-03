@@ -4,11 +4,13 @@ import log from '../services/log';
 
 const { debug, error } = log('au');
 
+const isNumber = /^\d+$/;
+
 export default async function (msg, ack) {
 
-  const { fields, properties, content } = msg;
+  const { fields, properties: { timestamp }, content } = msg;
   const { deliveryTag } = fields;
-  const ts = new Date(properties.timestamp * 1000);
+  const ts = isNumber.test(timestamp) ? new Date(timestamp * 1000) : new Date();
   const data = content.toString();
   const digest = JSON.parse(data);
 

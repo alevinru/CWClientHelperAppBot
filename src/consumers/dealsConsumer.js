@@ -1,16 +1,19 @@
 import * as CW from 'cw-rest-api';
 import { lpushAsync, ltrimAsync } from '../services/redis';
-import { itemKey } from '../services/cw';
+import { itemKey, itemNameByCode } from '../services/cw';
 import log from '../services/log';
 
 const { debug, error } = log('deals');
 
 const MAX_DEALS = parseInt(process.env.MAX_DEALS, 0) || 1000;
 
+const isNumber = /^\d+$/;
+
 export default async function (msg, ack) {
 
-  const { fields: { deliveryTag }, properties, content } = msg;
-  const ts = new Date(properties.timestamp * 1000);
+  const { fields, properties: { timestamp }, content } = msg;
+  const { deliveryTag } = fields;
+  const ts = isNumber.test(timestamp) ? new Date(timestamp * 1000) : new Date();
   const data = content.toString();
   const deal = JSON.parse(data);
   const {
@@ -35,5 +38,14 @@ export default async function (msg, ack) {
   } catch ({ name, message }) {
     error(name, message);
   }
+
+}
+
+
+export function dealsKey(itemCode) {
+
+  const itemName = itemNameByCode(itemCode);
+
+  return `${CW.QUEUE_DEALS}_${itemKey(itemName)}`;
 
 }

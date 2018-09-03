@@ -9,13 +9,17 @@
     "start": "nodemon --exec 'npm run lint && babel-node' -- src/index.js",
     "pkg": "cp package.json dist",
     "build": "npm run lint && babel src -d dist && npm run pkg",
-    "consumers": "nodemon --exec 'npm run lint && babel-node' -- src/consumers"
+    "consumers": "nodemon --exec 'npm run lint && babel-node' -- src/consumers",
+    "rest": "nodemon --exec 'npm run lint && babel-node' -- src/rest"
   },
   "author": "Alexander Levin",
   "license": "ISC",
   "dependencies": {
     "cw-rest-api": "^1.5.4",
     "debug": "^3.1.0",
+    "koa": "^2.5.2",
+    "koa-body": "^4.0.4",
+    "koa-router": "^7.4.0",
     "lodash": "^4.17.10",
     "redis": "^2.8.0",
     "telegraf": "^3.22.2",

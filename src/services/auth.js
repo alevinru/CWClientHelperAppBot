@@ -39,7 +39,7 @@ export async function refreshProfile(userId, session) {
 
   try {
     profile = await hgetAsync(USERS_HASH, userId)
-      .then(JSON.parse)
+      .then(u => (u ? JSON.parse(u) : {}))
       .then(res => res.profile);
   } catch (e) {
     throw e;
@@ -67,6 +67,10 @@ export async function refreshProfile(userId, session) {
 
   } catch (e) {
     error('refreshProfile', e.message || e);
+  }
+
+  if (!profile) {
+    throw new Error('Failed to refresh profile');
   }
 
   return profile;

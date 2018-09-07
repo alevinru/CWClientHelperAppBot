@@ -1,9 +1,17 @@
 import { refreshProfile } from '../services/auth';
 import { getAuthorizedUsers } from '../services/users';
+import { BOT_ID } from '../services/bot';
+import { getSession } from '../services/session';
 
 export async function hello(ctx) {
 
-  const { session, from: { id: userId, first_name: firstName } } = ctx;
+  const {
+    session,
+    from: { id: fromUserId, first_name: firstName },
+    match,
+  } = ctx;
+
+  const [, matchUserId] = match;
 
   if (!session.auth) {
     ctx.replyPlain([
@@ -13,19 +21,29 @@ export async function hello(ctx) {
     return;
   }
 
+  // if (!session.admin)
+
   try {
 
-    const profile = await refreshProfile(userId, session);
+    const userId = matchUserId || fromUserId;
+    const userSession = matchUserId ? await getSession(BOT_ID, userId) : session;
 
-    session.profile = profile;
-    replyResults(profile);
+    const profile = await refreshProfile(userId, userSession);
+
+    if (!matchUserId) {
+      session.profile = profile;
+    }
+
+    replyResults(profile, userId);
 
   } catch (e) {
-    replyResults(session.profile);
+    if (!matchUserId && session.profile) {
+      replyResults(session.profile, fromUserId);
+    }
     ctx.replyError('to refresh your profile', e);
   }
 
-  function replyResults(profile) {
+  function replyResults(profile, userId) {
 
     ctx.replyMD([
       `Hi there, *${firstName}*!\n`,

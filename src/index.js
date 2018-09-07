@@ -37,7 +37,7 @@ bot.hears(/^\/trading[ _](on|off)$/, traders.tradingActive);
 bot.hears(/^\/trades[ _]([a-z0-9]+)$/, trades.itemTrades);
 
 bot.hears(/^\/traders$/, traders.traders);
-bot.hears(/^\/grant_trading[ _](\d*)$/, traders.grantTrading);
+bot.hears(/^\/grant[ _]trading[ _](\d*)$/, traders.grantTrading);
 
 /*
 Orders
@@ -56,7 +56,7 @@ Users
 
 bot.command('start', start);
 bot.command('auth', auth);
-bot.command('hello', users.hello);
+bot.hears(/^\/hello[ _]?(\d+)?$/, users.hello);
 bot.command('users', users.listUsers);
 
 /*

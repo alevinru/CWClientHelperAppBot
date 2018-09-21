@@ -11,7 +11,7 @@ export async function hello(ctx) {
     match,
   } = ctx;
 
-  const [, matchUserId] = match;
+  const [, matchUserId] = match || [];
 
   if (!session.auth) {
     ctx.replyPlain([

@@ -47,7 +47,8 @@ Users
 
 bot.command('start', start);
 bot.command('auth', auth);
-bot.hears(/^\/hello[ _]?(\d+)?$/, users.hello);
+bot.hears(/^\/hello[ _](\d+)$/, users.hello);
+bot.command('hello', users.hello);
 bot.command('users', users.listUsers);
 
 /*

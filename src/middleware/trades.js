@@ -40,11 +40,12 @@ export async function itemTrades(ctx) {
 export async function itemStats(ctx) {
 
   const { match } = ctx;
-  const hours = 24;
-  const [command, itemCode] = match;
+  const [command, itemCode, hoursParam] = match;
   const itemName = itemNameByCode(itemCode);
 
-  debug(command, itemCode, itemName || 'unknown itemCode');
+  debug(command, itemCode, hoursParam, itemName || 'unknown itemCode');
+
+  const hours = parseInt(hoursParam, 0) || 24;
 
   if (!itemName) {
     await ctx.replyWithHTML(`Unknown item code <b>${itemCode}</b>`);
@@ -78,11 +79,12 @@ export async function itemStats(ctx) {
     qty: sumBy(priceDeals, 'qty'),
   }));
 
-  res.push('Price breakdown:');
-
-  priceBreakdown.forEach(({ price, qty }) => {
-    res.push(`${price}💰x ${qty}`);
-  });
+  if (priceBreakdown.length > 1) {
+    res.push('');
+    priceBreakdown.forEach(({ price, qty }) => {
+      res.push(`${price}💰x ${qty}`);
+    });
+  }
 
   await ctx.replyWithHTML(res.join('\n'));
 

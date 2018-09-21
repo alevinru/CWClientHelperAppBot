@@ -40,3 +40,13 @@ function exceptionHandler(ctx, next) {
 bot.catch(({ name, message }) => {
   debug(name, message);
 });
+
+
+process.on('SIGTERM', () => {
+  const { REPORT_CHAT_ID, SIGTERM_MESSAGE } = process.env;
+  if (!REPORT_CHAT_ID) {
+    return;
+  }
+  bot.telegram.sendMessage(REPORT_CHAT_ID, SIGTERM_MESSAGE || 'Stopping')
+    .catch(error);
+});

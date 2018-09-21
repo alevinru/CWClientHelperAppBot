@@ -7,9 +7,9 @@ const {
   REDIS_HOST, REDIS_PORT, REDIS_DB, REDIS_SOCK,
 } = process.env;
 
-const clientConfig = {
+export const clientConfig = {
   db: REDIS_DB || 0,
-  enable_offline_queue: false,
+  enable_offline_queue: true,
 };
 
 if (REDIS_SOCK) {

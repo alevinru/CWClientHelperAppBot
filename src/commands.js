@@ -28,6 +28,8 @@ bot.hears(/^\/trades[ _]([a-z0-9]+)$/, trades.itemTrades);
 bot.hears(/^\/traders$/, traders.traders);
 bot.hears(/^\/grant[ _]trading[ _](\d*)$/, traders.grantTrading);
 
+bot.hears(/^\/t_([a-z0-9]\d+)/, trades.itemStats);
+
 /*
 Orders
  */

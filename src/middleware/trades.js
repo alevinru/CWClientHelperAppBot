@@ -3,6 +3,7 @@ import sumBy from 'lodash/sumBy';
 import map from 'lodash/map';
 import groupBy from 'lodash/groupBy';
 import round from 'lodash/round';
+import orderBy from 'lodash/orderBy';
 import addHours from 'date-fns/add_hours';
 import log from '../services/log';
 import { lrangeAsync } from '../services/redis';
@@ -74,10 +75,10 @@ export async function itemStats(ctx) {
     `Turnover: ${totalSum}💰= ${totalQty} x ${round(totalSum / totalQty, 2)}💰`,
   ];
 
-  const priceBreakdown = map(byPrice, (priceDeals, price) => ({
-    price,
+  const priceBreakdown = orderBy(map(byPrice, (priceDeals, price) => ({
+    price: parseInt(price, 0),
     qty: sumBy(priceDeals, 'qty'),
-  }));
+  })), 'price');
 
   if (priceBreakdown.length > 1) {
     res.push('');

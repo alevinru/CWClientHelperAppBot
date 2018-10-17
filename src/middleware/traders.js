@@ -2,6 +2,7 @@ import * as trading from '../services/trading';
 import log from '../services/log';
 import { userOrderList } from './order';
 import { hookOffers } from '../services/ordering';
+// import { getAuthorizedUsers } from '../services/users';
 // import { dropOfferHooks, getOfferHooks } from "../consumers/offersConsumer";
 
 const { debug } = log('mw:traders');

@@ -129,7 +129,7 @@ export async function getTopOrders() {
 
   const index = await redis.hgetallAsync(ID_TO_ITEM_CODE_HASH);
   const itemCodes = map(keyBy(index, itemCode => itemCode));
-  const promises = map(itemCodes, itemCode => redis.lrangeAsync(ordersQueueKey(itemCode), 0, 0));
+  const promises = map(itemCodes, itemCode => redis.lrangeAsync(ordersQueueKey(itemCode), -1, -1));
 
   return Promise.all(promises)
     .then(res => map(res, getOrderById))

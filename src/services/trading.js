@@ -168,7 +168,7 @@ async function reportUpdatedFunds(userId) {
 
 function replyOrderFail(e, offer, order) {
 
-  const { name = 'Error', message = e } = e;
+  const { name = 'Error', message = JSON.stringify(e) } = e;
   const { item: itemName, sellerName, qty } = offer;
 
   const errMsg = [

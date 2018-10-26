@@ -32,6 +32,11 @@ export async function authCode(ctx, next) {
     from: { id: userId },
   } = ctx;
 
+  if (!text.match(/^Code .+/)) {
+    await next();
+    return;
+  }
+
   const codeEntity = find(entities, { type: 'code' });
 
   if (!codeEntity) {

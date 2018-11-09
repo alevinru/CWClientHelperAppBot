@@ -72,5 +72,8 @@ Command does `cwApi.wantToBuy(userId, { itemCode, quantity, price }, token)`
 
 Bot responds with process.env.PHRASE_NOT_IMPLEMENTED to any unknown message.
 
+### Sniper trading
+
+Bot has trading-specific functionality descibed in [src/commands.js](src/commands.js)
 
 

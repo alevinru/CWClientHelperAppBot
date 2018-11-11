@@ -32,7 +32,7 @@ export async function authCode(ctx, next) {
     from: { id: userId },
   } = ctx;
 
-  if (!text.match(/^Code .+/)) {
+  if (!text || !text.match(/^Code .+/)) {
     await next();
     return;
   }

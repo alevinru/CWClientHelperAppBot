@@ -15,7 +15,7 @@
   "author": "Alexander Levin",
   "license": "ISC",
   "dependencies": {
-    "cw-rest-api": "^1.5.4",
+    "cw-rest-api": "^1.6.1",
     "date-fns": "^1.29.0",
     "debug": "^3.1.0",
     "koa": "^2.5.2",

@@ -33,6 +33,14 @@ export function requestAuth(userId) {
   return cw.sendAuth(safeUserId(userId));
 }
 
+export function requestGuildInfoAuth(userId, token) {
+  return cw.authAdditionalOperation(safeUserId(userId), 'GuildInfo', token);
+}
+
+export function grantGuildInfoAuth(userId, requestId, code, token) {
+  return cw.grantAdditionalOperation(safeUserId(userId), requestId, code, token);
+}
+
 export async function refreshProfile(userId, session) {
 
   let profile;

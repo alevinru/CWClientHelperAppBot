@@ -14,7 +14,7 @@ import * as users from './middleware/hello';
 
 import start from './middleware/start';
 import stock from './middleware/stock';
-import profile from './middleware/profile';
+import profile, { guildInfo } from './middleware/profile';
 
 /*
 Trading
@@ -58,6 +58,7 @@ ChatWars
 
 bot.command('stock', stock);
 bot.hears(/^\/profile[ _]?(\d*)$/, profile);
+bot.hears(/^\/guildInfo[ _]?(\d*)$/, guildInfo);
 bot.hears(/^\/wtb[ _]([a-z0-9]+)[ _](\d+)[ _](\d+)[ ]?(\d*)$/, wtb);
 bot.on('message', Telegraf.optional(fromCWFilter, auth.authCode));
 

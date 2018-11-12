@@ -41,6 +41,14 @@ export function grantGuildInfoAuth(userId, requestId, code, token) {
   return cw.grantAdditionalOperation(safeUserId(userId), requestId, code, token);
 }
 
+export async function guildInfo(userId, session) {
+
+  const token = session ? getAuthToken(session) : await getToken(userId);
+
+  return cw.guildInfo(userId, token);
+
+}
+
 export async function refreshProfile(userId, session) {
 
   let profile;

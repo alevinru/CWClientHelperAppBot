@@ -1,6 +1,6 @@
 import Telegraf from 'telegraf';
 
-import bot from './services/bot';
+import bot, { BOT_USER_NAME } from './services/bot';
 import { fromCWFilter } from './config/filters';
 
 import * as auth from './middleware/auth';
@@ -58,7 +58,8 @@ ChatWars
 
 bot.command('stock', stock);
 bot.hears(/^\/profile[ _]?(\d*)$/, profile);
-bot.hears(/^\/guildInfo[ _]?(\d*)$/, guildInfo);
+const guildInfoRe = new RegExp(`^/guildInfo[ _]?(.*)[^@]?($|${BOT_USER_NAME})`);
+bot.hears(guildInfoRe, guildInfo);
 bot.hears(/^\/wtb[ _]([a-z0-9]+)[ _](\d+)[ _](\d+)[ ]?(\d*)$/, wtb);
 bot.on('message', Telegraf.optional(fromCWFilter, auth.authCode));
 

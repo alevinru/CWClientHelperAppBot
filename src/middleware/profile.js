@@ -35,7 +35,7 @@ export async function guildInfo(ctx) {
 
   const { session, from: { id: userId }, message } = ctx;
   const { match } = ctx;
-  const [, filterItems] = match;
+  const [, , filterItems] = match;
 
   debug(userId, message.text, filterItems);
 

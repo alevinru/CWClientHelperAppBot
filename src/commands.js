@@ -58,7 +58,7 @@ ChatWars
 
 bot.command('stock', stock);
 bot.hears(/^\/profile[ _]?(\d*)$/, profile);
-const guildInfoRe = new RegExp(`^/guildInfo[ _]?(.*)[^@]?($|${BOT_USER_NAME})`);
+const guildInfoRe = new RegExp(`^/(guildInfo|gi)[ _]?(.*)[^@]?($|${BOT_USER_NAME})`, 'i');
 bot.hears(guildInfoRe, guildInfo);
 bot.hears(/^\/wtb[ _]([a-z0-9]+)[ _](\d+)[ _](\d+)[ ]?(\d*)$/, wtb);
 bot.on('message', Telegraf.optional(fromCWFilter, auth.authCode));

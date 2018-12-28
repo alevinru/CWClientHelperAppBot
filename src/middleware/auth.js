@@ -51,6 +51,33 @@ export async function authGuildInfo(ctx) {
 
 }
 
+export async function authCraftBook(ctx) {
+
+  const { from: { id: userId }, session } = ctx;
+
+  debug('authCraftBook:', userId);
+
+  try {
+
+    const token = a.getAuthToken(session);
+
+    const { uuid } = await a.requestCraftBookAuth(userId, token);
+
+    const msg = [
+      `Auth code has been sent to your telegram account number ${userId}.`,
+      'Please forward that message back here to complete <b>Craft Book</b> authorization',
+    ];
+
+    session.authCraftBookId = uuid;
+
+    await ctx.replyHTML(msg.join(' '));
+
+  } catch (e) {
+    await ctx.replyError('to send auth code', e);
+  }
+
+}
+
 export async function authCode(ctx, next) {
 
   const {
@@ -91,24 +118,43 @@ export async function authCode(ctx, next) {
         session.isGuildInfoAuthorized = true;
         await ctx.replyHTML([
           '✅ Congratulations, guildInfo authorization complete!\n',
-          'Try /guildInfo command.',
+          'Try /gi {filter} command.',
         ]);
       }
 
-      return;
+    } else if (text.match(/to view your craft or alchemists book/)) {
+
+      const { authCraftBookId } = session;
+      const token = a.getAuthToken(session);
+
+      debug('craftBook code:', code, token, authCraftBookId);
+
+      if (!authCraftBookId) {
+        await ctx.replyHTML(`CraftBook auth is not requested for userId ${userId}`);
+      } else {
+        await a.grantCraftBookAuth(userId, authCraftBookId, code, token);
+        delete session.authCraftBookId;
+        session.isCraftBookAuthorized = true;
+        await ctx.replyHTML([
+          '✅ Congratulations, CraftBook authorization complete!\n',
+          'Try /cb command.',
+        ]);
+      }
+
+    } else {
+
+      const token = await a.requestToken(userId, code);
+      debug('token:', token);
+      a.setAuth(session, token);
+
+      ctx.replyPlain([
+        '✅ Congratulations, authorization complete!\n',
+        'Try /profile and /stock commands.',
+      ]);
+
+      await hello(ctx);
 
     }
-
-    const token = await a.requestToken(userId, code);
-    debug('token:', token);
-    a.setAuth(session, token);
-
-    ctx.replyPlain([
-      '✅ Congratulations, authorization complete!\n',
-      'Try /profile and /stock commands.',
-    ]);
-
-    await hello(ctx);
 
   } catch (e) {
     ctx.replyError('to complete authorization', e);

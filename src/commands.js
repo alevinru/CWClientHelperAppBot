@@ -14,7 +14,7 @@ import * as users from './middleware/hello';
 
 import start from './middleware/start';
 import stock from './middleware/stock';
-import profile, { guildInfo } from './middleware/profile';
+import profile, { guildInfo, craftBook } from './middleware/profile';
 
 /*
 Trading
@@ -48,6 +48,7 @@ Users
 bot.command('start', start);
 bot.command('auth', auth.auth);
 bot.command('authGuild', auth.authGuildInfo);
+bot.command('authCraftBook', auth.authCraftBook);
 bot.hears(/^\/hello[ _](\d+)$/, users.hello);
 bot.command('hello', users.hello);
 bot.command('users', users.listUsers);
@@ -58,8 +59,13 @@ ChatWars
 
 bot.command('stock', stock);
 bot.hears(/^\/profile[ _]?(\d*)$/, profile);
+
 const guildInfoRe = new RegExp(`^/(guildInfo|gi)[ _]?(.*)[^@]?($|${BOT_USER_NAME})`, 'i');
 bot.hears(guildInfoRe, guildInfo);
+
+const craftBookRe = new RegExp(`^/(craftBook|cb)[ _]?(.*)[^@]?($|${BOT_USER_NAME})`, 'i');
+bot.hears(craftBookRe, craftBook);
+
 bot.hears(/^\/wtb[ _]([a-z0-9]+)[ _](\d+)[ _](\d+)[ ]?(\d*)$/, wtb);
 bot.on('message', Telegraf.optional(fromCWFilter, auth.authCode));
 

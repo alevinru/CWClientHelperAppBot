@@ -60,7 +60,48 @@ export async function guildInfo(ctx) {
     debug(`GET /guildInfo/${userId}`, info.tag);
 
   } catch (e) {
-    ctx.replyError('/guildInfo', e);
+    ctx.replyError('guildInfo', e);
+  }
+
+}
+
+
+export async function craftBook(ctx) {
+
+  const { session, from: { id: userId }, message } = ctx;
+  const { match } = ctx;
+  const [, , filterItems] = match;
+
+  debug(userId, message.text, filterItems);
+
+  try {
+
+    const info = await a.craftBook(userId, session);
+
+
+    const { alchemy, craft } = info;
+    const options = [...alchemy, ...craft];
+    const re = new RegExp(replace(filterItems || '.*', ' ', '.+'), 'i');
+
+    const items = filter(map(options, ({ id, name, price }) => {
+      if (!re.test(name)) {
+        return '';
+      }
+      return `▪︎ <code>${id}</code> ${name}: ${price}💰`;
+    }));
+
+    if (!items.length) {
+      await ctx.replyWithHTML(`No items in craft book match <b>${filterItems}</b>`);
+      return;
+    }
+
+    const reply = orderBy(items).join('\n');
+    await ctx.replyWithHTML(reply);
+
+    debug(`GET /craftBook/${userId}`, info.tag);
+
+  } catch (e) {
+    ctx.replyError('viewCraftBook', e);
   }
 
 }

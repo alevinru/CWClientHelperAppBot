@@ -3,9 +3,10 @@ import map from 'lodash/map';
 import replace from 'lodash/replace';
 import orderBy from 'lodash/orderBy';
 import * as a from '../services/auth';
+import { itemCodeByName } from '../services/cw';
 import log from '../services/log';
 
-const { debug } = log('mw:profile');
+const { debug, error } = log('mw:profile');
 
 export default async function (ctx) {
 
@@ -48,23 +49,35 @@ export async function guildInfo(ctx) {
     } else {
       const { stock } = info;
       const re = new RegExp(replace(filterItems, ' ', '.+'), 'i');
-      const items = filter(map(stock, (qty, name) => re.test(name) && `▪︎ ${name}: ${qty}`));
+      const items = filter(map(stock, (qty, name) => re.test(name) && formatStockItem(name, qty)));
       if (!items.length) {
         await ctx.replyWithHTML(`No items on stock match <b>${filterItems}</b>`);
         return;
       }
-      const reply = orderBy(items).join('\n');
+      const reply = items.join('\n');
       await ctx.replyWithHTML(reply);
     }
 
     debug(`GET /guildInfo/${userId}`, info.tag);
 
   } catch (e) {
-    ctx.replyError('guildInfo', e);
+    error('guildInfo', e);
+    if (!e.message) {
+      if (e.requiredOperation) {
+        await ctx.replyWithHTML('You have to do /authGuild first');
+        return;
+      }
+    }
+    await ctx.replyError('guildInfo', e.message || e);
+  }
+
+  function formatStockItem(name, qty) {
+    const code = itemCodeByName(name);
+    const codeLabel = code ? `<code>${code || '??'}</code>` : '';
+    return filter(['▪', codeLabel, `${name}: ${qty}`]).join(' ');
   }
 
 }
-
 
 export async function craftBook(ctx) {
 
@@ -101,7 +114,7 @@ export async function craftBook(ctx) {
     debug(`GET /craftBook/${userId}`, info.tag);
 
   } catch (e) {
-    ctx.replyError('viewCraftBook', e);
+    await ctx.replyError('viewCraftBook', e);
   }
 
 }

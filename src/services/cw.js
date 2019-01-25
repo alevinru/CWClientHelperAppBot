@@ -1,5 +1,6 @@
 import CWExchange, * as CW from 'cw-rest-api';
 import map from 'lodash/map';
+import each from 'lodash/each';
 import keyBy from 'lodash/keyBy';
 
 import { consumeOffers } from '../consumers/offersConsumer';
@@ -15,8 +16,15 @@ const fanouts = { [CW.QUEUE_OFFERS]: consumeOffers };
 
 export const cw = CW_BOT_ID && new CWExchange({ bindIO: true, fanouts, noAck: true });
 
-export const itemsByName = CW.allItemsByName();
+const itemsByName = CW.allItemsByName();
+
 export const itemsByCode = keyBy(map(itemsByName, (code, name) => ({ name, code })), 'code');
+
+const itemsByNameLower = {};
+
+each(itemsByName, (code, name) => {
+  itemsByNameLower[name.toLowerCase()] = code;
+});
 
 if (CW_BOT_ID) {
   debug('Started CW API', CW_BOT_ID);
@@ -51,4 +59,8 @@ export function itemKey(name) {
 export function itemNameByCode(code) {
   const item = itemsByCode[code];
   return item && item.name;
+}
+
+export function itemCodeByName(name) {
+  return itemsByNameLower[name.toLowerCase()];
 }

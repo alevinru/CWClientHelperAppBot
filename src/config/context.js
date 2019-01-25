@@ -13,7 +13,7 @@ export default function (bot) {
 function replyError(tried, got) {
 
   const { message, name } = got;
-  const res = message && name ? `${name.toLocaleLowerCase()}: <b>${message}</b>` : `<b>${got}</b>`;
+  const res = (message && name) ? `${name.toLocaleLowerCase()}: <b>${message}</b>` : `<b>${got}</b>`;
 
   return replyHTML.call(this, `⚠️ Tried ${tried} and got ${res}`);
 

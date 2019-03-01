@@ -4,6 +4,7 @@ import log from '../services/log';
 import consumeSEXDigest from './exConsumer';
 import consumeAUDigest from './auConsumer';
 import onConsumeDeals from './dealsConsumer';
+import onConsumeDuels from './duelsConsumer';
 
 const { debug } = log('consumers');
 
@@ -18,6 +19,7 @@ const cw = new CWExchange({
     [CW.QUEUE_AU]: consumeAUDigest,
     [CW.QUEUE_DEALS]: onConsumeDeals,
     [CW.QUEUE_SEX]: consumeSEXDigest,
+    duels: onConsumeDuels,
   },
   bindIO: false,
   noAck: true,

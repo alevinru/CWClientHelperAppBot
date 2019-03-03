@@ -5,6 +5,7 @@ import consumeSEXDigest from './exConsumer';
 import consumeAUDigest from './auConsumer';
 import onConsumeDeals from './dealsConsumer';
 import onConsumeDuels from './duelsConsumer';
+import yp from './ypConsumer';
 
 const { debug } = log('consumers');
 
@@ -19,7 +20,8 @@ const cw = new CWExchange({
     [CW.QUEUE_AU]: consumeAUDigest,
     [CW.QUEUE_DEALS]: onConsumeDeals,
     [CW.QUEUE_SEX]: consumeSEXDigest,
-    duels: onConsumeDuels,
+    [CW.QUEUE_DUELS]: onConsumeDuels,
+    [CW.QUEUE_YELLOW_PAGES]: yp,
   },
   bindIO: false,
   noAck: true,

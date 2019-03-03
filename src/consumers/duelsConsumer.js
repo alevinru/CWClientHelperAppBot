@@ -1,4 +1,4 @@
-// import * as CW from 'cw-rest-api';
+import { QUEUE_DUELS } from 'cw-rest-api';
 import { lpushAsync, ltrimAsync } from '../services/redis';
 import log from '../services/log';
 // import { itemKey } from '../services/cw';
@@ -7,7 +7,6 @@ const { debug, error } = log('duels');
 
 const isNumber = /^\d+$/;
 
-const QUEUE_DUELS = 'duels';
 const MAX_DEALS = parseInt(process.env.MAX_DEALS, 0) || 1000;
 
 export default async function (msg, ack) {

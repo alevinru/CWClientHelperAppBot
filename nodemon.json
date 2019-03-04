@@ -9,6 +9,7 @@
     "REDIS_DB": 0,
     "BOT_USER_NAME": "CWClientAppBot",
     "REST_PORT": "8800",
-    "REPORT_CHAT_ID": ""
+    "REPORT_CHAT_ID": "",
+    "MONGO_URL": "mng2.sistemium.net:27017/CW"
   }
 }

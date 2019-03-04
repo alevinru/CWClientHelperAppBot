@@ -7,7 +7,9 @@ import onConsumeDeals from './dealsConsumer';
 import onConsumeDuels from './duelsConsumer';
 import yp from './ypConsumer';
 
-const { debug } = log('consumers');
+import * as mongo from '../models';
+
+const { debug, error } = log('consumers');
 
 /**
  *
@@ -27,5 +29,13 @@ const cw = new CWExchange({
   noAck: true,
 });
 
-cw.connect({ timeout: process.env.CW_TIMEOUT })
-  .then(() => debug('Start polling'));
+mongo.connect()
+  .then(() => cw.connect({ timeout: process.env.CW_TIMEOUT }))
+  .then(() => debug('Start polling'))
+  .catch(error);
+
+process.on('SIGINT', async () => {
+  error('SIGINT');
+  await mongo.disconnect().catch(error);
+  process.exit();
+});

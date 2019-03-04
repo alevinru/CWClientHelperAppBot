@@ -1,6 +1,5 @@
-import { QUEUE_YELLOW_PAGES } from 'cw-rest-api';
-import { hsetAsync } from '../services/redis';
 import log from '../services/log';
+import Shop from '../models/Shop';
 
 const { debug, error } = log('yp');
 
@@ -17,11 +16,31 @@ export default async function (msg, ack) {
   debug('consumed', `#${deliveryTag}`, ts, `(${digest.length})`);
 
   try {
-    await hsetAsync(QUEUE_YELLOW_PAGES, 'data', JSON.stringify(data));
-    await hsetAsync(QUEUE_YELLOW_PAGES, 'ts', ts.toISOString());
+
+    const ops = digest.map(item => {
+
+      const query = { _id: item.link };
+
+      return {
+        updateOne: {
+          filter: query,
+          update: {
+            $set: item,
+            $currentDate: { ts: true },
+            // $setOnInsert: { cts },
+          },
+          upsert: true,
+        },
+      };
+
+    });
+
+    await Shop.bulkWrite(ops, { ordered: false });
+
     if (ack) {
       ack();
     }
+
   } catch ({ name, message }) {
     error(name, message);
   }

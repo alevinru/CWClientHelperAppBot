@@ -22,6 +22,7 @@
     "koa-body": "^4.0.4",
     "koa-router": "^7.4.0",
     "lodash": "^4.17.10",
+    "mongoose": "^5.4.16",
     "redis": "^2.8.0",
     "telegraf": "^3.22.2",
     "telegraf-session-redis": "^5.0.0"

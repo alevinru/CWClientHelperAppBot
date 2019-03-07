@@ -1,6 +1,5 @@
-import * as CW from 'cw-rest-api';
-import { hsetAsync } from '../services/redis';
 import log from '../services/log';
+import Auction from '../models/Auction';
 
 const { debug, error } = log('au');
 
@@ -17,8 +16,27 @@ export default async function (msg, ack) {
   debug('consumed', `#${deliveryTag}`, ts, `(${digest.length})`);
 
   try {
-    await hsetAsync(CW.QUEUE_AU, 'data', JSON.stringify(data));
-    await hsetAsync(CW.QUEUE_AU, 'ts', ts.toISOString());
+
+    const ops = digest.map(item => {
+
+      const query = { lotId: item.lotId };
+
+      return {
+        updateOne: {
+          filter: query,
+          update: {
+            $set: item,
+            $currentDate: { ts: true },
+            // $setOnInsert: { cts },
+          },
+          upsert: true,
+        },
+      };
+
+    });
+
+    await Auction.bulkWrite(ops, { ordered: false });
+
     if (ack) {
       ack();
     }

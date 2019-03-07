@@ -1,11 +1,9 @@
 import * as CW from 'cw-rest-api';
-import { lpushAsync, ltrimAsync } from '../services/redis';
-import { itemKey, itemNameByCode } from '../services/cw';
+import Deal from '../models/Deal';
+import { itemKey, itemCodeByName, itemNameByCode } from '../services/cw';
 import log from '../services/log';
 
 const { debug, error } = log('deals');
-
-const MAX_DEALS = parseInt(process.env.MAX_DEALS, 0) || 1000;
 
 const isNumber = /^\d+$/;
 
@@ -20,27 +18,30 @@ export default async function (msg, ack) {
     item, buyerName, qty, price, sellerName,
   } = deal;
 
-  deal.ts = ts.toISOString();
+  const itemCode = itemCodeByName(item);
 
-  const id = itemKey(item);
-  const listKey = `${CW.QUEUE_DEALS}_${id}`;
+  deal.ts = ts;
+  deal.itemCode = itemCode;
 
-  const dealText = `${id} for "${buyerName}" ${qty} x ${price}💰 from "${sellerName}"`;
+  const dealText = `${itemCode} for "${buyerName}" ${qty} x ${price}💰 from "${sellerName}"`;
 
-  debug('Consumed', `#${deliveryTag}`, ts, dealText);
+  debug('Consumed', `#${deliveryTag}`, dealText);
 
   try {
-    await lpushAsync(listKey, JSON.stringify(deal));
-    await ltrimAsync(listKey, 0, MAX_DEALS - 1);
+
+    await Deal.create(deal);
+
     if (ack) {
       ack();
     }
+
   } catch ({ name, message }) {
     error(name, message);
   }
 
 }
 
+// TODO: rewrite rest api with mongo and remove this
 
 export function dealsKey(itemCode) {
 

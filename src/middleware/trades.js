@@ -1,13 +1,9 @@
-import filter from 'lodash/filter';
 import sumBy from 'lodash/sumBy';
-import map from 'lodash/map';
-import groupBy from 'lodash/groupBy';
 import round from 'lodash/round';
 import orderBy from 'lodash/orderBy';
 import addHours from 'date-fns/add_hours';
 import log from '../services/log';
-import { lrangeAsync } from '../services/redis';
-import { dealsKey } from '../consumers/dealsConsumer';
+import Deal from '../models/Deal';
 import { pricesByItemCode, itemNameByCode } from '../services/cw';
 
 const { debug } = log('mw:trades');
@@ -53,11 +49,25 @@ export async function itemStats(ctx) {
     return;
   }
 
-  const lastDay = addHours(new Date(), -hours).toISOString();
+  const dealsFilter = {
+    ts: { $gt: addHours(new Date(), -hours) },
+    itemCode,
+  };
 
-  const data = await lrangeAsync(dealsKey(itemCode), 0, -1);
-  const allDeals = data && data.map(JSON.parse);
-  const deals = filter(allDeals, ({ ts }) => ts > lastDay);
+  const pipeline = [
+    { $match: dealsFilter },
+    {
+      $group: {
+        _id: '$price',
+        qty: { $sum: '$qty' },
+        cnt: { $sum: 1 },
+      },
+    },
+    { $addFields: { price: '$_id' } },
+  ];
+
+  const data = await Deal.aggregate(pipeline);
+  const deals = orderBy(data, 'price');
 
   if (!deals.length) {
     await ctx.replyHTML(`No deals on <b>${itemName}</b> in last <b>${hours}</b> hours`);
@@ -67,22 +77,15 @@ export async function itemStats(ctx) {
   const totalSum = sumBy(deals, ({ price, qty }) => price * qty);
   const totalQty = sumBy(deals, 'qty');
 
-  const byPrice = groupBy(deals, 'price');
-
   const res = [
     `<b>${itemNameByCode(itemCode)}</b> market in last <b>${hours}</b> hours:\n`,
-    `Total deals: ${deals.length}`,
+    `Total deals: ${sumBy(deals, 'cnt')}`,
     `Turnover: ${totalSum}💰= ${totalQty} x ${round(totalSum / totalQty, 2)}💰`,
   ];
 
-  const priceBreakdown = orderBy(map(byPrice, (priceDeals, price) => ({
-    price: parseInt(price, 0),
-    qty: sumBy(priceDeals, 'qty'),
-  })), 'price');
-
-  if (priceBreakdown.length > 1) {
+  if (deals.length > 1) {
     res.push('');
-    priceBreakdown.forEach(({ price, qty }) => {
+    deals.forEach(({ price, qty }) => {
       res.push(`${price}💰x ${qty}`);
     });
   }

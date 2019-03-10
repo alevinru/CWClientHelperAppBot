@@ -17,15 +17,23 @@ export default async function (msg, ack) {
 
   try {
 
+    debug(digest[0]);
+
     const ops = digest.map(item => {
 
       const query = { lotId: item.lotId };
+
+      const $set = { ...item };
+
+      if ($set.finishedAt === '0001-01-01T00:00:00Z') {
+        $set.finishedAt = null;
+      }
 
       return {
         updateOne: {
           filter: query,
           update: {
-            $set: item,
+            $set,
             $currentDate: { ts: true },
             // $setOnInsert: { cts },
           },

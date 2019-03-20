@@ -7,6 +7,8 @@ import { hookOffers } from '../services/ordering';
 
 const { debug } = log('mw:traders');
 
+const ADMIN_ID = parseInt(process.env.ADMIN_ID, 0);
+
 export async function tradingStatus(ctx) {
 
   const command = '/trading';
@@ -84,22 +86,28 @@ export async function traders(ctx) {
 
 export async function grantTrading(ctx) {
 
-  const { match } = ctx;
+  const { match, from: { id: sessionUserId } } = ctx;
 
-  const [, userId] = match;
+  const [, userId, priority = 0] = match;
 
-  const command = `/grant_trading ${userId}`;
+  const command = `/grant_trading ${userId} ${priority}`;
 
   debug(command);
 
+  if (sessionUserId !== ADMIN_ID) {
+    debug('permission error', sessionUserId, ADMIN_ID);
+    ctx.replyError('/grant_trading', 'You have no permission to grant trading');
+    return;
+  }
+
   try {
 
-    const trader = await trading.grantTrading(userId);
+    const trader = await trading.grantTrading(userId, priority);
 
     ctx.replyHTML(`Trading granted to:\n${formatTrader(trader)}`);
 
   } catch (e) {
-    ctx.replyError(command, e);
+    await ctx.replyError(command, e);
   }
 
 }
@@ -111,11 +119,13 @@ function formatTrader(trader) {
     profile,
     funds,
     isPaused = false,
+    priority = 0,
   } = trader;
 
   return [
     isPaused ? '⏸' : '✅',
     `<code>${id}</code> <b>${profile.userName}</b> ${funds}💰`,
+    `priority: <code>${priority}</code>`,
   ].join(' ');
 
 }

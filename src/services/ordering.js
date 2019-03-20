@@ -3,12 +3,13 @@ import keyBy from 'lodash/keyBy';
 import map from 'lodash/map';
 import fpMap from 'lodash/fp/map';
 import fpFilter from 'lodash/fp/filter';
+import find from 'lodash/find';
 
 import log from './log';
 import * as redis from './redis';
 
 import { getProfile } from './profile';
-import { onGotOffer, refreshTraderCache } from './trading';
+import { onGotOffer, refreshTraderCache, getCachedTrader } from './trading';
 
 import { itemNameByCode } from './cw';
 import { addOfferHook, dropOfferHooks } from '../consumers/offersConsumer';
@@ -78,8 +79,24 @@ export async function addOrder(userId, itemCode, qty, price, token) {
 
   debug('addOrder', itemName, order);
 
+  const orders = await getOrdersByItemCode(itemCode);
+
+  const { priority: userPriority = 0 } = getCachedTrader(userId);
+
+  const pos = find(orders, ({ userId: traderId }) => {
+    const { priority = 0 } = getCachedTrader(traderId);
+    return priority > userPriority;
+  });
+
+  const queueKey = ordersQueueKey(itemCode);
+
+  if (!pos) {
+    await redis.rpushAsync(queueKey, id);
+  } else {
+    await redis.linsertAsync(queueKey, 'BEFORE', pos.id, id);
+  }
+
   await redis.hsetAsync(ID_TO_ITEM_CODE_HASH, id, itemCode);
-  await redis.rpushAsync(ordersQueueKey(itemCode), id);
   await redis.hmsetAsync(orderKey(id), order);
 
   return order;

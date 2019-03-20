@@ -36,7 +36,7 @@ export const hsetAsync = promisifyClient('hset');
 export const hincrbyAsync = promisifyClient('hincrby');
 export const hmsetAsync = promisifyClient('hmset');
 export const execAsync = promisifyClient('exec');
-
+export const linsertAsync = promisifyClient('linsert');
 
 const { debug, error } = log('redis');
 

@@ -26,7 +26,7 @@ const cw = new CWExchange({
     [CW.QUEUE_YELLOW_PAGES]: yp,
   },
   bindIO: false,
-  noAck: true,
+  noAck: false,
 });
 
 mongo.connect()

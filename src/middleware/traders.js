@@ -60,11 +60,19 @@ export async function traders(ctx) {
 
   const command = '/traders';
 
+  const { from: { id: sessionUserId } } = ctx;
+
   debug(command);
 
   try {
 
     const res = new Array('Traders');
+
+    if (sessionUserId !== ADMIN_ID) {
+      await ctx.reply('You have no permission to list traders');
+      return;
+    }
+
     const items = await trading.getTraders();
 
     if (!items.length) {

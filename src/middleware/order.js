@@ -1,4 +1,5 @@
 import fpMap from 'lodash/fp/map';
+import { getCachedTrader } from '../services/trading';
 import * as ordering from '../services/ordering';
 import { itemNameByCode } from '../services/cw';
 import { getProfile } from '../services/profile';
@@ -119,6 +120,7 @@ export async function rmById(ctx) {
 
   const {
     match,
+    from: { id: sessionUserId },
   } = ctx;
   const [, id] = match;
   const command = `/rmorder_${id}`;
@@ -127,12 +129,26 @@ export async function rmById(ctx) {
 
   try {
 
-    const order = await ordering.removeOrder(id);
+    const order = await ordering.getOrderById(id);
 
     if (!order) {
-      ctx.replyHTML(`No active orders found with id #<b>${id}</b>`);
+      await ctx.replyHTML(`No active orders found with id #<b>${id}</b>`);
       return;
     }
+
+    const { userId: authorId } = order;
+
+    if (sessionUserId !== authorId) {
+      const { priority: orderPriority = 0 } = getCachedTrader(authorId);
+      const { priority: ownPriority = 0 } = getCachedTrader(sessionUserId);
+
+      if (ownPriority < orderPriority) {
+        await ctx.reply('You have no permission to remove this order');
+        return;
+      }
+    }
+
+    await ordering.removeOrder(id);
 
     ctx.replyHTML(`Order #<b>${id}</b> removed`);
 

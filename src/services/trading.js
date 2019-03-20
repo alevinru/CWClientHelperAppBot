@@ -47,7 +47,7 @@ export async function grantTrading(userId, priority) {
 
   const trader = await refreshTraderCache(userId);
 
-  trader.priority = priority;
+  trader.priority = parseInt(priority, 0);
 
   return saveTrader(trader);
 

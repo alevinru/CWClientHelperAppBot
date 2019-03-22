@@ -139,8 +139,8 @@ export async function rmById(ctx) {
     const { userId: authorId } = order;
 
     if (sessionUserId !== authorId) {
-      const { priority: orderPriority = 0 } = getCachedTrader(authorId);
-      const { priority: ownPriority = 0 } = getCachedTrader(sessionUserId);
+      const { priority: orderPriority = 0 } = getCachedTrader(authorId) || {};
+      const { priority: ownPriority = 0 } = getCachedTrader(sessionUserId) || {};
 
       if (ownPriority < orderPriority) {
         await ctx.reply('You have no permission to remove this order');

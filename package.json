@@ -24,6 +24,7 @@
     "lodash": "^4.17.10",
     "mongoose": "^5.4.16",
     "redis": "^2.8.0",
+    "sistemium-telegram": "^1.2.10",
     "telegraf": "^3.22.2",
     "telegraf-session-redis": "^5.0.0"
   },

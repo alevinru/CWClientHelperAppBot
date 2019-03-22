@@ -1,6 +1,8 @@
 import map from 'lodash/map';
 import fpMap from 'lodash/fp/map';
 import * as CW from 'cw-rest-api';
+import { whilstAsync } from 'sistemium-telegram/services/async';
+
 import * as redis from './redis';
 import { refreshProfile } from './auth';
 import { cw } from './cw';
@@ -12,6 +14,9 @@ const { debug, error } = log('trading');
 const TRADERS_PREFIX = 'traders';
 
 const TRADERS_BY_ID = {};
+
+const DEAL_REPEAT_TIME = parseInt(process.env.DEAL_REPEAT_TIME, 0) || 500;
+const DEAL_MAX_REPEAT = parseInt(process.env.DEAL_MAX_REPEAT, 0) || 1;
 
 export function getCachedTrader(userId) {
   return TRADERS_BY_ID[userId];
@@ -94,6 +99,8 @@ function checkDeal(offer, order) {
 
 export async function onGotOffer(offer, order) {
 
+  let tries = 1;
+
   try {
 
     const deal = checkDeal(offer, order);
@@ -104,9 +111,18 @@ export async function onGotOffer(offer, order) {
 
     const { userId } = order;
 
-    await cw.wantToBuy(userId, deal, order.token);
+    await cw.wantToBuy(userId, deal, order.token)
+      .catch(e => {
 
-    replyOrderSuccess(offer, order, deal);
+        if (e !== CW.CW_RESPONSE_NO_OFFERS) {
+          return Promise.reject(e);
+        }
+
+        return retry(userId, deal);
+
+      });
+
+    replyOrderSuccess(offer, order, deal, tries);
 
     postUpdate(userId, 5);
 
@@ -121,7 +137,39 @@ export async function onGotOffer(offer, order) {
       postUpdate(order.userId, 0);
     }
 
-    replyOrderFail(e, offer, order);
+    replyOrderFail(e, offer, order, tries);
+
+  }
+
+  async function retry(userId, deal) {
+
+    let orderFulfilled = false;
+
+    let repeatTime = DEAL_REPEAT_TIME;
+
+    return whilstAsync(() => !orderFulfilled, async () => {
+
+      debug('onGotOffer attempt', tries, repeatTime);
+
+      await cw.wantToBuy(userId, deal, order.token)
+        .then(() => {
+          orderFulfilled = true;
+        })
+        .catch(e => {
+
+          if (e !== CW.CW_RESPONSE_NO_OFFERS || tries > DEAL_MAX_REPEAT) {
+            return Promise.reject(e);
+          }
+
+          tries += 1;
+
+          return new Promise(done => setTimeout(done, repeatTime));
+
+        });
+
+      repeatTime += DEAL_REPEAT_TIME;
+
+    });
 
   }
 
@@ -168,7 +216,7 @@ async function reportUpdatedFunds(userId) {
 }
 
 
-function replyOrderFail(e, offer, order) {
+function replyOrderFail(e, offer, order, tries) {
 
   const { name = 'Error', message = JSON.stringify(e) } = e;
   const { item: itemName, sellerName, qty } = offer;
@@ -177,8 +225,12 @@ function replyOrderFail(e, offer, order) {
     `⚠️ Missed ${qty} x ${offer.price}💰`,
     ` of <b>${itemName}</b> from <b>${sellerName}</b>\n`,
     `/order_${order.id} deal failed with`,
-    ` ${name.toLocaleLowerCase()}: <b>${message}</b>.`,
+    ` ${name.toLocaleLowerCase()}: <b>${message}</b>`,
   ];
+
+  if (tries > 1) {
+    errMsg.push(` on attempt №${tries}`);
+  }
 
   bot.telegram.sendMessage(order.userId, errMsg.join(''), { parse_mode: 'HTML' })
     .catch(errBot => error('replyOrderFail', errBot.message));
@@ -187,7 +239,7 @@ function replyOrderFail(e, offer, order) {
 
 }
 
-function replyOrderSuccess(offer, order, dealParams) {
+function replyOrderSuccess(offer, order, dealParams, tries) {
 
   debug('replyOrderSuccess:', dealParams);
 
@@ -198,6 +250,10 @@ function replyOrderSuccess(offer, order, dealParams) {
     ` of <b>${qty}</b> from <b>${sellerName}</b>`,
     ` by /order_${order.id}`,
   ];
+
+  if (tries > 1) {
+    reply.push(` on attempt №${tries}`);
+  }
 
   bot.telegram.sendMessage(order.userId, reply.join(''), { parse_mode: 'HTML' })
     .catch(({ name, message }) => error('onGotOffer', name, message));

@@ -100,14 +100,13 @@ function checkDeal(offer, order) {
 export async function onGotOffer(offer, order) {
 
   let tries = 1;
+  const deal = checkDeal(offer, order);
+
+  if (!deal) {
+    return;
+  }
 
   try {
-
-    const deal = checkDeal(offer, order);
-
-    if (!deal) {
-      return;
-    }
 
     const { userId } = order;
 
@@ -118,7 +117,7 @@ export async function onGotOffer(offer, order) {
           return Promise.reject(e);
         }
 
-        return retry(userId, deal);
+        return retry(userId);
 
       });
 
@@ -137,11 +136,11 @@ export async function onGotOffer(offer, order) {
       postUpdate(order.userId, 0);
     }
 
-    replyOrderFail(e, offer, order, tries);
+    replyOrderFail(e, offer, order, deal, tries);
 
   }
 
-  async function retry(userId, deal) {
+  async function retry(userId) {
 
     let orderFulfilled = false;
 
@@ -216,21 +215,20 @@ async function reportUpdatedFunds(userId) {
 }
 
 
-function replyOrderFail(e, offer, order, tries) {
+function replyOrderFail(e, offer, order, deal) {
 
   const { name = 'Error', message = JSON.stringify(e) } = e;
   const { item: itemName, sellerName, qty } = offer;
+
+  const wtb = `/wtb_${order.itemCode}_${deal.quantity}_${offer.price}`;
 
   const errMsg = [
     `⚠️ Missed ${qty} x ${offer.price}💰`,
     ` of <b>${itemName}</b> from <b>${sellerName}</b>\n`,
     `/order_${order.id} deal failed with`,
-    ` ${name.toLocaleLowerCase()}: <b>${message}</b>`,
+    ` ${name.toLocaleLowerCase()}: <b>${message}</b>\n`,
+    `Retry ${wtb}`,
   ];
-
-  if (tries > 1) {
-    errMsg.push(` on attempt №${tries}`);
-  }
 
   bot.telegram.sendMessage(order.userId, errMsg.join(''), { parse_mode: 'HTML' })
     .catch(errBot => error('replyOrderFail', errBot.message));

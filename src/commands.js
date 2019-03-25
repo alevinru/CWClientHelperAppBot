@@ -60,7 +60,7 @@ ChatWars
 bot.command('stock', stock);
 bot.hears(/^\/profile[ _]?(\d*)$/, profile);
 
-const guildInfoRe = new RegExp(`^/(guildInfo|gi)[ _](.+)[^@]?($|${BOT_USER_NAME})`, 'i');
+const guildInfoRe = new RegExp(`^/(guildInfo|gi)[ _]?(.*)[^@]?($|${BOT_USER_NAME})`, 'i');
 bot.hears(guildInfoRe, guildInfo);
 
 const craftBookRe = new RegExp(`^/(craftBook|cb)[ _]?(.*)[^@]?($|${BOT_USER_NAME})`, 'i');

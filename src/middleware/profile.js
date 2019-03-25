@@ -45,7 +45,20 @@ export async function guildInfo(ctx) {
     const info = await a.guildInfo(userId, session);
 
     if (!filterItems) {
-      await ctx.replyJson(info);
+
+      const { stockLimit, stockSize } = info;
+      const { tag, castle, name } = info;
+
+      const freeStock = stockLimit - stockSize;
+      const alert = freeStock < 0 ? '⚠' : '';
+
+      const shortInfo = [
+        `${castle} [${tag}] ${name}`,
+        `Stock available: ${alert}<b>${freeStock}</b> of <b>${stockLimit}</b>`,
+      ];
+
+      await ctx.replyWithHTML(shortInfo.join('\n'));
+
     } else {
       const { stock } = info;
       const re = new RegExp(replace(filterItems, ' ', '.+'), 'i');

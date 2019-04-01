@@ -2,6 +2,7 @@ import sumBy from 'lodash/sumBy';
 import round from 'lodash/round';
 import orderBy from 'lodash/orderBy';
 import addHours from 'date-fns/add_hours';
+import addMinutes from 'date-fns/add_minutes';
 import log from '../services/log';
 import Deal from '../models/Deal';
 import { pricesByItemCode, itemNameByCode } from '../services/cw';
@@ -37,7 +38,7 @@ export async function itemTrades(ctx) {
 export async function itemStats(ctx) {
 
   const { match } = ctx;
-  const [command, itemCode, hoursParam] = match;
+  const [command, itemCode, hoursParam, hm = 'h'] = match;
   const itemName = itemNameByCode(itemCode);
 
   debug(command, itemCode, hoursParam, itemName || 'unknown itemCode');
@@ -49,8 +50,10 @@ export async function itemStats(ctx) {
     return;
   }
 
+  const add = hm === 'h' ? addHours : addMinutes;
+
   const dealsFilter = {
-    ts: { $gt: addHours(new Date(), -hours) },
+    ts: { $gt: add(new Date(), -hours) },
     itemCode,
   };
 
@@ -68,9 +71,10 @@ export async function itemStats(ctx) {
 
   const data = await Deal.aggregate(pipeline);
   const deals = orderBy(data, 'price');
+  const hms = `${hm === 'h' ? 'hour' : 'minute'}${hours > 1 ? 's' : ''}`;
 
   if (!deals.length) {
-    await ctx.replyHTML(`No deals on <b>${itemName}</b> in last <b>${hours}</b> hours`);
+    await ctx.replyHTML(`No deals on <b>${itemName}</b> in last <b>${hours}</b> ${hms}`);
     return;
   }
 
@@ -78,7 +82,7 @@ export async function itemStats(ctx) {
   const totalQty = sumBy(deals, 'qty');
 
   const res = [
-    `<b>${itemNameByCode(itemCode)}</b> market in last <b>${hours}</b> hours:\n`,
+    `<b>${itemNameByCode(itemCode)}</b> market in last <b>${hours}</b> ${hms}:\n`,
     `Total deals: ${sumBy(deals, 'cnt')}`,
     `Turnover: ${totalSum}💰= ${totalQty} x ${round(totalSum / totalQty, 2)}💰`,
   ];

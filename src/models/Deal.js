@@ -6,6 +6,7 @@ const schema = new Schema({
   sellerName: String,
   buyerCastle: String,
   buyerName: String,
+  buyerId: String,
   item: String,
   itemCode: String,
   qty: Number,

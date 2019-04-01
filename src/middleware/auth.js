@@ -78,6 +78,33 @@ export async function authCraftBook(ctx) {
 
 }
 
+export async function authGearInfo(ctx) {
+
+  const { from: { id: userId }, session } = ctx;
+
+  debug('authCraftBook:', userId);
+
+  try {
+
+    const token = a.getAuthToken(session);
+
+    const { uuid } = await a.requestGearInfo(userId, token);
+
+    const msg = [
+      `Auth code has been sent to your telegram account number ${userId}.`,
+      'Please forward that message back here to complete <b>Gear Info</b> authorization',
+    ];
+
+    session.authGearInfoId = uuid;
+
+    await ctx.replyHTML(msg.join(' '));
+
+  } catch (e) {
+    await ctx.replyError('to send auth code', e);
+  }
+
+}
+
 export async function authCode(ctx, next) {
 
   const {
@@ -103,7 +130,26 @@ export async function authCode(ctx, next) {
 
   try {
 
-    if (text.match(/to read your guild info/)) {
+    if (text.match(/view currently equipped gear/)) {
+
+      const { authGearInfoId } = session;
+      const token = a.getAuthToken(session);
+
+      debug('guildInfo code:', code, token, authGearInfoId);
+
+      if (!authGearInfoId) {
+        await ctx.replyHTML(`GearInfo auth is not requested for userId ${userId}`);
+      } else {
+        await a.grantGearInfoAuth(userId, authGearInfoId, code, token);
+        delete session.authGearInfoId;
+        session.isGearInfoAuthorized = true;
+        await ctx.replyHTML([
+          '✅ Congratulations, gear info authorization complete!\n',
+          'Try /gear command.',
+        ]);
+      }
+
+    } else if (text.match(/to read your guild info/)) {
 
       const { authGuildInfoId } = session;
       const token = a.getAuthToken(session);

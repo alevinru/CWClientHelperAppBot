@@ -41,11 +41,19 @@ export function requestCraftBookAuth(userId, token) {
   return cw.authAdditionalOperation(safeUserId(userId), 'ViewCraftbook', token);
 }
 
+export function requestGearInfo(userId, token) {
+  return cw.authAdditionalOperation(safeUserId(userId), 'GetGearInfo', token);
+}
+
 export function grantGuildInfoAuth(userId, requestId, code, token) {
   return cw.grantAdditionalOperation(safeUserId(userId), requestId, code, token);
 }
 
 export function grantCraftBookAuth(userId, requestId, code, token) {
+  return cw.grantAdditionalOperation(safeUserId(userId), requestId, code, token);
+}
+
+export function grantGearInfoAuth(userId, requestId, code, token) {
   return cw.grantAdditionalOperation(safeUserId(userId), requestId, code, token);
 }
 
@@ -62,6 +70,14 @@ export async function craftBook(userId, session) {
   const token = session ? getAuthToken(session) : await getToken(userId);
 
   return cw.craftBook(userId, token);
+
+}
+
+export async function gearInfo(userId, session) {
+
+  const token = session ? getAuthToken(session) : await getToken(userId);
+
+  return cw.gearInfo(userId, token);
 
 }
 

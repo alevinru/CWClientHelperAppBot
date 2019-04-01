@@ -1,5 +1,7 @@
 import filter from 'lodash/filter';
 import map from 'lodash/map';
+import find from 'lodash/find';
+import findIndex from 'lodash/findIndex';
 import replace from 'lodash/replace';
 import orderBy from 'lodash/orderBy';
 import * as a from '../services/auth';
@@ -130,4 +132,85 @@ export async function craftBook(ctx) {
     await ctx.replyError('viewCraftBook', e);
   }
 
+}
+
+
+export async function gearInfo(ctx) {
+
+  const { session, from: { id: fromUserId }, message } = ctx;
+  const { match } = ctx;
+  const [, matchUserId] = match;
+
+  debug(fromUserId, message.text, match);
+
+  try {
+
+    const userId = matchUserId || fromUserId;
+
+    const info = await a.gearInfo(userId, !matchUserId && session);
+
+    const profile = await a.refreshProfile(userId, !matchUserId && session);
+
+
+    await ctx.replyWithHTML([
+      formatProfileTitle(profile),
+      formatGear(info),
+    ].join('\n\n'));
+
+    debug(`GET /gear/${userId}`, info);
+
+  } catch (e) {
+
+    if (!e.message) {
+      if (e.requiredOperation) {
+        await ctx.replyWithHTML('You have to do /authGear first');
+        return;
+      }
+    }
+
+    await ctx.replyError('/gear', e);
+  }
+
+}
+
+function formatProfileTitle(profile) {
+
+  const {
+    class: cls,
+    userName,
+    guild_tag: tag,
+    castle,
+  } = profile;
+
+  return `${castle}${cls} <b>${tag ? `[${tag}] ` : ''}${userName}</b> gear:`;
+
+}
+
+const gearIcons = [
+  { head: '⛑' },
+  { body: '🎽' },
+  { hands: '🧤' },
+  { feet: '👞' },
+  { coat: '🧥' },
+  { weapon: '⚔️' },
+  { offhand: '🗡️' },
+  { ring: '🎒' },
+  { amulet: '✨' },
+];
+
+function formatGear({ gear }) {
+
+  const gearArray = map(gear, (name, type) => ({ name, type, icon: gearIcon(type) }));
+  const sorted = orderBy(gearArray, ({ type }) => findIndex(gearIcons, type));
+  const gearList = map(sorted, ({ name, icon }) => `${icon}: ${name}`);
+
+  return [
+    ...gearList,
+  ].join('\n');
+
+}
+
+function gearIcon(gear) {
+  const item = find(gearIcons, gear);
+  return item ? item[gear] : '❓';
 }

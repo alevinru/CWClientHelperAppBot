@@ -17,6 +17,8 @@ export default async function (msg, ack) {
 
   try {
 
+    debug(digest[0]);
+
     const ops = digest.map(item => {
 
       const query = { _id: item.link };

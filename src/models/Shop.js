@@ -12,6 +12,8 @@ const schema = new Schema({
   specialization: Object,
   guildDiscount: Number,
   castleDiscount: Number,
+  maintenanceEnabled: Boolean,
+  maintenanceCost: Number,
   ts: Date,
 }, { collection: 'Shop' });
 

@@ -15,6 +15,7 @@ const schema = new Schema({
   startedAt: Date,
   price: Number,
   stats: Object,
+  condition: String,
   ts: Date,
 }, { collection: 'Auction' });
 

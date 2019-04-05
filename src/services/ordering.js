@@ -81,10 +81,10 @@ export async function addOrder(userId, itemCode, qty, price, token) {
 
   const orders = await getOrdersByItemCode(itemCode);
 
-  const { priority: userPriority = 0 } = getCachedTrader(userId);
+  const { priority: userPriority = 0 } = getCachedTrader(userId) || {};
 
   const pos = find(orders, ({ userId: traderId }) => {
-    const { priority = 0 } = getCachedTrader(traderId);
+    const { priority = 0 } = getCachedTrader(traderId) || {};
     return priority > userPriority;
   });
 

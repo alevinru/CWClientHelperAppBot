@@ -34,12 +34,16 @@ bot.hears(/^\/t[_]?([a-z0-9]{1,2}\d+)[ _]?(\d+)?([hm])?$/, trades.itemStats);
 Orders
  */
 
-bot.hears(/^\/orders_top$/, ord.ordersTop);
-bot.hears(/^\/order[ _]([a-z0-9]+)[ _](\d+)[ _](\d+)[ ]?(\d*)$/, ord.createOrder);
-bot.hears(/^\/orders[ _]([a-z0-9]+)$/, ord.orders);
+function hearsOrders(match, mw) {
+  bot.hears(match, ord.checkTraderAuth, mw);
+}
 
-bot.hears(/^\/order[ _]([a-z0-9]+)$/, ord.orderById);
-bot.hears(/^\/rmorder[ _]([a-z0-9]+)$/, ord.rmById);
+hearsOrders(/^\/orders_top$/, ord.ordersTop);
+hearsOrders(/^\/order[ _]([a-z0-9]+)[ _](\d+)[ _](\d+)[ ]?(\d*)$/, ord.createOrder);
+hearsOrders(/^\/orders[ _]([a-z0-9]+)$/, ord.orders);
+
+hearsOrders(/^\/order[ _]([a-z0-9]+)$/, ord.orderById);
+hearsOrders(/^\/rmorder[ _]([a-z0-9]+)$/, ord.rmById);
 
 /*
 Users

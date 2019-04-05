@@ -69,7 +69,7 @@ export async function traders(ctx) {
     const res = new Array('Traders');
 
     if (sessionUserId !== ADMIN_ID) {
-      await ctx.reply('You have no permission to list traders');
+      // await ctx.reply('You have no permission to list traders');
       return;
     }
 

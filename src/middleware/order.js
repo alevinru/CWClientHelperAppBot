@@ -8,6 +8,23 @@ import log from '../services/log';
 
 const { debug, error } = log('mw:order');
 
+export async function checkTraderAuth(ctx, next) {
+
+  const {
+    from: { id: userId },
+  } = ctx;
+
+  const trader = getCachedTrader(userId);
+
+  if (!trader) {
+    debug('unauthorized access', userId);
+    return;
+  }
+
+  await next();
+
+}
+
 export async function createOrder(ctx) {
 
   const {
@@ -24,7 +41,6 @@ export async function createOrder(ctx) {
     ctx.reply('You are not authorized yet, do /auth prior to trading.');
     return;
   }
-
 
   try {
 

@@ -18,4 +18,6 @@ const schema = new Schema({
   ts: Date,
 }, { collection: 'Shop' });
 
+schema.index({ lastOpened: -1 });
+
 export default model('Shop', schema);

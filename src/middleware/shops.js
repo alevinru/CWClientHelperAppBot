@@ -1,6 +1,7 @@
 import map from 'lodash/map';
 import upperFirst from 'lodash/upperFirst';
-import { distanceInWordsToNow } from 'date-fns';
+import orderBy from 'lodash/orderBy';
+import { distanceInWordsToNow, addMinutes } from 'date-fns';
 
 import log from '../services/log';
 
@@ -25,7 +26,9 @@ export async function shopInfo(ctx) {
       return;
     }
 
-    await ctx.replyWithHTML(shopInfoText(shop));
+    const lastDigest = await lastDigestOpened();
+
+    await ctx.replyWithHTML(shopInfoText(shop, lastDigest));
 
   } catch (e) {
     ctx.replyError(command, e);
@@ -51,18 +54,23 @@ export async function maintenanceShops(ctx) {
 }
 
 
-function shopInfoText(shop) {
+function shopInfoText(shop, lastDigest) {
 
   const { lastOpened } = shop;
 
   const openAgo = lastOpened ? distanceInWordsToNow(lastOpened) : '';
+  const closedAgo = lastOpened ? distanceInWordsToNow(addMinutes(lastOpened, 5)) : 'sometime';
+
+  const isOpen = lastDigest <= lastOpened;
+
+  const status = isOpen ? `open about <b>${openAgo}</b>` : `closed <b>${closedAgo}</b>`;
 
   const reply = [
     `${shop.kind} «${shop.name}» of ${shop.ownerCastle} <b>${shop.ownerName}</b>`,
-    `💧 <b>${shop.mana}</b>${lastOpened ? ` opened <b>${openAgo}</b> ago` : ''}`,
+    `💧 <b>${shop.mana}</b> was ${status} ago`,
   ];
 
-  const { specialization, maintenanceEnabled } = shop;
+  const { specialization, maintenanceEnabled, offers } = shop;
 
   if (specialization) {
     reply.push(specializationInfo(specialization).join(' '));
@@ -70,6 +78,10 @@ function shopInfoText(shop) {
 
   if (maintenanceEnabled) {
     reply.push(`🔧 Offers maintenance for <code>${shop.maintenanceCost}</code>💰`);
+  }
+
+  if (offers) {
+    reply.push('', ...offersInfo(offers));
   }
 
   return reply.join('\n');
@@ -91,4 +103,21 @@ function specializationInfo(specialization) {
 
   });
 
+}
+
+function offersInfo(offers) {
+
+  return map(orderBy(offers, 'item'), offer => {
+
+    const { item, mana, price } = offer;
+
+    return `‍‍‍‍‍‍‍▪︎ ${item} for: <code>${price}</code>💰 ${mana}💧`;
+
+  });
+
+}
+
+async function lastDigestOpened() {
+  const last = await Shop.findOne().sort({ lastOpened: -1 });
+  return last ? last.lastOpened : null;
 }

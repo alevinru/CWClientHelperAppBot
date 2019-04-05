@@ -19,6 +19,8 @@ export default async function (msg, ack) {
 
     debug(digest[0]);
 
+    const lastOpened = new Date();
+
     const ops = digest.map(item => {
 
       const query = { _id: item.link };
@@ -27,7 +29,7 @@ export default async function (msg, ack) {
         updateOne: {
           filter: query,
           update: {
-            $set: item,
+            $set: { ...item, lastOpened },
             $currentDate: { ts: true },
             // $setOnInsert: { cts },
           },

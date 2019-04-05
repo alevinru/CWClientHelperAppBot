@@ -14,6 +14,7 @@ const schema = new Schema({
   castleDiscount: Number,
   maintenanceEnabled: Boolean,
   maintenanceCost: Number,
+  lastOpened: Date,
   ts: Date,
 }, { collection: 'Shop' });
 

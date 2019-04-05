@@ -16,6 +16,8 @@ import start from './middleware/start';
 import stock from './middleware/stock';
 import profile, { guildInfo, craftBook, gearInfo } from './middleware/profile';
 
+import * as shops from './middleware/shops';
+
 /*
 Trading
  */
@@ -77,8 +79,17 @@ bot.hears(craftBookRe, craftBook);
 bot.hears(/^\/wtb[ _]([a-z0-9]+)[ _](\d+)[ _](\d+)[ ]?(\d*)$/, wtb);
 bot.on('message', Telegraf.optional(fromCWFilter, auth.authCode));
 
+bot.hears(hearsRe('ws[r]?_([a-z0-9]+)'), shops.shopInfo);
+
 /*
 Other
  */
 
 bot.on('message', require('./middleware/message').default);
+
+
+function hearsRe(command) {
+
+  return new RegExp(`^/${command}($|@${BOT_USER_NAME})`, 'i');
+
+}

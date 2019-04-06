@@ -5,7 +5,7 @@ const { BOT_TOKEN } = process.env;
 const options = { username: process.env.BOT_USER_NAME };
 
 export const BOT_ID = BOT_TOKEN.match(/^[^:]*/)[0];
-export const { BOT_USER_NAME } = options;
+export const { username: BOT_USER_NAME } = options;
 
 const { debug } = log('bot');
 

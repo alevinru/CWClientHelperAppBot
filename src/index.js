@@ -1,7 +1,7 @@
 import { cw } from './services';
 import log from './services/log';
 import session from './services/session';
-import bot, { BOT_ID } from './services/bot';
+import bot, { BOT_ID, BOT_USER_NAME } from './services/bot';
 import * as mongo from './models';
 
 const { debug, error } = log('index');
@@ -20,7 +20,7 @@ require('./commands');
 cw.connect({ timeout: process.env.CW_TIMEOUT })
   .then(() => mongo.connect())
   .then(() => bot.startPolling())
-  .then(() => debug('Start polling'));
+  .then(() => debug('Start polling', BOT_USER_NAME));
 
 /*
 Exception handlers

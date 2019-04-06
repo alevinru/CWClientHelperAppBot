@@ -39,20 +39,48 @@ export async function shopInfo(ctx) {
 
 export async function maintenanceShops(ctx) {
 
-  // const { message } = ctx;
-  const { match } = ctx;
-  const [, link] = match;
+  // // const { message } = ctx;
+  // const { match } = ctx;
+  // const [, link] = match;
 
-  debug('maintenanceShops:', link);
+  debug('maintenanceShops:');
 
-  // try {
-  //
-  // } catch (e) {
-  //   ctx.replyError('/maintenanceShops', e);
-  // }
+  try {
+
+    const lastOpened = await lastDigestOpened();
+
+    const shops = await Shop.find({
+      lastOpened,
+      maintenanceEnabled: true,
+    })
+      .sort({
+        maintenanceCost: 1,
+        mana: -1,
+      })
+      .limit(12);
+
+    const reply = [
+      `Best maintenance <b>${distanceInWordsToNow(lastOpened)}</b> ago:\n`,
+      ...shops.map(shopAsMaintenanceListItem),
+    ];
+
+    await ctx.replyWithHTML(reply.join('\n'));
+
+  } catch (e) {
+    ctx.replyError('/maintenanceShops', e);
+  }
 
 }
 
+
+function shopAsMaintenanceListItem(shop) {
+
+  const { ownerCastle, ownerName, link } = shop;
+  const { mana, maintenanceCost } = shop;
+
+  return `${ownerCastle} ${maintenanceCost}💰 ${mana}💧 /wsr_${link} <b>${ownerName}</b>`;
+
+}
 
 function shopInfoText(shop, lastDigest) {
 
@@ -77,7 +105,7 @@ function shopInfoText(shop, lastDigest) {
   }
 
   if (maintenanceEnabled) {
-    reply.push(`🔧 Offers maintenance for <code>${shop.maintenanceCost}</code>💰`);
+    reply.push(`🔧 Maintenance for <code>${shop.maintenanceCost}</code>💰`);
   }
 
   if (offers) {
@@ -111,7 +139,7 @@ function offersInfo(offers) {
 
     const { item, mana, price } = offer;
 
-    return `‍‍‍‍‍‍‍▪︎ ${item} for: <code>${price}</code>💰 ${mana}💧`;
+    return `‍‍‍‍‍‍‍▪︎ ${item}: <code>${price}</code>💰 ${mana}💧`;
 
   });
 

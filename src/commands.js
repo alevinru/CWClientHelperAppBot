@@ -80,6 +80,7 @@ bot.hears(/^\/wtb[ _]([a-z0-9]+)[ _](\d+)[ _](\d+)[ ]?(\d*)$/, wtb);
 bot.on('message', Telegraf.optional(fromCWFilter, auth.authCode));
 
 bot.hears(hearsRe('ws[r]?_([a-z0-9]+)'), shops.shopInfo);
+bot.hears(hearsRe('mnt'), shops.maintenanceShops);
 
 /*
 Other
@@ -90,6 +91,6 @@ bot.on('message', require('./middleware/message').default);
 
 function hearsRe(command) {
 
-  return new RegExp(`^/${command}($|@${BOT_USER_NAME})`, 'i');
+  return new RegExp(`^/${command}($|@${BOT_USER_NAME}$)`, 'i');
 
 }

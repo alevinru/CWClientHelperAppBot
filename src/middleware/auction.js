@@ -30,13 +30,14 @@ export async function showItem(ctx) { // eslint-disable-line
 
 function itemView(item) {
 
-  const { lotId, status } = item;
+  const { lotId, status, itemName } = item;
   const { sellerName, sellerCastle } = item;
   const { buyerName, buyerCastle } = item;
   const { finishedAt, endAt } = item;
 
   const reply = [
-    `Lot /l_${lotId} by ${sellerCastle}${sellerName}`,
+    `<b>${itemName}</b>`,
+    `/l_${lotId} by ${sellerCastle}${sellerName}`,
     `Status: ${status}`,
     `Price: ${item.price}`,
   ];

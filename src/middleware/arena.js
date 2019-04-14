@@ -12,7 +12,7 @@ import Duel from '../models/Duel';
 
 const { debug, error } = log('mw:arena');
 
-const DUEL_RESET_HOUR = parseFloat(process.env.DUEL_RESET_HOUR) || 11.25;
+const DUEL_RESET_HOUR = parseFloat(process.env.DUEL_RESET_HOUR) || 3;
 
 export default async function (ctx) {
 

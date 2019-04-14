@@ -16,6 +16,12 @@ const schema = new Schema({
   collection: 'Deal',
 });
 
+schema.index({ itemCode: 1, ts: -1 });
+schema.index({ sellerName: 1, ts: -1 });
+schema.index({ buyerName: 1, ts: -1 });
+schema.index({ sellerId: 1, ts: -1 });
+schema.index({ buyerId: 1, ts: -1 });
+
 export default model('Deal', schema);
 
 /*

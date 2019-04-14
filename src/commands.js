@@ -18,6 +18,7 @@ import profile, { guildInfo, craftBook, gearInfo } from './middleware/profile';
 
 import * as shops from './middleware/shops';
 import * as au from './middleware/auction';
+import arena from './middleware/arena';
 
 /*
 Trading
@@ -85,6 +86,9 @@ bot.hears(hearsRe('mnt'), shops.maintenanceShops);
 
 bot.hears(hearsRe('l_([0-9]+)'), au.showItem);
 bot.hears(hearsRe('bet_([0-9]+)(_[\\d]+)?'), au.showItem);
+
+bot.hears(hearsRe('du[ ](.*)[ ](\\d+)'), arena);
+bot.hears(hearsRe('du[ ](.*)'), arena);
 
 /*
 Other

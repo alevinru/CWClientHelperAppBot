@@ -18,22 +18,28 @@ export default async function (ctx) {
 
   const { from: { id: fromUserId }, message } = ctx;
   const { match } = ctx;
-  const [, name, shiftParam = '0'] = match;
+  const [, name, shiftParam = '0', shiftHigh = shiftParam] = match;
 
-  debug(fromUserId, message.text, name, shiftParam);
+  debug(fromUserId, message.text, `"${name}"`, shiftParam, shiftHigh);
 
 
   try {
 
     const shift = parseInt(shiftParam, 0) || 0;
+    const shiftTo = shiftHigh ? parseInt(shiftHigh, 0) : shift;
     const [, tag] = name.match(/\[(.+)\]/) || [];
+
+    if (shift < shiftTo) {
+      await ctx.replyWithHTML(`Invalid param <b>${shift}</b> less than <b>${shiftTo}</b>`);
+      return;
+    }
 
     if (tag) {
 
-      const { tf, res: data } = await guildDuels(tag, shift);
+      const { period, res: data } = await guildDuels(tag, shift, shiftTo);
 
       const reply = [
-        `<b>[${tag}]</b> duels on <b>${format(tf.ts.$gt, 'D/MM')}</b>\n`,
+        `<b>[${tag}]</b> duels ${period}\n`,
         ...map(data, formatGuildMemberDuels),
         `\n<b>${data.length}</b> active fighters won ${formatGuildTotalDuels(data)}`,
       ];
@@ -44,7 +50,7 @@ export default async function (ctx) {
 
       const cond = {
         $or: [{ 'winner.name': name }, { 'loser.name': name }],
-        ...duelTimeFilter(shift),
+        ...duelTimeFilter(shift, shiftTo),
       };
 
       const data = await Duel.find(cond).sort('-ts');
@@ -77,11 +83,25 @@ function formatGuildMemberDuels(duels) {
 }
 
 
-async function guildDuels(tag, shift) {
+function formatPeriod(duels) {
+
+  const { ts: maxTs } = duels[0];
+  const { ts: minTs } = last(duels);
+
+  const minDate = dateFormat(minTs);
+  const maxDate = dateFormat(maxTs);
+
+  return minDate !== maxDate
+    ? `from <b>${minDate}</b> to <b>${maxDate}</b>` : `on <b>${minDate}</b>`;
+
+}
+
+
+async function guildDuels(tag, shift, shiftTo) {
 
   const cond = { $or: [{ 'winner.tag': tag }, { 'loser.tag': tag }] };
 
-  const tf = duelTimeFilter(shift);
+  const tf = duelTimeFilter(shift, shiftTo);
 
   Object.assign(cond, tf);
 
@@ -117,15 +137,17 @@ async function guildDuels(tag, shift) {
     };
   });
 
-  return { tf, res: orderBy(res, ['level', 'name'], ['desc', 'asc']) };
+  const period = formatPeriod(duels);
+
+  return { period, res: orderBy(res, ['level', 'name'], ['desc', 'asc']) };
 
 }
 
 
-function duelTimeFilter(shift) {
+function duelTimeFilter(shift, shiftTo = shift) {
 
-  const today = addDays(new Date(), -shift);
-  let $lt = addDays(new Date(), -shift);
+  const today = addDays(new Date(), -shiftTo);
+  let $lt = addDays(new Date(), -shiftTo);
 
   const hours = Math.floor(DUEL_RESET_HOUR);
   const minutes = (DUEL_RESET_HOUR - hours) * 60;
@@ -136,9 +158,9 @@ function duelTimeFilter(shift) {
     $lt = addDays($lt, 1);
   }
 
-  const $gt = addDays($lt, -1);
+  const $gt = addDays($lt, shiftTo - shift - 1);
 
-  debug('duelTimeFilter', shift, $gt, $lt);
+  debug('duelTimeFilter', shift, shiftTo, $gt, $lt);
 
   return { ts: { $gt, $lt } };
 
@@ -151,8 +173,15 @@ function dateFormat(date) {
 
 function formatDuels(duels, primaryName) {
 
-  const wonOver = filter(map(duels, ({ winner, loser }) => winner.name === primaryName && loser));
-  const lostTo = filter(map(duels, ({ winner, loser }) => loser.name === primaryName && winner));
+  const wonOver = filter(map(duels, duel => {
+    const { winner, loser, isChallenge } = duel;
+    return winner.name === primaryName && { ...loser, isChallenge };
+  }));
+
+  const lostTo = filter(map(duels, duel => {
+    const { winner, loser, isChallenge } = duel;
+    return (loser.name === primaryName) && { ...winner, isChallenge };
+  }));
 
   if (!duels.length) {
     return `Duels of <b>${primaryName}</b> not found`;
@@ -183,9 +212,12 @@ function formatDuels(duels, primaryName) {
 
   }
 
-  function opponentFormat({ castle, tag, name }) {
+  function opponentFormat(duel) {
+    const { castle, tag, name } = duel;
+    const { isChallenge } = duel;
     return filter([
       '\t',
+      isChallenge ? '🤺‍' : '',
       castle,
       tag ? `[${tag}]` : '',
       name,

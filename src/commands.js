@@ -87,6 +87,7 @@ bot.hears(hearsRe('mnt'), shops.maintenanceShops);
 bot.hears(hearsRe('l_([0-9]+)'), au.showItem);
 bot.hears(hearsRe('bet_([0-9]+)(_[\\d]+)?'), au.showItem);
 
+bot.hears(hearsRe('du[ ](.*)[ ](\\d+)[ ](\\d+)'), arena);
 bot.hears(hearsRe('du[ ](.*)[ ](\\d+)'), arena);
 bot.hears(hearsRe('du[ ](.*)'), arena);
 

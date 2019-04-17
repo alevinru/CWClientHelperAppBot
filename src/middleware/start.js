@@ -11,7 +11,10 @@ export default async function (ctx) {
   if (session.auth) {
     await hello(ctx);
   } else {
-    reply('Welcome to CW Helper bot! Now you need /auth to request ChatWars authorization code');
+    reply([
+      'Welcome to CW Helper bot!',
+      'You may need /auth if you want to use some ChatWars specific features',
+    ].join('\n'));
   }
 
 }

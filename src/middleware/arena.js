@@ -107,6 +107,10 @@ async function guildDuels(tag, shift, shiftTo) {
 
   const duels = await Duel.find(cond);
 
+  if (!duels.length) {
+    throw new Error('not found duels');
+  }
+
   const named = map(duels, duel => {
 
     const { winner, loser } = duel;

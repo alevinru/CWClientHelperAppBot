@@ -11,13 +11,13 @@ export default async function (ctx, next) {
   const {
     message,
     message: { forward_from: forwardFrom, text },
-    from: { id: userId },
-    chat: { id: chatId },
+    from: { id: userId, username },
+    chat: { id: chatId, title },
     reply,
   } = ctx;
 
   if (chatId !== userId) {
-    debug('ignore group chat message:', text);
+    debug('ignore:', `"${title}"`, `@${username}`, text);
     return;
   }
 

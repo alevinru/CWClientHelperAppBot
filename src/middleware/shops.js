@@ -7,7 +7,7 @@ import log from '../services/log';
 
 import Shop from '../models/Shop';
 
-const { debug } = log('mw:shops');
+const { debug, error } = log('mw:shops');
 
 
 export async function shopInfo(ctx) {
@@ -40,38 +40,72 @@ export async function shopInfo(ctx) {
 export async function maintenanceShops(ctx) {
 
   // // const { message } = ctx;
-  // const { match } = ctx;
-  // const [, link] = match;
+  const { match } = ctx;
+  const [, castle] = match;
 
-  debug('maintenanceShops:');
+  debug('maintenanceShops:', castle || 'any');
 
   try {
 
     const lastOpened = await lastDigestOpened();
 
-    const shops = await Shop.find({
+    const ownerCastle = castleByLetter(castle);
+
+    const openShop = {
       lastOpened,
       maintenanceEnabled: true,
-    })
+    };
+
+    if (ownerCastle) {
+      Object.assign(openShop, { ownerCastle });
+    } else if (castle) {
+      await ctx.replyWithHTML(castleHelp(!castle.match(/help/i) && castle));
+      return;
+    }
+
+    const shops = await Shop.find(openShop)
       .sort({
         maintenanceCost: 1,
         mana: -1,
       })
       .limit(12);
 
+    const title = `Best ${ownerCastle || ''}${ownerCastle ? ' ' : ''}maintenance`;
+
     const reply = [
-      `Best maintenance <b>${distanceInWordsToNow(lastOpened)}</b> ago:\n`,
+      `${title} <b>${distanceInWordsToNow(lastOpened)}</b> ago:\n`,
       ...shops.map(shopAsMaintenanceListItem),
     ];
+
+    if (!shops.length) {
+      reply.push('No open shops found');
+    }
 
     await ctx.replyWithHTML(reply.join('\n'));
 
   } catch (e) {
+    error('maintenanceShops', e);
     ctx.replyError('/maintenanceShops', e);
   }
 
 }
 
+const CASTLES = JSON.parse(process.env.CASTLES);
+
+function castleHelp(castle) {
+  return [
+    castle ? `Unknown castle code <code>${castle}</code>` : 'Shows cheapest open maintenance shops:',
+    '',
+    map(CASTLES, (icon, code) => `${icon} /mnt_${code}`).join('\n'),
+    '\nor /mnt for any castle',
+  ].join('\n');
+}
+
+function castleByLetter(letter) {
+
+  return CASTLES[letter];
+
+}
 
 function shopAsMaintenanceListItem(shop) {
 

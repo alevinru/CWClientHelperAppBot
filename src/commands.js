@@ -72,8 +72,9 @@ bot.hears(/^\/profile[ _]?(\d*)$/, profile);
 const gearRe = new RegExp(`^/gear[ _]?(\\d*)?($|@${BOT_USER_NAME})`, 'i');
 bot.hears(gearRe, gearInfo);
 
-const guildInfoRe = new RegExp(`^/(guildInfo|gi)[ _]?(.*)[^@]?($|${BOT_USER_NAME})`, 'i');
-bot.hears(guildInfoRe, guildInfo);
+const guildInfoRe = '(guildInfo|gi)';
+bot.hears(hearsRe(`${guildInfoRe}[ _](.+)`), guildInfo);
+bot.hears(hearsRe(guildInfoRe), guildInfo);
 
 const craftBookRe = new RegExp(`^/(craftBook|cb)[ _]?(.*)[^@]?($|${BOT_USER_NAME})`, 'i');
 bot.hears(craftBookRe, craftBook);
@@ -83,6 +84,7 @@ bot.on('message', Telegraf.optional(fromCWFilter, auth.authCode));
 
 bot.hears(hearsRe('ws[r]?_([a-z0-9]+)'), shops.shopInfo);
 bot.hears(hearsRe('mnt'), shops.maintenanceShops);
+bot.hears(hearsRe('mnt[ _]([a-z]+)'), shops.maintenanceShops);
 
 bot.hears(hearsRe('l_([0-9]+)'), au.showItem);
 bot.hears(hearsRe('bet_([0-9]+)(_[\\d]+)?'), au.showItem);

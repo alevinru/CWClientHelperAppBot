@@ -92,6 +92,8 @@ bot.hears(hearsRe('bet_([0-9]+)(_[\\d]+)?'), au.showItem);
 bot.hears(hearsRe('du[ ](.*)[ ](\\d+)[ ](\\d+)'), arena);
 bot.hears(hearsRe('du[ ](.*)[ ](\\d+)'), arena);
 bot.hears(hearsRe('du[ ](.*)'), arena);
+bot.command('dug', arena);
+bot.command('du', arena);
 
 /*
 Other

@@ -9,6 +9,7 @@ import { format, addDays } from 'date-fns';
 
 import log from '../services/log';
 import Duel from '../models/Duel';
+import { refreshProfile } from '../services/auth';
 
 const { debug, error } = log('mw:arena');
 
@@ -16,14 +17,25 @@ const DUEL_RESET_HOUR = parseFloat(process.env.DUEL_RESET_HOUR) || 3;
 
 export default async function (ctx) {
 
-  const { from: { id: fromUserId }, message } = ctx;
+  const { from: { id: fromUserId }, message, session } = ctx;
   const { match } = ctx;
-  const [, name, shiftParam = '0', shiftHigh = shiftParam] = match;
+  const [, nameArg, shiftParam = '0', shiftHigh = shiftParam] = match || [message.text];
 
-  debug(fromUserId, message.text, `"${name}"`, shiftParam, shiftHigh);
-
+  debug(fromUserId, message.text, `"${nameArg}"`, shiftParam, shiftHigh);
 
   try {
+
+    let name = nameArg;
+
+    if (!name && session.auth) {
+      const profile = await refreshProfile(fromUserId);
+      name = message.text === '/dug' ? `[${profile.guild_tag}]` : profile.userName;
+    }
+
+    if (!name) {
+      await replyHelp(ctx);
+      return;
+    }
 
     const shift = parseInt(shiftParam, 0) || 0;
     const shiftTo = shiftHigh ? parseInt(shiftHigh, 0) : shift;
@@ -66,6 +78,11 @@ export default async function (ctx) {
     ctx.replyError('/du', e);
   }
 
+}
+
+
+function replyHelp(ctx) {
+  return ctx.replyWithHTML('Try /du username|[TAG] or do /auth to use /du without params');
 }
 
 function formatGuildTotalDuels(duels) {

@@ -25,6 +25,7 @@
     "mongoose": "^5.4.16",
     "redis": "^2.8.0",
     "sistemium-telegram": "^1.2.10",
+    "socks5-https-client": "^1.2.1",
     "telegraf": "^3.22.2",
     "telegraf-session-redis": "^5.0.0"
   },

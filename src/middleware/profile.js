@@ -5,8 +5,9 @@ import findIndex from 'lodash/findIndex';
 import replace from 'lodash/replace';
 import orderBy from 'lodash/orderBy';
 import * as a from '../services/auth';
-import { itemCodeByName } from '../services/cw';
+
 import log from '../services/log';
+import { formatStockItem } from './stock';
 
 const { debug, error } = log('mw:profile');
 
@@ -24,13 +25,37 @@ export default async function (ctx) {
 
     const profile = await a.refreshProfile(userId, !matchUserId && session);
 
-    ctx.replyJson(profile);
+    await ctx.replyWithHTML(formatProfile(profile));
 
     debug(`GET /profile/${userId}`, profile.userName);
 
   } catch (e) {
     ctx.replyError('/profile', e);
   }
+
+}
+
+
+function formatProfile(profile) {
+
+  const { userName, guild_tag: tag } = profile;
+  const { class: cls, castle } = profile;
+
+  const { mana, gold, pouches } = profile;
+  const { stamina, exp } = profile;
+  const { atk, def, lvl } = profile;
+
+  const nameTag = tag ? `[${tag}] ` : '';
+
+  const res = [
+    `${cls}${castle} <b>${nameTag || ''}${userName}</b>`,
+    `🏅: ${lvl} ⚔: ${atk} 🛡: ${def} 🔥: ${exp}`,
+    `💰: ${gold} 👝: ${pouches} 🔋: ${stamina}${mana ? `💧: ${mana}` : ''}`,
+    '',
+    '/gear /stock',
+  ];
+
+  return res.join('\n');
 
 }
 
@@ -86,13 +111,8 @@ export async function guildInfo(ctx) {
     await ctx.replyError('guildInfo', e.message || e);
   }
 
-  function formatStockItem(name, qty) {
-    const code = itemCodeByName(name);
-    const codeLabel = code ? `<code>${code || '??'}</code>` : '';
-    return filter(['▪', codeLabel, `${name}: ${qty}`]).join(' ');
-  }
-
 }
+
 
 export async function craftBook(ctx) {
 

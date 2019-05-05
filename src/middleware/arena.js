@@ -15,27 +15,15 @@ const { debug, error } = log('mw:arena');
 
 const DUEL_RESET_HOUR = parseFloat(process.env.DUEL_RESET_HOUR) || 3;
 
-export default async function (ctx) {
+export async function arena(ctx) {
 
-  const { from: { id: fromUserId }, message, session } = ctx;
-  const { match } = ctx;
-  const [, nameArg, shiftParam = '0', shiftHigh = shiftParam] = match || [message.text];
+  const { from: { id: fromUserId }, message } = ctx;
+  const { match, state: { match: stateMatch } } = ctx;
+  const [, name, shiftParam = '0', shiftHigh = shiftParam] = stateMatch || match;
 
-  debug(fromUserId, message.text, `"${nameArg}"`, shiftParam, shiftHigh);
+  debug(fromUserId, message.text, `"${name}"`, shiftParam, shiftHigh);
 
   try {
-
-    let name = nameArg;
-
-    if (!name && session.auth) {
-      const profile = await refreshProfile(fromUserId);
-      name = message.text === '/dug' ? `[${profile.guild_tag}]` : profile.userName;
-    }
-
-    if (!name) {
-      await replyHelp(ctx);
-      return;
-    }
 
     const shift = parseInt(shiftParam, 0) || 0;
     const shiftTo = shiftHigh ? parseInt(shiftHigh, 0) : shift;
@@ -80,6 +68,30 @@ export default async function (ctx) {
 
 }
 
+export async function ownArena(ctx) {
+
+  const { from: { id: fromUserId }, message, session } = ctx;
+  const [, shiftParam, shiftHigh] = ctx.match || [message.text];
+
+  const dug = /^\/dug( |@|$)/.test(message.text);
+
+  let name;
+
+  if (session.auth) {
+    const profile = await refreshProfile(fromUserId);
+    name = dug ? `[${profile.guild_tag}]` : profile.userName;
+  }
+
+  if (!name) {
+    await replyHelp(ctx);
+    return;
+  }
+
+  ctx.state.match = [message.text, name, shiftParam, shiftHigh];
+
+  await arena(ctx);
+
+}
 
 function replyHelp(ctx) {
   return ctx.replyWithHTML('Try /du username|[TAG] or do /auth to use /du without params');

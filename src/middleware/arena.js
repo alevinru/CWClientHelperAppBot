@@ -13,7 +13,7 @@ import { refreshProfile } from '../services/auth';
 
 const { debug, error } = log('mw:arena');
 
-const DUEL_RESET_HOUR = parseFloat(process.env.DUEL_RESET_HOUR) || 3;
+const DUEL_RESET_HOUR = parseFloat(process.env.DUEL_RESET_HOUR) || 10.25;
 
 export async function arena(ctx) {
 
@@ -74,6 +74,8 @@ export async function ownArena(ctx) {
   const [, shiftParam, shiftHigh] = ctx.match || [message.text];
 
   const dug = /^\/dug( |@|$)/.test(message.text);
+
+  debug('ownArena', message.text);
 
   let name;
 

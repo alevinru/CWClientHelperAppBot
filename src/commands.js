@@ -91,13 +91,13 @@ bot.hears(hearsRe('bet_([0-9]+)(_[\\d]+)?'), au.showItem);
 
 bot.hears(hearsRe('du[g]?[ ](\\d+)[ ](\\d+)'), ownArena);
 bot.hears(hearsRe('du[g]?[ ](\\d+)'), ownArena);
-bot.command('dug', ownArena);
-bot.command('du', ownArena);
 
-bot.hears(hearsRe('du[ ](.*)[ ](\\d+)[ ](\\d+)'), arena);
-bot.hears(hearsRe('du[ ](.*)[ ](\\d+)'), arena);
-bot.hears(hearsRe('du[ ](.*)'), arena);
+bot.hears(hearsRe('du[ ](.+)[ ](\\d+)[ ](\\d+)'), arena);
+bot.hears(hearsRe('du[ ](.+)[ ](\\d+)'), arena);
+bot.hears(hearsRe('du[ ](.+)'), arena);
 
+bot.hears(hearsRe('dug'), ownArena);
+bot.hears(hearsRe('du'), ownArena);
 
 /*
 Other

@@ -1,5 +1,6 @@
 import filter from 'lodash/filter';
 import map from 'lodash/map';
+import get from 'lodash/get';
 import find from 'lodash/find';
 import findIndex from 'lodash/findIndex';
 import replace from 'lodash/replace';
@@ -8,6 +9,7 @@ import * as a from '../services/auth';
 
 import log from '../services/log';
 import { formatStockItem } from './stock';
+import { isTrusted } from '../services/users';
 
 const { debug, error } = log('mw:profile');
 
@@ -49,8 +51,8 @@ function formatProfile(profile) {
 
   const res = [
     `${cls}${castle} <b>${nameTag || ''}${userName}</b>`,
-    `🏅: ${lvl} ⚔: ${atk} 🛡: ${def} 🔥: ${exp}`,
-    `💰: ${gold} 👝: ${pouches} 🔋: ${stamina}${mana ? `💧: ${mana}` : ''}`,
+    `🏅${lvl} ⚔${atk} 🛡${def} 🔥${exp}`,
+    `💰${gold} 👝${pouches} 🔋${stamina}${mana ? `💧${mana}` : ''}`,
     '',
     '/gear /stock',
   ];
@@ -62,53 +64,66 @@ function formatProfile(profile) {
 export async function guildInfo(ctx) {
 
   const { session, from: { id: userId }, message } = ctx;
-  const { match } = ctx;
-  const [, , filterItems] = match;
+  const replyUserId = get(message, 'reply_to_message.from.id');
+  const [, , filterItems] = ctx.match;
 
-  debug(userId, message.text, filterItems);
+  debug(userId, message.text, filterItems, replyUserId);
 
   try {
 
-    const info = await a.guildInfo(userId, session);
+    debug('reply_to_message:', message, ctx.reply_to_message);
+    // debug('ctx keys:', Object.keys(ctx));
+
+    if (replyUserId && !await isTrusted(replyUserId, userId)) {
+      const replyUserName = get(message, 'reply_to_message.from.username');
+      await ctx.replyWithHTML(`You are not a trustee of <code>@${replyUserName}</code>`);
+      return;
+    }
+
+    const info = await a.guildInfo(replyUserId || userId, !replyUserId && session);
+    const { tag, castle, name } = info;
+    const reply = [
+      `${castle} [${tag}] ${name}`,
+    ];
 
     if (!filterItems) {
 
       const { stockLimit, stockSize } = info;
-      const { tag, castle, name } = info;
-
       const freeStock = stockLimit - stockSize;
       const alert = freeStock < 0 ? '⚠' : '';
 
-      const shortInfo = [
-        `${castle} [${tag}] ${name}`,
-        `Stock available: ${alert}<b>${freeStock}</b> of <b>${stockLimit}</b>`,
-      ];
-
-      await ctx.replyWithHTML(shortInfo.join('\n'));
+      reply.push(`Stock available: ${alert}<b>${freeStock}</b> of <b>${stockLimit}</b>`);
 
     } else {
+
       const { stock } = info;
       const re = new RegExp(replace(filterItems, ' ', '.+'), 'i');
-      const items = filter(map(stock, (qty, name) => re.test(name) && formatStockItem(name, qty)));
+      const matchesRe = (qty, itemName) => re.test(itemName) && formatStockItem(itemName, qty);
+      const items = filter(map(stock, matchesRe));
+
       if (!items.length) {
-        await ctx.replyWithHTML(`No items on stock match <b>${filterItems}</b>`);
-        return;
+        reply.push(`\nNo items on stock match <b>${filterItems}</b>`);
+      } else {
+        reply.push('', ...items);
       }
-      const reply = items.join('\n');
-      await ctx.replyWithHTML(reply);
+
     }
 
+    await ctx.replyWithHTML(reply.join('\n'));
     debug(`GET /guildInfo/${userId}`, info.tag);
 
   } catch (e) {
+
     error('guildInfo', e);
-    if (!e.message) {
-      if (e.requiredOperation) {
-        await ctx.replyWithHTML('You have to do /authGuild first');
-        return;
-      }
+    const who = replyUserId ? get(message, 'reply_to_message.from.username') : 'You';
+
+    if (!e.message && e.requiredOperation) {
+      await ctx.replyWithHTML(`<b>${who}</b> have to do /authGuild first`);
+      return;
     }
+
     await ctx.replyError('guildInfo', e.message || e);
+
   }
 
 }

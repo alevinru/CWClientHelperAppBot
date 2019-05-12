@@ -1,7 +1,11 @@
 import { refreshProfile } from '../services/auth';
-import { getAuthorizedUsers } from '../services/users';
+import { saveUser, getAuthorizedUsers } from '../services/users';
 import { BOT_ID } from '../services/bot';
 import { getSession } from '../services/session';
+
+import log from '../services/log';
+
+const { debug } = log('mw:hello');
 
 export async function hello(ctx) {
 
@@ -34,6 +38,10 @@ export async function hello(ctx) {
       session.profile = profile;
     }
 
+    const saved = await saveUser(ctx.from, profile);
+
+    debug('saved', saved);
+
     replyResults(profile, userId);
 
   } catch (e) {
@@ -65,7 +73,7 @@ export async function listUsers(ctx) {
       await ctx.replyHTML(users.map(formatUser).join('\n'));
     } else {
       await ctx.replyHTML([
-        'There\'s no users for your session.',
+        'There are no users for your session.',
         ' Try /hello to update your profile',
       ]);
     }

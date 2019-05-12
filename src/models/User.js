@@ -7,7 +7,7 @@ const schema = new Schema({
   username: String,
   profile: Object,
   gear: Object,
-  trusts: Array,
+  trusts: Object,
   ts: Date,
 }, {
   collection: 'User',

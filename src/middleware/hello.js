@@ -1,9 +1,12 @@
+import get from 'lodash/get';
+
 import { refreshProfile } from '../services/auth';
-import { saveUser, getAuthorizedUsers } from '../services/users';
+import { saveUser, getAuthorizedUsers, saveTrust } from '../services/users';
 import { BOT_ID } from '../services/bot';
 import { getSession } from '../services/session';
 
 import log from '../services/log';
+import User from '../models/User';
 
 const { debug } = log('mw:hello');
 
@@ -87,4 +90,53 @@ export async function listUsers(ctx) {
 
 function formatUser({ userId, profile, teamId }) {
   return `/profile_${userId} <b>${profile.userName}</b> from <b>${teamId}</b>`;
+}
+
+
+export async function trust(ctx) {
+
+  const {
+    from: { id: fromUserId },
+    message: { reply_to_message: reply },
+  } = ctx;
+
+  const replyUserId = reply && reply.from.id;
+
+  debug('trust', fromUserId, replyUserId);
+
+  if (!reply) {
+    await ctx.replyWithHTML('Reply to any user\'s message to set up trust');
+    return;
+  }
+
+  const replyName = `<code>@${reply.from.username}</code>`;
+
+  const user = await User.findOne({ id: fromUserId });
+
+  if (!user) {
+    await ctx.replyWithHTML('You are not a user of mine, try /hello to update your data');
+    return;
+  }
+
+  if (reply.from.is_bot) {
+    await ctx.replyWithHTML(`${replyName} is a bot, one can not trust to bots.`);
+    return;
+  }
+
+  debug('trust:trusts', user.trusts);
+
+  if (get(user.trusts, replyUserId)) {
+    await ctx.replyWithHTML(`You do trust <code>@${reply.from.username}</code> already`);
+    return;
+  }
+
+  await saveTrust(fromUserId, replyUserId);
+
+  const finalReply = [
+    `You now trust <code>@${reply.from.username}</code> to view your stock and profile.`,
+    'To break trust relationships reply any of it\'s messages with /untrust',
+  ];
+
+  await ctx.replyWithHTML(finalReply.join('\n'));
+
 }

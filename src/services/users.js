@@ -57,7 +57,21 @@ export async function saveUser(from, profile) {
 }
 
 export async function isTrusted(userId, toUserId) {
-  const result = await User.findOne({ id: userId, trusts: toUserId });
+  const result = await User.findOne({
+    id: userId,
+    [`trusts.${toUserId}`]: true,
+  });
   debug('isTrusted', result);
   return !!result;
+}
+
+export async function saveTrust(id, toUserId) {
+
+  const $set = {
+    [`trusts.${toUserId}`]: true,
+    $currentDate: { ts: true },
+  };
+
+  return User.update({ id }, { $set });
+
 }

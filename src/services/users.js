@@ -52,7 +52,7 @@ export async function saveUser(from, profile) {
     $set.profile = profile;
   }
 
-  return User.update({ id }, { $set }, { upsert: true });
+  return User.updateOne({ id }, { $set }, { upsert: true });
 
 }
 
@@ -65,13 +65,13 @@ export async function isTrusted(userId, toUserId) {
   return !!result;
 }
 
-export async function saveTrust(id, toUserId) {
+export async function saveTrust(id, toUserId, value = true) {
 
   const $set = {
-    [`trusts.${toUserId}`]: true,
+    [`trusts.${toUserId}`]: value,
     $currentDate: { ts: true },
   };
 
-  return User.update({ id }, { $set });
+  return User.updateOne({ id }, { $set });
 
 }

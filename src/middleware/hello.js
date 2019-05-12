@@ -97,7 +97,7 @@ export async function trust(ctx) {
 
   const {
     from: { id: fromUserId },
-    message: { reply_to_message: reply },
+    message: { reply_to_message: reply, text },
   } = ctx;
 
   const replyUserId = reply && reply.from.id;
@@ -105,7 +105,7 @@ export async function trust(ctx) {
   debug('trust', fromUserId, replyUserId);
 
   if (!reply) {
-    await ctx.replyWithHTML('Reply to any user\'s message to set up trust');
+    await ctx.replyWithHTML('Reply to any user\'s message to set or break up a trust');
     return;
   }
 
@@ -125,17 +125,36 @@ export async function trust(ctx) {
 
   debug('trust:trusts', user.trusts);
 
-  if (get(user.trusts, replyUserId)) {
-    await ctx.replyWithHTML(`You do trust <code>@${reply.from.username}</code> already`);
-    return;
+  let finalReply;
+
+  if (text === '/trust') {
+
+    if (get(user.trusts, replyUserId)) {
+      await ctx.replyWithHTML(`You do trust <code>@${reply.from.username}</code> already`);
+      return;
+    }
+
+    await saveTrust(fromUserId, replyUserId);
+
+    finalReply = [
+      `You now trust <code>@${reply.from.username}</code> to view your stock and profile.`,
+      'To break trust relationships reply any of it\'s messages with /untrust',
+    ];
+
+  } else {
+
+    if (!get(user.trusts, replyUserId)) {
+      await ctx.replyWithHTML(`You do not trust <code>@${reply.from.username}</code>`);
+      return;
+    }
+
+    await saveTrust(fromUserId, replyUserId, false);
+
+    finalReply = [
+      `You've broken up a trust with <code>@${reply.from.username}</code>`,
+    ];
+
   }
-
-  await saveTrust(fromUserId, replyUserId);
-
-  const finalReply = [
-    `You now trust <code>@${reply.from.username}</code> to view your stock and profile.`,
-    'To break trust relationships reply any of it\'s messages with /untrust',
-  ];
 
   await ctx.replyWithHTML(finalReply.join('\n'));
 

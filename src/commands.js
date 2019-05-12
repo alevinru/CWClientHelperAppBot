@@ -62,7 +62,7 @@ bot.hears(/^\/hello[ _](\d+)$/, users.hello);
 bot.command('hello', users.hello);
 bot.command('users', users.listUsers);
 
-bot.command('trust', users.trust);
+bot.hears(/^\/(trust|untrust)$/, users.trust);
 
 /*
 ChatWars

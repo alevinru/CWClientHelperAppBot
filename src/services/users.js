@@ -57,12 +57,18 @@ export async function saveUser(from, profile) {
 }
 
 export async function isTrusted(userId, toUserId) {
+
+  if (userId === toUserId) {
+    return true;
+  }
+
   const result = await User.findOne({
     id: userId,
     [`trusts.${toUserId}`]: true,
   });
   debug('isTrusted', result);
   return !!result;
+
 }
 
 export async function saveTrust(id, toUserId, value = true) {

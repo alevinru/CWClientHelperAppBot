@@ -1,4 +1,6 @@
 import map from 'lodash/map';
+import filter from 'lodash/filter';
+
 import fpMap from 'lodash/fp/map';
 import * as CW from 'cw-rest-api';
 import { whilstAsync } from 'sistemium-telegram/services/async';
@@ -42,9 +44,9 @@ export async function getTraders() {
 
   const traders = await redis.hgetallAsync(TRADERS_PREFIX).then(fpMap(JSON.parse));
 
-  // debug('getTraders', traders);
+  const reallyTraders = filter(traders, 'priority');
 
-  return Promise.all(map(traders, trader => refreshTraderCache(trader.id)));
+  return Promise.all(map(reallyTraders, trader => refreshTraderCache(trader.id)));
 
 }
 

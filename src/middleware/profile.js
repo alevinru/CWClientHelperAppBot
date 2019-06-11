@@ -271,13 +271,14 @@ const qualityLetter = {
 
 function gearItemHtml(gear) {
 
-  const { name, icon } = gear;
+  const { name, icon, stam } = gear;
   const { atk, def, quality } = gear;
 
   const stats = [
     quality && `(${qualityLetter[quality]})`,
     atk && `+${atk}⚔`,
     def && `+${def}🛡`,
+    stam && `+${stam}🔋`,
   ];
 
   return `${icon}: ${name} ${filter(stats).join(' ')}`;

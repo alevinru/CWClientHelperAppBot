@@ -27,7 +27,7 @@ export default async function (ctx) {
 
     const profile = await a.refreshProfile(userId, !matchUserId && session);
 
-    await ctx.replyWithHTML(formatProfile(profile));
+    await ctx.replyWithHTML(formatProfile(profile, matchUserId));
 
     debug(`GET /profile/${userId}`, profile.userName);
 
@@ -38,7 +38,7 @@ export default async function (ctx) {
 }
 
 
-function formatProfile(profile) {
+function formatProfile(profile, userId) {
 
   const { userName, guild_tag: tag } = profile;
   const { class: cls, castle } = profile;
@@ -49,12 +49,14 @@ function formatProfile(profile) {
 
   const nameTag = tag ? `[${tag}] ` : '';
 
+  const withUserId = userId ? `_${userId}` : '';
+
   const res = [
     `${cls}${castle} <b>${nameTag || ''}${userName}</b>`,
     `🏅${lvl} ⚔${atk} 🛡${def} 🔥${exp}`,
-    `💰${gold} 👝${pouches} 🔋${stamina}${mana ? `💧${mana}` : ''}`,
+    `💰${gold || 0} 👝${pouches || 0} 🔋${stamina}${mana ? `💧${mana}` : ''}`,
     '',
-    '/gear /stock',
+    `/gear${withUserId} /stock${withUserId}`,
   ];
 
   return res.join('\n');
@@ -64,10 +66,14 @@ function formatProfile(profile) {
 export async function guildInfo(ctx) {
 
   const { session, from: { id: userId }, message } = ctx;
-  const replyUserId = get(message, 'reply_to_message.from.id');
+  let replyUserId = get(message, 'reply_to_message.from.id');
   const [, , filterItems] = ctx.match;
 
   debug(userId, message.text, filterItems, replyUserId);
+
+  if (replyUserId === userId) {
+    replyUserId = null;
+  }
 
   try {
 
@@ -198,7 +204,8 @@ export async function gearInfo(ctx) {
 
     if (!e.message) {
       if (e.requiredOperation) {
-        await ctx.replyWithHTML('You have to do /authGear first');
+        const who = matchUserId ? 'The user has' : 'You have';
+        await ctx.replyWithHTML(`${who} to do /authGear first`);
         return;
       }
     }
@@ -233,11 +240,11 @@ const gearIcons = [
   { amulet: '✨' },
 ];
 
-function formatGear({ gear }) {
+function formatGear({ gearInfo: info }) {
 
-  const gearArray = map(gear, (name, type) => ({ name, type, icon: gearIcon(type) }));
+  const gearArray = map(info, gearItem);
   const sorted = orderBy(gearArray, ({ type }) => findIndex(gearIcons, type));
-  const gearList = map(sorted, ({ name, icon }) => `${icon}: ${name}`);
+  const gearList = map(sorted, gearItemHtml);
 
   return [
     ...gearList,
@@ -248,4 +255,31 @@ function formatGear({ gear }) {
 function gearIcon(gear) {
   const item = find(gearIcons, gear);
   return item ? item[gear] : '❓';
+}
+
+function gearItem(gear, type) {
+  return { type, icon: gearIcon(type), ...gear };
+}
+
+
+const qualityLetter = {
+  Fine: 'E',
+  High: 'D',
+  Great: 'C',
+  Excellent: 'B',
+};
+
+function gearItemHtml(gear) {
+
+  const { name, icon } = gear;
+  const { atk, def, quality } = gear;
+
+  const stats = [
+    quality && `(${qualityLetter[quality]})`,
+    atk && `+${atk}⚔`,
+    def && `+${def}🛡`,
+  ];
+
+  return `${icon}: ${name} ${filter(stats).join(' ')}`;
+
 }

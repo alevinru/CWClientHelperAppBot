@@ -68,11 +68,9 @@ bot.hears(/^\/(trust|untrust)$/, users.trust);
 ChatWars
  */
 
-bot.command('stock', stock);
-bot.hears(/^\/profile[ _]?(\d*)$/, profile);
-
-const gearRe = new RegExp(`^/gear[ _]?(\\d*)?($|@${BOT_USER_NAME})`, 'i');
-bot.hears(gearRe, gearInfo);
+bot.hears(hearsRe('stock[ _]?(\\d*)'), stock);
+bot.hears(hearsRe('profile[ _]?(\\d*)'), profile);
+bot.hears(hearsRe('gear[ _]?(\\d*)'), gearInfo);
 
 const guildInfoRe = '(guildInfo|gi)';
 bot.hears(hearsRe(`${guildInfoRe}[ _](.+)`), guildInfo);

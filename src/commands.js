@@ -73,7 +73,7 @@ botHears('profile[ _]?(\\d*)', profile);
 botHears('gear[ _]?(\\d*)', gearInfo);
 
 botHears('gi[ _](.+)', guildInfo);
-botHears('gi', guildInfo);
+bot.command('gi', guildInfo);
 
 botHears('(craftBook|cb)[ _]?(.*)', craftBook);
 

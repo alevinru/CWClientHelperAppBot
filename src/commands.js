@@ -68,36 +68,35 @@ bot.hears(/^\/(trust|untrust)$/, users.trust);
 ChatWars
  */
 
-bot.hears(hearsRe('stock[ _]?(\\d*)'), stock);
-bot.hears(hearsRe('profile[ _]?(\\d*)'), profile);
-bot.hears(hearsRe('gear[ _]?(\\d*)'), gearInfo);
+botHears('stock[ _]?(\\d*)', stock);
+botHears('profile[ _]?(\\d*)', profile);
+botHears('gear[ _]?(\\d*)', gearInfo);
 
-const guildInfoRe = '(guildInfo|gi)';
-bot.hears(hearsRe(`${guildInfoRe}[ _](.+)`), guildInfo);
-bot.hears(hearsRe(guildInfoRe), guildInfo);
+botHears('gi[ _](.+)', guildInfo);
+botHears('gi', guildInfo);
 
-const craftBookRe = new RegExp(`^/(craftBook|cb)[ _]?(.*)[^@]?($|${BOT_USER_NAME})`, 'i');
-bot.hears(craftBookRe, craftBook);
+botHears('(craftBook|cb)[ _]?(.*)', craftBook);
 
-bot.hears(/^\/wtb[ _]([a-z0-9]+)[ _](\d+)[ _](\d+)[ ]?(\d*)$/, wtb);
+botHears('wtb[ _]([a-z0-9]+)[ _](\\d+)[ _](\\d+)[ ]?(\\d*)', wtb);
+
+botHears('ws[r]?_([a-z0-9]+)', shops.shopInfo);
+botHears('mnt', shops.maintenanceShops);
+botHears('mnt[ _]([a-z]+)', shops.maintenanceShops);
+
+botHears('l_([0-9]+)', au.showItem);
+botHears('bet_([0-9]+)(_[\\d]+)?', au.showItem);
+
+botHears('du[g]?[ ](\\d+)[ ](\\d+)', ownArena);
+botHears('du[g]?[ ](\\d+)', ownArena);
+
+botHears('du[ ](.+)[ ](\\d+)[ ](\\d+)', arena);
+botHears('du[ ](.+)[ ](\\d+)', arena);
+botHears('du[ ](.+)', arena);
+
+botHears('dug', ownArena);
+botHears('du', ownArena);
+
 bot.on('message', Telegraf.optional(fromCWFilter, auth.authCode));
-
-bot.hears(hearsRe('ws[r]?_([a-z0-9]+)'), shops.shopInfo);
-bot.hears(hearsRe('mnt'), shops.maintenanceShops);
-bot.hears(hearsRe('mnt[ _]([a-z]+)'), shops.maintenanceShops);
-
-bot.hears(hearsRe('l_([0-9]+)'), au.showItem);
-bot.hears(hearsRe('bet_([0-9]+)(_[\\d]+)?'), au.showItem);
-
-bot.hears(hearsRe('du[g]?[ ](\\d+)[ ](\\d+)'), ownArena);
-bot.hears(hearsRe('du[g]?[ ](\\d+)'), ownArena);
-
-bot.hears(hearsRe('du[ ](.+)[ ](\\d+)[ ](\\d+)'), arena);
-bot.hears(hearsRe('du[ ](.+)[ ](\\d+)'), arena);
-bot.hears(hearsRe('du[ ](.+)'), arena);
-
-bot.hears(hearsRe('dug'), ownArena);
-bot.hears(hearsRe('du'), ownArena);
 
 /*
 Other
@@ -110,4 +109,8 @@ function hearsRe(command) {
 
   return new RegExp(`^/${command}($|@${BOT_USER_NAME}$)`, 'i');
 
+}
+
+function botHears(command, mw) {
+  bot.hears(hearsRe(command), mw);
 }

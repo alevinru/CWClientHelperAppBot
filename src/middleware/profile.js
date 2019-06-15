@@ -81,9 +81,10 @@ export async function guildInfo(ctx) {
     // debug('ctx keys:', Object.keys(ctx));
 
     if (replyUserId && !await isTrusted(replyUserId, userId)) {
-      const replyUserName = get(message, 'reply_to_message.from.username');
-      await ctx.replyWithHTML(`You are not a trustee of <code>@${replyUserName}</code>`);
-      return;
+      // const replyUserName = get(message, 'reply_to_message.from.username');
+      // await ctx.replyWithHTML(`You are not a trustee of <code>@${replyUserName}</code>`);
+      // return;
+      replyUserId = null;
     }
 
     const info = await a.guildInfo(replyUserId || userId, !replyUserId && session);

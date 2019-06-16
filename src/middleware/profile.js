@@ -104,9 +104,12 @@ export async function guildInfo(ctx) {
     } else {
 
       const { stock } = info;
-      const re = new RegExp(replace(filterItems, ' ', '.+'), 'i');
-      const matchesRe = (qty, itemName) => re.test(itemName) && formatStockItem(itemName, qty);
-      const items = filter(map(stock, matchesRe));
+      const itemsFilter = stockFilter(filterItems);
+      const matchingItems = (qty, itemName) => {
+        const itemMatches = itemsFilter(qty, itemName);
+        return itemMatches && formatStockItem(itemName, qty);
+      };
+      const items = filter(map(stock, matchingItems));
 
       if (!items.length) {
         reply.push(`\nNo items on stock match <b>${filterItems}</b>`);
@@ -133,8 +136,23 @@ export async function guildInfo(ctx) {
 
   }
 
+
 }
 
+function stockFilter(text) {
+
+  const [, size] = text.match(/>[ ]?(\d+)$/) || [];
+
+  if (size) {
+    const sizeNumber = parseInt(size, 0);
+    return qty => qty >= sizeNumber;
+  }
+
+  const re = new RegExp(replace(text, ' ', '.+'), 'i');
+
+  return (qty, itemName) => re.test(itemName);
+
+}
 
 export async function craftBook(ctx) {
 

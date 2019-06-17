@@ -94,7 +94,7 @@ export async function orders(ctx) {
     if (!items.length) {
       res.push(' not found.');
     } else {
-      res.push('\n');
+      res.push('\n\n');
       res.push(items.map(o => formatOrder(o)).join('\n'));
     }
 
@@ -117,18 +117,27 @@ export async function orderById(ctx) {
   debug(command);
 
   try {
+
     const order = await ordering.getOrderById(id);
+
     if (!order) {
       ctx.replyHTML(`No active orders found with id #<b>${id}</b>`);
       return;
     }
+
     const res = [
       formatOrder(order, true),
-      `To remove the order issue /rmorder_${id} command`,
+      `To remove issue /rmorder_${id} command`,
     ];
-    ctx.replyHTML(res.join('\n'));
+
+    if (!order.isActive) {
+      res.push(`To set active issue /saorder_${id}`);
+    }
+
+    await ctx.replyHTML(res.join('\n'));
+
   } catch (e) {
-    ctx.replyError(command, e);
+    await ctx.replyError(command, e);
   }
 
 }
@@ -155,6 +164,8 @@ export async function setOrderActive(ctx) {
     await ordering.setOrderTop(id, userId, itemCode);
 
     order = await ordering.getOrderById(id);
+
+    await ordering.hookOffers();
 
     await ctx.replyWithHTML(formatOrder(order, true));
 
@@ -243,7 +254,7 @@ export async function ordersTop(ctx) {
     if (!items.length) {
       res.push(' not found.');
     } else {
-      res.push(' so far:\n');
+      res.push(':\n\n');
       res.push(items.map(o => formatOrder(o, true)).join('\n'));
     }
 

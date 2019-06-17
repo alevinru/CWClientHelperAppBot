@@ -51,7 +51,7 @@ export async function getOrderById(id) {
     qty: parseInt(order.qty, 0),
     price: parseInt(order.price, 0),
     userId: parseInt(order.userId, 0),
-    isActive: topId === id,
+    isActive: parseInt(topId, 0) === parseInt(id, 0),
   });
 
 }

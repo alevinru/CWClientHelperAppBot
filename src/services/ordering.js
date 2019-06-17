@@ -34,12 +34,26 @@ function orderKey(id) {
 }
 
 export async function getOrderById(id) {
-  return redis.hgetallAsync(orderKey(id))
-    .then(order => order && Object.assign(order, {
-      qty: parseInt(order.qty, 0),
-      price: parseInt(order.price, 0),
-      userId: parseInt(order.userId, 0),
-    }));
+
+  const order = await redis.hgetallAsync(orderKey(id));
+
+  if (!order) {
+    return order;
+  }
+
+  const { itemCode } = order;
+
+  const [topId] = await redis.lrangeAsync(ordersQueueKey(itemCode), -1, -1) || [];
+
+  debug('getOrderById:', itemCode, id, topId);
+
+  return Object.assign(order, {
+    qty: parseInt(order.qty, 0),
+    price: parseInt(order.price, 0),
+    userId: parseInt(order.userId, 0),
+    isActive: topId === id,
+  });
+
 }
 
 export async function removeOrder(id) {
@@ -79,6 +93,20 @@ export async function addOrder(userId, itemCode, qty, price, token) {
 
   debug('addOrder', itemName, order);
 
+  await setOrderTop(id, userId, itemCode);
+
+  await redis.hsetAsync(ID_TO_ITEM_CODE_HASH, id, itemCode);
+  await redis.hmsetAsync(orderKey(id), order);
+
+  return order;
+
+}
+
+export async function setOrderTop(id, userId, itemCode) {
+
+  const queueKey = ordersQueueKey(itemCode);
+  await redis.lremAsync(queueKey, 0, id);
+
   const orders = await getOrdersByItemCode(itemCode);
 
   const { priority: userPriority = 0 } = getCachedTrader(userId) || {};
@@ -88,18 +116,11 @@ export async function addOrder(userId, itemCode, qty, price, token) {
     return priority > userPriority;
   });
 
-  const queueKey = ordersQueueKey(itemCode);
-
   if (!pos) {
     await redis.rpushAsync(queueKey, id);
   } else {
     await redis.linsertAsync(queueKey, 'BEFORE', pos.id, id);
   }
-
-  await redis.hsetAsync(ID_TO_ITEM_CODE_HASH, id, itemCode);
-  await redis.hmsetAsync(orderKey(id), order);
-
-  return order;
 
 }
 
@@ -109,7 +130,7 @@ export async function getOrdersByItemCode(itemCode) {
   const promises = ids.map(id => getOrderById(id));
   const orders = await Promise.all(promises);
 
-  debug('getOrdersByItemCode', itemCode, orders);
+  debug('getOrdersByItemCode', itemCode, orders.length);
 
   return filter(orders);
 

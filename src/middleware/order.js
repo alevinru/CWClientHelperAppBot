@@ -183,7 +183,8 @@ export function formatOrder(order, withItem = false, withUser = true) {
   } = order;
 
   const res = [
-    `/order_${id} `,
+    order.isActive ? '✅' : '⏸',
+    ` /order_${id} `,
     withItem ? `<b>${itemNameByCode(itemCode)}</b> ` : '',
     `${qty} x ${price}💰`,
   ];

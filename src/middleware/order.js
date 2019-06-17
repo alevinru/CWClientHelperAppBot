@@ -56,7 +56,8 @@ export async function createOrder(ctx) {
     }
 
     const res = [
-      `✅ I have added an /order_${order.id} for <b>${userName}</b>:\n`,
+      order.isActive ? '✅' : '⏸',
+      `I have added an /order_${order.id} for <b>${userName}</b>:\n`,
       `to buy <b>${quantity}</b> of <b>${itemNameByCode(itemCode)}</b>`,
       `by max price of <b>${price}</b>💰\n`,
       `so the total sum is <b>${price * quantity}</b>💰.`,
@@ -126,6 +127,37 @@ export async function orderById(ctx) {
       `To remove the order issue /rmorder_${id} command`,
     ];
     ctx.replyHTML(res.join('\n'));
+  } catch (e) {
+    ctx.replyError(command, e);
+  }
+
+}
+
+export async function setOrderActive(ctx) {
+
+  const { match } = ctx;
+  const [, id] = match;
+  const command = `/saorder_${id}`;
+
+  try {
+
+    let order = await ordering.getOrderById(id);
+
+    if (!id) {
+      await ctx.replyWithHTML(`Not found order with id ${id}`);
+      return;
+    }
+
+    const { userId, itemCode } = order;
+
+    debug('setOrderActive:', userId, itemCode);
+
+    await ordering.setOrderTop(id, userId, itemCode);
+
+    order = await ordering.getOrderById(id);
+
+    await ctx.replyWithHTML(formatOrder(order, true));
+
   } catch (e) {
     ctx.replyError(command, e);
   }

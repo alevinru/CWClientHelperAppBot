@@ -80,6 +80,8 @@ export async function addOrder(userId, itemCode, qty, price, token) {
     throw Error(res);
   }
 
+  const topId = await setOrderTop(id, userId, itemCode);
+
   const order = {
     id,
     itemCode,
@@ -91,14 +93,14 @@ export async function addOrder(userId, itemCode, qty, price, token) {
     token,
   };
 
-  debug('addOrder', itemName, order);
-
-  await setOrderTop(id, userId, itemCode);
+  debug('addOrder', itemName, order, topId);
 
   await redis.hsetAsync(ID_TO_ITEM_CODE_HASH, id, itemCode);
   await redis.hmsetAsync(orderKey(id), order);
 
-  return order;
+  return Object.assign(order, {
+    isActive: parseInt(topId, 0) === parseInt(id, 0),
+  });
 
 }
 
@@ -121,6 +123,10 @@ export async function setOrderTop(id, userId, itemCode) {
   } else {
     await redis.linsertAsync(queueKey, 'BEFORE', pos.id, id);
   }
+
+  const [topId] = await redis.lrangeAsync(queueKey, -1, -1) || [];
+
+  return topId;
 
 }
 

@@ -48,6 +48,7 @@ hearsOrders(/^\/orders[ _]([a-z0-9]+)$/, ord.orders);
 
 hearsOrders(/^\/order[ _]([a-z0-9]+)$/, ord.orderById);
 hearsOrders(/^\/rmorder[ _]([a-z0-9]+)$/, ord.rmById);
+hearsOrders(/^\/saorder[ _]([a-z0-9]+)$/, ord.setOrderActive);
 
 /*
 Users

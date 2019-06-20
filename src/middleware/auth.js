@@ -130,9 +130,12 @@ export async function authCode(ctx, next) {
 
   try {
 
-    if (text.match(/view currently equipped gear/)) {
+    const { authGuildInfoId } = session;
+    const { authGearInfoId } = session;
+    const { authCraftBookId } = session;
 
-      const { authGearInfoId } = session;
+    if (authGearInfoId && text.match(/view currently equipped gear/)) {
+
       const token = a.getAuthToken(session);
 
       debug('guildInfo code:', code, token, authGearInfoId);
@@ -149,9 +152,8 @@ export async function authCode(ctx, next) {
         ]);
       }
 
-    } else if (text.match(/to read your guild info/)) {
+    } else if (authGuildInfoId && text.match(/to read your guild info/)) {
 
-      const { authGuildInfoId } = session;
       const token = a.getAuthToken(session);
 
       debug('guildInfo code:', code, token, authGuildInfoId);
@@ -168,9 +170,8 @@ export async function authCode(ctx, next) {
         ]);
       }
 
-    } else if (text.match(/to view your craft or alchemists book/)) {
+    } else if (authCraftBookId && text.match(/to view your craft or alchemists book/)) {
 
-      const { authCraftBookId } = session;
       const token = a.getAuthToken(session);
 
       debug('craftBook code:', code, token, authCraftBookId);

@@ -2,6 +2,7 @@ import filter from 'lodash/filter';
 import map from 'lodash/map';
 import get from 'lodash/get';
 import find from 'lodash/find';
+import escapeRegExp from 'lodash/escapeRegExp';
 import findIndex from 'lodash/findIndex';
 import replace from 'lodash/replace';
 import orderBy from 'lodash/orderBy';
@@ -148,7 +149,17 @@ function stockFilter(text) {
     return qty => qty >= sizeNumber;
   }
 
-  const re = new RegExp(replace(text, ' ', '.+'), 'i');
+  const isRe = text.match(/\/(.+)\//);
+
+  let reText;
+
+  if (isRe) {
+    reText = new RegExp(isRe[1], 'i');
+  } else {
+    reText = replace(escapeRegExp(text), ' ', '.+');
+  }
+
+  const re = new RegExp(reText, 'i');
 
   return (qty, itemName) => re.test(itemName);
 

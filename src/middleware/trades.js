@@ -105,7 +105,7 @@ export async function itemStats(ctx) {
  */
 
 function minPriceForPrices(prices) {
-  return Math.floor(prices[0] * PRICE_LIMIT_PERCENT);
+  return Math.ceil(prices[0] * PRICE_LIMIT_PERCENT);
 }
 
 export async function dealLimit(itemCode) {
@@ -117,7 +117,7 @@ export async function checkPrice(itemCode, price) {
 
   const maxPrice = await dealLimit(itemCode);
 
-  if (maxPrice < price) {
+  if (maxPrice > 0 && maxPrice < price) {
     throw new Error(`Price is higher than limit of ${maxPrice}💰`);
   }
 

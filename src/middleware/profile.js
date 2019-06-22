@@ -14,6 +14,8 @@ import { isTrusted } from '../services/users';
 
 const { debug, error } = log('mw:profile');
 
+const MAX_REGEX_LENGTH = 50;
+
 export default async function (ctx) {
 
   const { session, from: { id: fromUserId }, message } = ctx;
@@ -103,6 +105,11 @@ export async function guildInfo(ctx) {
       reply.push(`Stock available: ${alert}<b>${freeStock}</b> of <b>${stockLimit}</b>`);
 
     } else {
+
+      if (filterItems.length > MAX_REGEX_LENGTH) {
+        await ctx.replyWithHTML(`${filterItems.length} symbols is too long for the /gi filter`);
+        return;
+      }
 
       const { stock } = info;
       const itemsFilter = stockFilter(filterItems);

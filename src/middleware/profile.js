@@ -24,22 +24,50 @@ export default async function (ctx) {
 
   debug(fromUserId, message.text, match);
 
+  const ownTag = await getOwnTag(ctx);
+
   try {
 
     const userId = matchUserId || fromUserId;
 
     const profile = await a.refreshProfile(userId, !matchUserId && session);
 
+    await checkViewAuth(ctx, ownTag, profile.guild_tag, userId, fromUserId);
+
     await ctx.replyWithHTML(formatProfile(profile, matchUserId));
 
     debug(`GET /profile/${userId}`, profile.userName);
 
   } catch (e) {
-    ctx.replyError('/profile', e);
+    await ctx.replyError('/profile', e);
   }
 
 }
 
+
+async function getOwnTag(ctx) {
+
+  const { profile: ownProfile } = ctx.session;
+
+  if (!ownProfile) {
+    await ctx.replyWithHTML('You need /auth to view profiles');
+    throw new Error('Not authorized');
+  }
+
+  const { guild_tag: ownTag } = ownProfile;
+
+  return ownTag;
+
+}
+
+
+async function checkViewAuth(ctx, ownTag, userTag, userId, fromUserId) {
+  if (ownTag !== userTag || (!ownTag && !userTag && userId !== fromUserId)) {
+    const notAuthorized = `You have no permission to view <code>${userId}</code>`;
+    await ctx.replyWithHTML(notAuthorized);
+    throw new Error('Not authorized');
+  }
+}
 
 function formatProfile(profile, userId) {
 
@@ -221,6 +249,8 @@ export async function gearInfo(ctx) {
 
   debug(fromUserId, message.text, match);
 
+  const ownTag = await getOwnTag(ctx);
+
   try {
 
     const userId = matchUserId || fromUserId;
@@ -229,6 +259,7 @@ export async function gearInfo(ctx) {
 
     const profile = await a.refreshProfile(userId, !matchUserId && session);
 
+    await checkViewAuth(ctx, ownTag, profile.guild_tag, userId, fromUserId);
 
     await ctx.replyWithHTML([
       formatProfileTitle(profile),

@@ -28,4 +28,4 @@ const { debug } = log('bot');
 
 export default new Telegraf(BOT_TOKEN, options);
 
-debug('Starting bot id:', BOT_ID);
+debug('Starting bot id:', BOT_ID, SOCKS_HOST);

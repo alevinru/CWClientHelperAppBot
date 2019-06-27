@@ -1,5 +1,6 @@
 import { cw } from './services';
 import log from './services/log';
+import { getTraders } from './services/trading';
 import session from './services/session';
 import bot, { BOT_ID, BOT_USER_NAME } from './services/bot';
 import * as mongo from './models';
@@ -20,6 +21,7 @@ require('./commands');
 cw.connect({ timeout: process.env.CW_TIMEOUT })
   .then(() => mongo.connect())
   .then(() => bot.startPolling())
+  .then(() => getTraders())
   .then(() => debug('Start polling', BOT_USER_NAME));
 
 /*

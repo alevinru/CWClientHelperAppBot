@@ -8,6 +8,7 @@ import { hookOffers } from '../services/ordering';
 const { debug } = log('mw:traders');
 
 const ADMIN_ID = parseInt(process.env.ADMIN_ID, 0);
+const ADMIN_PRIORITY = parseInt(process.env.ADMIN_PRIORITY, 0) || 10;
 
 export async function tradingStatus(ctx) {
 
@@ -68,8 +69,13 @@ export async function traders(ctx) {
 
     const res = new Array('Traders');
 
-    if (sessionUserId !== ADMIN_ID) {
-      // await ctx.reply('You have no permission to list traders');
+    const trader = trading.getCachedTrader(sessionUserId);
+
+    if (!(trader && trader.priority)) {
+      return;
+    }
+
+    if (sessionUserId !== ADMIN_ID && trader.priority < ADMIN_PRIORITY) {
       return;
     }
 

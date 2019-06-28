@@ -9,6 +9,10 @@ const schema = new Schema({
   gear: Object,
   trusts: Object,
   ts: Date,
+  settings: {
+    type: Object,
+    default: {},
+  },
 }, {
   collection: 'User',
 });

@@ -19,6 +19,7 @@ import profile, { guildInfo, craftBook, gearInfo } from './middleware/profile';
 import * as shops from './middleware/shops';
 import * as au from './middleware/auction';
 import { arena, ownArena } from './middleware/arena';
+import settings, * as ss from './middleware/settings';
 
 /*
 Trading
@@ -96,6 +97,9 @@ botHears('du[ ](.+)', arena);
 
 botHears('dug', ownArena);
 botHears('du', ownArena);
+
+botHears('settings', settings);
+botHears('set[_ ]([^ _]+)[_ ](.+)', ss.setValue);
 
 bot.on('message', Telegraf.optional(fromCWFilter, auth.authCode));
 

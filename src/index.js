@@ -36,7 +36,7 @@ function exceptionHandler(ctx, next) {
   // .then(() => debug('exceptionHandler', 'end'))
     .catch(({ name, message }) => {
       error('exceptionHandler', name, message);
-      return ctx.reply(`Error: ${message}`);
+      return ctx.replyWithHTML(`Error: ${message}`);
     });
 
 }

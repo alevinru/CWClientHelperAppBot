@@ -1,8 +1,9 @@
 import map from 'lodash/map';
-import mapValues from 'lodash/mapValues';
 
 import User from '../models/User';
 import log from '../services/log';
+import { allSettings, applyDefaults } from '../services/users';
+
 
 const { debug } = log('mw:settings');
 
@@ -36,13 +37,15 @@ export async function setValue(ctx) {
     return;
   }
 
-  const newValue = checkSetting(key, val);
+  const updatedSetting = { [key]: checkSetting(key, val) };
 
-  user.settings[key] = newValue;
+  const { settings } = user;
+
+  user.settings = { ...settings, ...updatedSetting };
 
   await user.save();
 
-  await ctx.replyWithHTML(formatSettings({ key: newValue }));
+  await ctx.replyWithHTML(formatSettings(updatedSetting));
 
 }
 
@@ -67,21 +70,8 @@ function checkSetting(key, val) {
 }
 
 
-function applyDefaults(settings) {
-  return mapValues(allSettings(), ({ defaults }, key) => settings[key] || defaults);
-}
-
 function formatSettings(settings) {
   return map(settings, (val, key) => {
     return `▪ <code>${key}</code>: <b>${val}</b>`;
   }).join('\n');
-}
-
-function allSettings() {
-  return {
-    notifyOrderFail: {
-      type: Boolean,
-      defaults: true,
-    },
-  };
 }

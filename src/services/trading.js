@@ -5,6 +5,7 @@ import fpMap from 'lodash/fp/map';
 import * as CW from 'cw-rest-api';
 import { whilstAsync } from 'sistemium-telegram/services/async';
 
+import { settingValue, NOTIFY_ORDER_FAIL } from './users';
 import * as redis from './redis';
 import { refreshProfile } from './auth';
 import { cw } from './cw';
@@ -138,7 +139,8 @@ export async function onGotOffer(offer, order) {
       postUpdate(order.userId, 0);
     }
 
-    replyOrderFail(e, offer, order, deal, tries);
+    replyOrderFail(e, offer, order, deal, tries)
+      .catch(error);
 
   }
 
@@ -217,7 +219,7 @@ async function reportUpdatedFunds(userId) {
 }
 
 
-function replyOrderFail(e, offer, order, deal) {
+async function replyOrderFail(e, offer, order, deal) {
 
   const { name = 'Error', message = JSON.stringify(e) } = e;
   const { item: itemName, sellerName, qty } = offer;
@@ -232,8 +234,14 @@ function replyOrderFail(e, offer, order, deal) {
     `Retry ${wtb}`,
   ];
 
-  bot.telegram.sendMessage(order.userId, errMsg.join(''), { parse_mode: 'HTML' })
-    .catch(errBot => error('replyOrderFail', errBot.message));
+  const { userId } = order;
+
+  const notify = await settingValue(userId, NOTIFY_ORDER_FAIL);
+
+  if (notify) {
+    bot.telegram.sendMessage(userId, errMsg.join(''), { parse_mode: 'HTML' })
+      .catch(errBot => error('replyOrderFail', errBot.message));
+  }
 
   error('consumeOffers', name, message);
 

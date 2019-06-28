@@ -1,5 +1,7 @@
 import fpMap from 'lodash/fp/map';
 import filter from 'lodash/filter';
+import mapValues from 'lodash/mapValues';
+
 import User from '../models/User';
 
 import { hgetallAsync, hgetAsync } from './redis';
@@ -80,4 +82,44 @@ export async function saveTrust(id, toUserId, value = true) {
 
   return User.updateOne({ id }, { $set });
 
+}
+
+
+export async function settingValue(userId, key) {
+
+  const user = await User.findOne({ id: userId });
+
+  if (!user) {
+    throw new Error(`Unknown user <code>${userId}</code>`);
+  }
+
+  const setting = allSettings()[key];
+
+  if (!setting) {
+    throw new Error(`Unknown setting <code>${key}</code>`);
+  }
+
+  return settingValueWithDefault(setting, user.settings[key]);
+
+}
+
+function settingValueWithDefault(setting, value) {
+  return value === undefined ? setting.defaults : value;
+}
+
+export function applyDefaults(settings) {
+  return mapValues(allSettings(), (setting, key) => {
+    return settingValueWithDefault(setting, settings[key]);
+  });
+}
+
+export const NOTIFY_ORDER_FAIL = 'notifyOrderFail';
+
+export function allSettings() {
+  return {
+    [NOTIFY_ORDER_FAIL]: {
+      type: Boolean,
+      defaults: true,
+    },
+  };
 }

@@ -51,5 +51,6 @@ module.exports = {
     'no-use-before-define': ['error', { functions: false, classes: true }],
     'padded-blocks': 'off',
     'arrow-parens': ['error', 'as-needed'],
+    'arrow-body-style': 'off',
   }
 };

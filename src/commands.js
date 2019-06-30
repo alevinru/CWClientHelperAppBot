@@ -33,7 +33,7 @@ bot.hears(/^\/trades[ _]([a-z0-9]+)$/, trades.itemTrades);
 bot.hears(/^\/traders$/, traders.traders);
 bot.hears(/^\/grant[ _]trading[ _](\d*)[ ]?(\d*)$/, traders.grantTrading);
 
-bot.hears(/^\/t[_]?([a-z0-9]{1,2}\d+)[ _]?(\d+)?([hm])?$/, trades.itemStats);
+bot.hears(/^\/t[_ ]?([a-z0-9]{1,2}\d+)[ _]?(\d+)?([hm])?$/, trades.itemStats);
 
 /*
 Orders
@@ -82,8 +82,8 @@ botHears('(craftBook|cb)[ _]?(.*)', craftBook);
 botHears('wtb[ _]([a-z0-9]+)[ _](\\d+)[ _](\\d+)[ ]?(\\d*)', wtb);
 
 botHears('ws[r]?_([a-z0-9]+)', shops.shopInfo);
-botHears('mnt', shops.maintenanceShops);
 botHears('mnt[ _]([a-z]+)', shops.maintenanceShops);
+bot.command('mnt', shops.maintenanceShops);
 
 botHears('l_([0-9]+)', au.showItem);
 botHears('bet_([0-9]+)(_[\\d]+)?', au.showItem);
@@ -95,8 +95,8 @@ botHears('du[ ](.+)[ ](\\d+)[ ](\\d+)', arena);
 botHears('du[ ](.+)[ ](\\d+)', arena);
 botHears('du[ ](.+)', arena);
 
-botHears('dug', ownArena);
-botHears('du', ownArena);
+bot.command('dug', ownArena);
+bot.command('du', ownArena);
 
 botHears('settings', settings);
 botHears('set[_ ]([^ _]+)[_ ](.+)', ss.setValue);

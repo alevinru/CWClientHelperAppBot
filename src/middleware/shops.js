@@ -41,7 +41,7 @@ export async function maintenanceShops(ctx) {
 
   // // const { message } = ctx;
   const { match } = ctx;
-  const [, castle] = match;
+  const [, castle] = match || [];
 
   debug('maintenanceShops:', castle || 'any');
 

@@ -23,7 +23,7 @@ export async function tradingStatus(ctx) {
     let trader = trading.getCachedTrader(userId);
 
     if (!trader) {
-      ctx.replyHTML(replyNotAuthorized());
+      await ctx.replyWithHTML(replyNotAuthorized());
       return;
     }
 
@@ -147,10 +147,12 @@ function formatTrader(trader) {
 
 function replyNotAuthorized() {
   return [
-    'You are not authorized for trading\n',
-    'Try /request_trading',
-    ' followed by some words you might want to say to the admin',
-  ];
+    'For a start try /t_01 for Thread market statistics tof the past day',
+    'Try /t01_8 and /t01_20m to narrow the time range',
+    '\nUse <code>/wtb_{itemCode}_{qty}_{price}</code> for exact price requests',
+    'For example /wtb_01_1_8 will try to buy 1 thread for 8 gold',
+    '\nUnderscores could be substituted with spaces like <code>/t_01 2</code>',
+  ].join('\n');
 }
 
 export async function tradingActive(ctx) {

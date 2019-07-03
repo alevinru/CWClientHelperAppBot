@@ -81,7 +81,7 @@ botHears('(craftBook|cb)[ _]?(.*)', craftBook);
 
 botHears('wtb[ _]([a-z0-9]+)[ _](\\d+)[ _](\\d+)[ ]?(\\d*)', wtb);
 
-botHears('wf[ _]([a-z]+)', shops.shopsByItem);
+botHears('wf[ _]([a-z ]+)', shops.shopsByItem);
 botHears('wf (/.+/)', shops.shopsByItem);
 
 botHears('ws[r]?_([a-z0-9]+)', shops.shopInfo);

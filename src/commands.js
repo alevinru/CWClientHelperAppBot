@@ -40,16 +40,16 @@ Orders
  */
 
 function hearsOrders(match, mw) {
-  bot.hears(match, ord.checkTraderAuth, mw);
+  botHears(match, Telegraf.compose([ord.checkTraderAuth, mw]));
 }
 
-hearsOrders(/^\/orders_top$/, ord.ordersTop);
-hearsOrders(/^\/order[ _]([a-z0-9]+)[ _](\d+)[ _](\d+)[ ]?(\d*)$/, ord.createOrder);
-hearsOrders(/^\/orders[ _]([a-z0-9]+)$/, ord.orders);
+hearsOrders('orders_top', ord.ordersTop);
+hearsOrders('order[ _]([a-z0-9]+)[ _](\\d+)[ _](\\d+)[ ]?(\\d*)', ord.createOrder);
+hearsOrders('orders[ _]([a-z0-9]+)', ord.orders);
 
-hearsOrders(/^\/order[ _]([a-z0-9]+)$/, ord.orderById);
-hearsOrders(/^\/rmorder[ _]([a-z0-9]+)$/, ord.rmById);
-hearsOrders(/^\/saorder[ _]([a-z0-9]+)$/, ord.setOrderActive);
+hearsOrders('order[ _]([a-z0-9]+)', ord.orderById);
+hearsOrders('rmorder[ _]([a-z0-9]+)', ord.rmById);
+hearsOrders('saorder[ _]([a-z0-9]+)', ord.setOrderActive);
 
 /*
 Users

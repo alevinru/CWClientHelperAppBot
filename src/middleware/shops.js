@@ -1,8 +1,10 @@
 import map from 'lodash/map';
+import filter from 'lodash/filter';
 import upperFirst from 'lodash/upperFirst';
 import orderBy from 'lodash/orderBy';
 import { distanceInWordsToNow, addMinutes } from 'date-fns';
 
+import { searchRe } from '../services/util';
 import log from '../services/log';
 
 import Shop from '../models/Shop';
@@ -90,6 +92,36 @@ export async function maintenanceShops(ctx) {
 
 }
 
+
+export async function shopsByItem(ctx) {
+
+  const { match } = ctx;
+  const [, search] = match || [];
+
+  const lastOpened = await lastDigestOpened();
+
+  debug('shopsByItem', `"${search}"`);
+
+  const $regex = searchRe(search);
+
+  const shops = await Shop.find({
+    lastOpened,
+    'offers.item': { $regex },
+  })
+    .sort({ mana: -1 })
+    .limit(12);
+
+  if (!shops.length) {
+    await ctx.replyWithHTML(`No open shops matching <b>${search}</b>`);
+    return;
+  }
+
+  const reply = shops.map(shop => shopAsListItem(shop, $regex));
+
+  await ctx.replyWithHTML(reply.join('\n\n'));
+
+}
+
 const CASTLES = JSON.parse(process.env.CASTLES);
 
 function castleHelp(castle) {
@@ -113,6 +145,24 @@ function shopAsMaintenanceListItem(shop) {
   const { mana, maintenanceCost } = shop;
 
   return `${ownerCastle} ${maintenanceCost}💰 ${mana}💧 /wsr_${link} <b>${ownerName}</b>`;
+
+}
+
+function shopAsListItem(shop, $regex) {
+
+  const { ownerCastle, ownerName, link } = shop;
+  const { mana, offers } = shop;
+
+  const matchingOffers = filter(offers, ({ item }) => $regex.test(item));
+
+  const offersList = matchingOffers.map(({ item, price }) => {
+    return `▪︎ ${item}: ${price}💰`;
+  });
+
+  return [
+    `${ownerCastle} ${mana}💧 /wsr_${link} <b>${ownerName}</b>`,
+    ...offersList,
+  ].join('\n');
 
 }
 

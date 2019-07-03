@@ -2,19 +2,17 @@ import filter from 'lodash/filter';
 import map from 'lodash/map';
 import get from 'lodash/get';
 import find from 'lodash/find';
-import escapeRegExp from 'lodash/escapeRegExp';
 import findIndex from 'lodash/findIndex';
 import replace from 'lodash/replace';
 import orderBy from 'lodash/orderBy';
 import * as a from '../services/auth';
+import * as util from '../services/util';
 
 import log from '../services/log';
 import { formatStockItem } from './stock';
 import { isTrusted } from '../services/users';
 
 const { debug, error } = log('mw:profile');
-
-const MAX_REGEX_LENGTH = 50;
 
 export default async function (ctx) {
 
@@ -134,11 +132,6 @@ export async function guildInfo(ctx) {
 
     } else {
 
-      if (filterItems.length > MAX_REGEX_LENGTH) {
-        await ctx.replyWithHTML(`${filterItems.length} symbols is too long for the /gi filter`);
-        return;
-      }
-
       const { stock } = info;
       const itemsFilter = stockFilter(filterItems);
       const matchingItems = (qty, itemName) => {
@@ -184,17 +177,7 @@ function stockFilter(text) {
     return qty => qty >= sizeNumber;
   }
 
-  const isRe = text.match(/\/(.+)\//);
-
-  let reText;
-
-  if (isRe) {
-    reText = new RegExp(isRe[1], 'i');
-  } else {
-    reText = replace(escapeRegExp(text), ' ', '.+');
-  }
-
-  const re = new RegExp(reText, 'i');
+  const re = util.searchRe(text);
 
   return (qty, itemName) => re.test(itemName);
 

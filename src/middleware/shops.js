@@ -160,7 +160,7 @@ function shopAsListItem(shop, $regex) {
   });
 
   return [
-    `${ownerCastle} ${mana}💧 /wsr_${link} <b>${ownerName}</b>`,
+    `${ownerCastle} ${mana}💧 /ws_${link} <b>${ownerName}</b>`,
     ...offersList,
   ].join('\n');
 

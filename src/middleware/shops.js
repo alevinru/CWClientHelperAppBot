@@ -1,7 +1,12 @@
 import map from 'lodash/map';
+import find from 'lodash/find';
 import filter from 'lodash/filter';
+import take from 'lodash/take';
 import upperFirst from 'lodash/upperFirst';
 import orderBy from 'lodash/orderBy';
+import uniq from 'lodash/uniq';
+import flatten from 'lodash/flatten';
+
 import { distanceInWordsToNow, addMinutes } from 'date-fns';
 
 import { searchRe } from '../services/util';
@@ -107,18 +112,71 @@ export async function shopsByItem(ctx) {
   const shops = await Shop.find({
     lastOpened,
     'offers.item': { $regex },
-  })
-    .sort({ mana: -1 })
-    .limit(12);
+  });
+  // .sort({ mana: -1 })
+  // .limit(12);
 
   if (!shops.length) {
     await ctx.replyWithHTML(`No open shops matching <b>${search}</b>`);
     return;
   }
 
-  const reply = shops.map(shop => shopAsListItem(shop, $regex));
+  const matchingItems = shopsItems(shops, $regex);
 
-  await ctx.replyWithHTML(reply.join('\n\n'));
+  if (matchingItems.length > 1) {
+
+    const replyMultipleItems = [
+      `There are more than one items matching <code>${search}</code>:`,
+      '',
+      ...matchingItems.map(item => `▪︎ ${item}`),
+      '',
+      'Please specify',
+    ];
+
+    await ctx.replyWithHTML(replyMultipleItems.join('\n'));
+
+    return;
+
+  }
+
+  const item = matchingItems[0];
+
+  const itemShops = orderBy(shopsItem(shops, item), ['price', 'mana'], ['asc', 'desc']);
+
+  const reply = [
+    `Best offers for <b>${item}</b> on <b>${distanceInWordsToNow(lastOpened)}</b> ago:`,
+    '',
+    ...take(itemShops, 12).map(shopAsListItem),
+  ];
+
+  await ctx.replyWithHTML(reply.join('\n'));
+
+}
+
+function shopsItem(shops, itemName) {
+
+  const res = map(shops, shop => {
+
+    const offer = find(shop.offers, ({ item, mana }) => {
+      return itemName === item && mana <= shop.mana;
+    });
+
+    return offer && { ...shop.toObject(), price: offer.price };
+
+  });
+
+  return filter(res);
+
+}
+
+function shopsItems(shops, $regex) {
+
+  const allItems = map(shops, ({ offers }) => {
+    const matchingOffers = filter(offers, ({ item }) => $regex.test(item));
+    return map(matchingOffers, 'item');
+  });
+
+  return uniq(flatten(allItems));
 
 }
 
@@ -148,21 +206,19 @@ function shopAsMaintenanceListItem(shop) {
 
 }
 
-function shopAsListItem(shop, $regex) {
+function shopAsListItem(shop) {
 
-  const { ownerCastle, ownerName, link } = shop;
-  const { mana, offers } = shop;
+  const { ownerCastle, ownerName } = shop;
+  const { mana, price } = shop;
 
-  const matchingOffers = filter(offers, ({ item }) => $regex.test(item));
-
-  const offersList = matchingOffers.map(({ item, price }) => {
-    return `▪︎ ${item}: ${price}💰`;
-  });
+  const link = `/ws_${shop.link}`;
 
   return [
-    `${ownerCastle} ${mana}💧 /ws_${link} <b>${ownerName}</b>`,
-    ...offersList,
-  ].join('\n');
+    `${ownerCastle} ${price}💰`,
+    `<code>${link}</code>`,
+    `${mana}💧`,
+    `<a href="http://t.me/share/url?url=${link}">${ownerName}</a>`,
+  ].join(' ');
 
 }
 

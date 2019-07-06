@@ -217,7 +217,7 @@ function shopAsListItem(shop) {
     `${ownerCastle} ${price}💰`,
     `<code>${link}</code>`,
     `${mana}💧`,
-    `<a href="http://t.me/share/url?url=${link}">${ownerName}</a>`,
+    `<a href="http://t.me/share/url?url=${link}_stand">${ownerName}</a>`,
   ].join(' ');
 
 }

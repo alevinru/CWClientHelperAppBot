@@ -11,7 +11,7 @@ export function searchRe(text) {
 
   const isRe = text.match(/\/(.+)\//);
 
-  const reText = isRe ? isRe[1] : replace(escapeRegExp(text), ' ', '.+');
+  const reText = isRe ? isRe[1] : replace(escapeRegExp(text), /[ _]/g, '.+');
 
   return new RegExp(reText, 'i');
 

@@ -23,6 +23,8 @@ export async function arena(ctx) {
 
   debug(fromUserId, message.text, `"${name}"`, shiftParam, shiftHigh);
 
+  await ctx.replyWithChatAction('typing');
+
   try {
 
     const shift = parseInt(shiftParam, 0) || 0;
@@ -96,7 +98,11 @@ export async function ownArena(ctx) {
 }
 
 function replyHelp(ctx) {
-  return ctx.replyWithHTML('Try /du username|[TAG] or do /auth to use /du without params');
+  const help = [
+    'Try /du username or /du [TAG] (case sensitive)',
+    'Authorize this bot with /auth to use /du without params for you or /dug for your guild',
+  ];
+  return ctx.replyWithHTML(help.join(' '));
 }
 
 function formatGuildTotalDuels(duels) {
@@ -243,20 +249,48 @@ function formatDuels(duels, primaryName) {
       return ': none';
     }
 
-    return ` (<b>${opponents.length}</b>): \n\n${map(opponents, opponentFormat).join('\n')}`;
+    const res = [
+      ` (<b>${opponents.length}</b>):`,
+      '',
+    ];
+
+    if (opponents.length > 10) {
+      res.push(...opponentsCastles(opponents));
+    } else {
+      res.push(...map(opponents, opponentFormat));
+    }
+
+    return res.join('\n');
 
   }
 
-  function opponentFormat(duel) {
-    const { castle, tag, name } = duel;
-    const { isChallenge } = duel;
-    return filter([
-      '\t',
-      isChallenge ? '🤺‍' : '',
-      castle,
-      tag ? `[${tag}]` : '',
-      name,
-    ]).join(' ');
-  }
+}
+
+function opponentFormat(duel) {
+
+  const { castle, tag, name } = duel;
+  const { isChallenge } = duel;
+
+  return filter([
+    '\t',
+    isChallenge ? '🤺‍' : '',
+    castle,
+    tag ? `[${tag}]` : '',
+    name,
+  ]).join(' ');
+
+}
+
+function opponentsCastles(opponents) {
+
+  const byCastle = groupBy(opponents, 'castle');
+
+  const data = map(byCastle, (duels, key) => ({
+    text: `${key} : ${duels.length}`,
+    key,
+    count: duels.length,
+  }));
+
+  return map(orderBy(data, ['count'], ['desc']), 'text');
 
 }

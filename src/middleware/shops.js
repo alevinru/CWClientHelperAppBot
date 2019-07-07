@@ -144,7 +144,7 @@ export async function shopsByItem(ctx) {
   const itemShops = orderBy(shopsItem(shops, item), ['price', 'mana'], ['asc', 'desc']);
 
   const reply = [
-    `Best offers for <b>${item}</b> on <b>${distanceInWordsToNow(lastOpened)}</b> ago:`,
+    `Best offers for <b>${item}</b> at <b>${distanceInWordsToNow(lastOpened)}</b> ago:`,
     '',
     ...take(itemShops, 12).map(shopAsListItem),
   ];

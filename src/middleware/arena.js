@@ -3,6 +3,7 @@ import groupBy from 'lodash/groupBy';
 import orderBy from 'lodash/orderBy';
 import maxBy from 'lodash/maxBy';
 import sumBy from 'lodash/sumBy';
+import mapKeys from 'lodash/mapKeys';
 import filter from 'lodash/filter';
 import last from 'lodash/last';
 import { format, addDays } from 'date-fns';
@@ -97,6 +98,14 @@ export async function ownArena(ctx) {
 
 }
 
+function duelKey(nameOrTag) {
+  const tag = nameOrTag.match(/\[(.+)]/);
+  return tag ? { tag: tag[1] } : { name: nameOrTag };
+}
+
+function fpMapKeys(mapper) {
+  return obj => mapKeys(obj, mapper);
+}
 
 export async function vsArena(ctx) {
 
@@ -104,16 +113,22 @@ export async function vsArena(ctx) {
 
   const [, p1, p2] = match || [];
 
-  debug(vsArena, p1, p2);
+  const winner = fpMapKeys((val, key) => `winner.${key}`);
+  const loser = fpMapKeys((val, key) => `loser.${key}`);
+
+  const p1Key = duelKey(p1);
+  const p2Key = duelKey(p2);
+
+  debug('vsArena', p1Key, p2Key);
 
   const p1Won = await Duel.find({
-    'winner.name': p1,
-    'loser.name': p2,
+    ...winner(p1Key),
+    ...loser(p2Key),
   });
 
   const p2Won = await Duel.find({
-    'winner.name': p2,
-    'loser.name': p1,
+    ...winner(p2Key),
+    ...loser(p1Key),
   });
 
   const total = p2Won.length + p1Won.length;

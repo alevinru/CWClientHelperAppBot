@@ -18,7 +18,7 @@ import profile, { guildInfo, craftBook, gearInfo } from './middleware/profile';
 
 import * as shops from './middleware/shops';
 import * as au from './middleware/auction';
-import { arena, ownArena } from './middleware/arena';
+import { arena, ownArena, vsArena } from './middleware/arena';
 import settings, * as ss from './middleware/settings';
 
 /*
@@ -91,6 +91,14 @@ bot.command('mnt', shops.maintenanceShops);
 botHears('l_([0-9]+)', au.showItem);
 botHears('bet_([0-9]+)(_[\\d]+)?', au.showItem);
 
+bot.on('message', Telegraf.optional(fromCWFilter, auth.authCode));
+
+/*
+Duels
+ */
+
+botHears('du[ ](.+) vs (.+)', vsArena);
+
 botHears('du[g]?[ ](\\d+)[ ](\\d+)', ownArena);
 botHears('du[g]?[ ](\\d+)', ownArena);
 
@@ -101,14 +109,12 @@ botHears('du[ ](.+)', arena);
 bot.command('dug', ownArena);
 bot.command('du', ownArena);
 
-botHears('settings', settings);
-botHears('set[_ ]([^ _]+)[_ ](.+)', ss.setValue);
-
-bot.on('message', Telegraf.optional(fromCWFilter, auth.authCode));
-
 /*
 Other
  */
+
+botHears('settings', settings);
+botHears('set[_ ]([^ _]+)[_ ](.+)', ss.setValue);
 
 bot.on('message', require('./middleware/message').default);
 

@@ -97,6 +97,49 @@ export async function ownArena(ctx) {
 
 }
 
+
+export async function vsArena(ctx) {
+
+  const { match } = ctx;
+
+  const [, p1, p2] = match || [];
+
+  debug(vsArena, p1, p2);
+
+  const p1Won = await Duel.find({
+    'winner.name': p1,
+    'loser.name': p2,
+  });
+
+  const p2Won = await Duel.find({
+    'winner.name': p2,
+    'loser.name': p1,
+  });
+
+  const total = p2Won.length + p1Won.length;
+
+  if (!total) {
+    await ctx.replyWithHTML(`Not found duels of <b>${p1}</b> vs <b>${p2}</b>`);
+    return;
+  }
+
+  let wonTimes = p1Won.length ? `won <b>${p1Won.length}</b> times` : 'never won';
+
+  if (p1Won.length === 1) {
+    wonTimes = 'won only <b>once</b>';
+  }
+
+  const reply = [
+    `<b>${p1}</b>`,
+    wonTimes,
+    `over <b>${p2}</b> in <b>${total}</b> duel${total > 1 ? 's' : ''}`,
+  ];
+
+  await ctx.replyWithHTML(reply.join(' '));
+
+}
+
+
 function replyHelp(ctx) {
   const help = [
     'Try /du username or /du [TAG] (case sensitive)',

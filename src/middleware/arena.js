@@ -51,7 +51,7 @@ export async function arena(ctx) {
     } else {
 
       const cond = {
-        $or: [{ 'winner.name': name }, { 'loser.name': name }],
+        'players.name': name,
         ...duelTimeFilter(shift, shiftTo),
       };
 
@@ -136,7 +136,7 @@ function formatPeriod(duels) {
 
 async function guildDuels(tag, shift, shiftTo) {
 
-  const cond = { $or: [{ 'winner.tag': tag }, { 'loser.tag': tag }] };
+  const cond = { 'players.tag': tag };
 
   const tf = duelTimeFilter(shift, shiftTo);
 

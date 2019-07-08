@@ -199,10 +199,19 @@ function castleByLetter(letter) {
 
 function shopAsMaintenanceListItem(shop) {
 
-  const { ownerCastle, ownerName, link } = shop;
+  const { ownerCastle, ownerName } = shop;
   const { mana, maintenanceCost } = shop;
 
-  return `${ownerCastle} ${maintenanceCost}💰 ${mana}💧 /wsr_${link} <b>${ownerName}</b>`;
+  const link = `/wsr_${shop.link}`;
+
+  return [
+    `${ownerCastle}`,
+    `${maintenanceCost}💰`,
+    `${mana}💧`,
+    link,
+    '🔗',
+    `<a href="http://t.me/share/url?url=${link}">${ownerName}</a>`,
+  ].join(' ');
 
 }
 
@@ -215,8 +224,9 @@ function shopAsListItem(shop) {
 
   return [
     `${ownerCastle} ${price}💰`,
-    `<code>${link}</code>`,
     `${mana}💧`,
+    link,
+    '🔗',
     `<a href="http://t.me/share/url?url=${link}_stand">${ownerName}</a>`,
   ].join(' ');
 

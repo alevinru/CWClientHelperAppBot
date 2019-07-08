@@ -1,4 +1,6 @@
 import map from 'lodash/map';
+import get from 'lodash/get';
+import uniq from 'lodash/uniq';
 import groupBy from 'lodash/groupBy';
 import orderBy from 'lodash/orderBy';
 import maxBy from 'lodash/maxBy';
@@ -144,13 +146,43 @@ export async function vsArena(ctx) {
     wonTimes = 'won only <b>once</b>';
   }
 
-  const reply = [
+  const title = [
     `<b>${p1}</b>`,
     wonTimes,
     `over <b>${p2}</b> in <b>${total}</b> duel${total > 1 ? 's' : ''}`,
   ];
 
-  await ctx.replyWithHTML(reply.join(' '));
+  const reply = [
+    title.join(' '),
+  ];
+
+  if ((p2Key.tag && !p1Key.tag) || (p1Key.tag && !p2Key.tag)) {
+
+    const key1 = p2Key.tag ? 'loser' : 'winner';
+    const key2 = p2Key.tag ? 'winner' : 'loser';
+
+    const p1WonGrouped = groupBy(p1Won, ({ [key1]: { name } }) => name);
+    const p2WonGrouped = groupBy(p2Won, ({ [key2]: { name } }) => name);
+
+    const opponents = orderBy(uniq([
+      ...Object.keys(p1WonGrouped),
+      ...Object.keys(p2WonGrouped),
+    ]));
+
+    const winRates = map(opponents, name => {
+      const winCount = get(p1WonGrouped[name], 'length') || 0;
+      const loseCount = get(p2WonGrouped[name], 'length') || 0;
+      return `${name}: <b>${winCount}</b>/<b>${loseCount}</b>`;
+    });
+
+    reply.push(
+      '',
+      ...winRates,
+    );
+
+  }
+
+  await ctx.replyWithHTML(reply.join('\n'));
 
 }
 

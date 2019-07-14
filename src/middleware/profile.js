@@ -287,8 +287,8 @@ const gearIcons = [
   { coat: '🧥' },
   { weapon: '⚔️' },
   { offhand: '🗡️' },
-  { ring: '🎒' },
-  { amulet: '✨' },
+  { ring: '🎒', showIcon: true },
+  { amulet: '✨', showIcon: true },
 ];
 
 function formatGear({ gearInfo: info }) {
@@ -305,7 +305,7 @@ function formatGear({ gearInfo: info }) {
 
 function gearIcon(gear) {
   const item = find(gearIcons, gear);
-  return item ? item[gear] : '❓';
+  return (item && item.showIcon) ? item[gear] : '';
 }
 
 function gearItem(gear, type) {
@@ -318,6 +318,7 @@ const qualityLetter = {
   High: 'D',
   Great: 'C',
   Excellent: 'B',
+  Masterpiece: 'A',
 };
 
 function gearItemHtml(gear) {
@@ -332,6 +333,10 @@ function gearItemHtml(gear) {
     stam && `+${stam}🔋`,
   ];
 
-  return `${icon}: ${name} ${filter(stats).join(' ')}`;
+  return filter([
+    icon ? `${icon}:` : '',
+    name,
+    ...stats,
+  ]).join(' ');
 
 }

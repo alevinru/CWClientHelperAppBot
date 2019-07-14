@@ -158,7 +158,7 @@ function shopsItem(shops, itemName) {
   const res = map(shops, shop => {
 
     const offer = find(shop.offers, ({ item, mana }) => {
-      return itemName === item && mana <= shop.mana;
+      return itemName === item && mana <= shop.mana * 1.5;
     });
 
     return offer && { ...shop.toObject(), price: offer.price };

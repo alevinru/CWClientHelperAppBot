@@ -59,7 +59,7 @@ export async function arena(ctx) {
     } else {
 
       if (!cwId) {
-        cwId = ar.lastKnownUserID(name);
+        cwId = await ar.lastKnownUserID(name);
       }
 
       if (!cwId) {
@@ -356,10 +356,13 @@ function formatDuels(duels, id, primaryName) {
   const { tag, level, name } = duelPlayer;
 
   return [
-    `${LEVEL_ICON}${level} <b>${tag ? `[${tag}] ` : ''}${name}</b> duels ${period}`,
+    `${LEVEL_ICON}${level} <b>${tag ? `[${tag}] ` : ''}${name}</b>`,
+    `${gainInfo(opponents)} ${period}`,
+    '',
     `Won${opponentList(wonOver)}`,
+    '',
     `Lost${opponentList(lostTo)}`,
-  ].join('\n\n');
+  ].join('\n');
 
   function duelOpponents() {
 
@@ -389,6 +392,14 @@ function formatDuels(duels, id, primaryName) {
 
 }
 
+function gainInfo(opponents) {
+  const gain = sumBy(opponents, duel => {
+    const { saved, undamaged } = duel;
+    return saved - undamaged;
+  });
+  return `${gain > 0 ? '❤️' : '💔'}${gain}`;
+}
+
 
 function opponentList(opponents) {
 
@@ -397,7 +408,7 @@ function opponentList(opponents) {
   }
 
   const res = [
-    ` (<b>${opponents.length}</b>):`,
+    ` ${gainInfo(opponents)} (<b>${opponents.length}</b>)`,
     '',
   ];
 
@@ -415,14 +426,17 @@ function opponentList(opponents) {
 function opponentFormat(duel) {
 
   const { castle, tag, name } = duel;
-  const { isChallenge } = duel;
+  const { isChallenge, level } = duel;
+  // const { saved, undamaged } = duel;
+  const gain = gainInfo([duel]);
 
   return filter([
-    '\t',
-    isChallenge ? '🤺‍' : '',
+    `<code>${level}</code>`,
     castle,
     tag ? `[${tag}]` : '',
+    isChallenge ? '🤺‍' : '',
     name,
+    gain,
   ]).join(' ');
 
 }

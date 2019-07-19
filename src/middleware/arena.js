@@ -239,7 +239,11 @@ function formatGuildMemberDuels(duels) {
     lost,
     level,
   } = duels;
-  return `<code>${level}</code> ${name}: <b>${won}</b>/<b>${lost}</b>`;
+  return [
+    duels.gainInfo,
+    `<b>${won}</b>/<b>${lost}</b>`,
+    `<code>${level}</code> ${name}`,
+  ].join(' ');
 }
 
 
@@ -281,6 +285,8 @@ async function guildDuels(tag, shift, shiftTo) {
     const { won = [], lost = [] } = groupBy(nameDuels, ({ isWinner }) => (isWinner ? 'won' : 'lost'));
     const { level } = maxBy(nameDuels, 'level');
     return {
+      gain: gainTotal(nameDuels),
+      gainInfo: gainInfo(nameDuels),
       name,
       level,
       won: won.length,
@@ -290,7 +296,7 @@ async function guildDuels(tag, shift, shiftTo) {
 
   const period = formatPeriod(duels);
 
-  return { period, res: orderBy(res, ['level', 'name'], ['desc', 'asc']) };
+  return { period, res: orderBy(res, ['gain', 'level'], ['desc', 'asc']) };
 
 }
 
@@ -383,11 +389,17 @@ function duelOpponents(duels, cond) {
 
 }
 
-function gainInfo(opponents) {
-  const gain = sumBy(opponents, duel => {
+
+function gainTotal(opponents) {
+  return sumBy(opponents, duel => {
     const { saved, undamaged } = duel;
     return saved - undamaged;
   });
+
+}
+
+function gainInfo(opponents) {
+  const gain = gainTotal(opponents);
   return gain ? `${gain > 0 ? '❤️' : '💔'}${gain}` : '⚡️';
 }
 

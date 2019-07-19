@@ -205,11 +205,10 @@ function shopAsMaintenanceListItem(shop) {
   const link = `/wsr_${shop.link}`;
 
   return [
-    `${ownerCastle}`,
-    `${maintenanceCost}💰`,
-    `${mana}💧`,
+    `💰${maintenanceCost}`,
+    `💧${mana}`,
     link,
-    '🔗',
+    `${ownerCastle}`,
     `<a href="http://t.me/share/url?url=${link}">${ownerName}</a>`,
   ].join(' ');
 
@@ -223,10 +222,10 @@ function shopAsListItem(shop) {
   const link = `/ws_${shop.link}`;
 
   return [
-    `${ownerCastle} ${price}💰`,
-    `${mana}💧`,
+    `💰${price}`,
+    `💧${mana}`,
     link,
-    '🔗',
+    ownerCastle,
     `<a href="http://t.me/share/url?url=${link}_stand">${ownerName}</a>`,
   ].join(' ');
 

@@ -14,6 +14,8 @@ import { isTrusted } from '../services/users';
 
 const { debug, error } = log('mw:profile');
 
+export const LEVEL_ICON = '🏅';
+
 export default async function (ctx) {
 
   const { session, from: { id: fromUserId }, message } = ctx;
@@ -82,7 +84,7 @@ function formatProfile(profile, userId) {
 
   const res = [
     `${cls}${castle} <b>${nameTag || ''}${userName}</b>`,
-    `🏅${lvl} ⚔${atk} 🛡${def} 🔥${exp}`,
+    `${LEVEL_ICON}${lvl} ⚔${atk} 🛡${def} 🔥${exp}`,
     `💰${gold || 0} 👝${pouches || 0} 🔋${stamina}${mana ? `💧${mana}` : ''}`,
     '',
     `/gear${withUserId} /stock${withUserId}`,

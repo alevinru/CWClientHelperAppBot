@@ -8,6 +8,10 @@ import sumBy from 'lodash/sumBy';
 import mapKeys from 'lodash/mapKeys';
 import filter from 'lodash/filter';
 import last from 'lodash/last';
+import isEqual from 'lodash/isEqual';
+import pick from 'lodash/pick';
+import fpGet from 'lodash/fp/get';
+
 import { format, addDays } from 'date-fns';
 
 import log from '../services/log';
@@ -267,27 +271,14 @@ async function guildDuels(tag, shift, shiftTo) {
     throw new Error('not found duels');
   }
 
-  const named = map(duels, duel => {
+  const opponents = duelOpponents(duels, { tag });
 
-    const { winner, loser } = duel;
-    const isWinner = winner.tag === tag;
-    const name = isWinner ? winner.name : loser.name;
-    const result = isWinner ? 'won' : 'lost';
-    const opponentName = isWinner ? loser.name : winner.name;
-    const level = isWinner ? winner.level : loser.level;
+  debug(opponents);
 
-    return {
-      ...duel,
-      name,
-      result,
-      opponentName,
-      level,
-    };
+  const byName = groupBy(opponents, fpGet('player.name'));
 
-  });
-
-  const res = map(groupBy(named, 'name'), (nameDuels, name) => {
-    const { won = [], lost = [] } = groupBy(nameDuels, 'result');
+  const res = map(byName, (nameDuels, name) => {
+    const { won = [], lost = [] } = groupBy(nameDuels, ({ isWinner }) => (isWinner ? 'won' : 'lost'));
     const { level } = maxBy(nameDuels, 'level');
     return {
       name,
@@ -302,7 +293,6 @@ async function guildDuels(tag, shift, shiftTo) {
   return { period, res: orderBy(res, ['level', 'name'], ['desc', 'asc']) };
 
 }
-
 
 function duelTimeFilter(shift, shiftTo = shift) {
 
@@ -337,7 +327,7 @@ function formatDuels(duels, id, primaryName) {
     return `Duels of <b>${primaryName}</b> not found`;
   }
 
-  const opponents = duelOpponents();
+  const opponents = duelOpponents(duels, { id });
 
   const wonOver = filter(opponents, 'isWinner');
   const lostTo = filter(opponents, { isWinner: false });
@@ -356,7 +346,7 @@ function formatDuels(duels, id, primaryName) {
   const { tag, level, name } = duelPlayer;
 
   return [
-    `${LEVEL_ICON}${level} <b>${tag ? `[${tag}] ` : ''}${name}</b>`,
+    `${LEVEL_ICON}${level} <b>${tag ? `[${tag}] ` : ''}${name}</b> duels`,
     `${gainInfo(opponents)} ${period}`,
     '',
     `Won${opponentList(wonOver)}`,
@@ -364,31 +354,32 @@ function formatDuels(duels, id, primaryName) {
     `Lost${opponentList(lostTo)}`,
   ].join('\n');
 
-  function duelOpponents() {
+}
 
-    return filter(map(duels, duel => {
+function duelOpponents(duels, cond) {
 
-      const { winner, loser, isChallenge } = duel;
+  return filter(map(duels, duel => {
 
-      const isWinner = winner.id === id;
+    const { winner, loser, isChallenge } = duel;
 
-      const player = isWinner ? winner : loser;
-      const opponent = isWinner ? loser : winner;
+    const isWinner = isEqual(cond, pick(winner, Object.keys(cond)));
 
-      const { hp: undamaged } = opponent;
+    const player = isWinner ? winner : loser;
+    const opponent = isWinner ? loser : winner;
 
-      return {
-        isWinner,
-        ...opponent,
-        isChallenge,
-        undamaged,
-        saved: player.hp,
-      };
+    const { hp: undamaged } = opponent;
 
-    }));
+    return {
+      isWinner,
+      opponent,
+      player,
+      ...opponent,
+      isChallenge,
+      undamaged,
+      saved: player.hp,
+    };
 
-  }
-
+  }));
 
 }
 
@@ -397,7 +388,7 @@ function gainInfo(opponents) {
     const { saved, undamaged } = duel;
     return saved - undamaged;
   });
-  return `${gain > 0 ? '❤️' : '💔'}${gain}`;
+  return gain ? `${gain > 0 ? '❤️' : '💔'}${gain}` : '⚡️';
 }
 
 
@@ -425,8 +416,9 @@ function opponentList(opponents) {
 
 function opponentFormat(duel) {
 
-  const { castle, tag, name } = duel;
-  const { isChallenge, level } = duel;
+  const { opponent } = duel;
+  const { castle, tag, name } = opponent;
+  const { isChallenge, level } = opponent;
   // const { saved, undamaged } = duel;
   const gain = gainInfo([duel]);
 

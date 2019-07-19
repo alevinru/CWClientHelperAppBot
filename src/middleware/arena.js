@@ -12,7 +12,10 @@ import { format, addDays } from 'date-fns';
 
 import log from '../services/log';
 import Duel from '../models/Duel';
-import { refreshProfile } from '../services/auth';
+// import { refreshProfile } from '../services/auth';
+import User from '../models/User';
+import * as ar from '../services/arena';
+import { LEVEL_ICON } from './profile';
 
 const { debug, error } = log('mw:arena');
 
@@ -24,7 +27,9 @@ export async function arena(ctx) {
   const { match, state: { match: stateMatch } } = ctx;
   const [, name, shiftParam = '0', shiftHigh = shiftParam] = stateMatch || match;
 
-  debug(fromUserId, message.text, `"${name}"`, shiftParam, shiftHigh);
+  let { cwId } = ctx.state;
+
+  debug(fromUserId, message.text, `"${name || cwId}"`, shiftParam, shiftHigh);
 
   await ctx.replyWithChatAction('typing');
 
@@ -53,14 +58,23 @@ export async function arena(ctx) {
 
     } else {
 
+      if (!cwId) {
+        cwId = ar.lastKnownUserID(name);
+      }
+
+      if (!cwId) {
+        await ctx.replyWithHTML(formatDuels([], cwId, name));
+        return;
+      }
+
       const cond = {
-        'players.name': name,
         ...duelTimeFilter(shift, shiftTo),
+        'players.id': cwId,
       };
 
       const data = await Duel.find(cond).sort('-ts');
 
-      await ctx.replyWithHTML(formatDuels(data, name));
+      await ctx.replyWithHTML(formatDuels(data, cwId, name));
 
     }
 
@@ -82,14 +96,29 @@ export async function ownArena(ctx) {
 
   debug('ownArena', message.text);
 
-  let name;
+  let name = '';
 
   if (session.auth) {
-    const profile = await refreshProfile(fromUserId);
-    name = dug ? `[${profile.guild_tag}]` : profile.userName;
+
+    const user = await User.findOne({ id: fromUserId });
+
+    if (!user) {
+      await ctx.replyWithHTML('Click /hello to update your game info then try /du again');
+      return;
+    }
+
+    if (user) {
+      const { profile } = user;
+      name = dug ? `[${profile.guild_tag}]` : profile.userName;
+    }
+
+    if (!dug) {
+      ctx.state.cwId = session.auth.id;
+    }
+
   }
 
-  if (!name) {
+  if (!name && !ctx.state.cwId) {
     await replyHelp(ctx);
     return;
   }
@@ -302,24 +331,21 @@ function dateFormat(date) {
 }
 
 
-function formatDuels(duels, primaryName) {
-
-  const wonOver = filter(map(duels, duel => {
-    const { winner, loser, isChallenge } = duel;
-    return winner.name === primaryName && { ...loser, isChallenge };
-  }));
-
-  const lostTo = filter(map(duels, duel => {
-    const { winner, loser, isChallenge } = duel;
-    return (loser.name === primaryName) && { ...winner, isChallenge };
-  }));
+function formatDuels(duels, id, primaryName) {
 
   if (!duels.length) {
     return `Duels of <b>${primaryName}</b> not found`;
   }
 
-  const { ts: maxTs } = duels[0];
+  const opponents = duelOpponents();
+
+  const wonOver = filter(opponents, 'isWinner');
+  const lostTo = filter(opponents, { isWinner: false });
+
+  const { ts: maxTs, winner: duelWinner, loser: duelLoser } = duels[0];
   const { ts: minTs } = last(duels);
+
+  const duelPlayer = duelWinner.id === id ? duelWinner : duelLoser;
 
   const minDate = dateFormat(minTs);
   const maxDate = dateFormat(maxTs);
@@ -327,34 +353,64 @@ function formatDuels(duels, primaryName) {
   const period = minDate !== maxDate
     ? `from <b>${minDate}</b> to <b>${maxDate}</b>` : `on <b>${minDate}</b>`;
 
+  const { tag, level, name } = duelPlayer;
+
   return [
-    `<b>${primaryName}</b> duels ${period}`,
+    `${LEVEL_ICON}${level} <b>${tag ? `[${tag}] ` : ''}${name}</b> duels ${period}`,
     `Won${opponentList(wonOver)}`,
     `Lost${opponentList(lostTo)}`,
   ].join('\n\n');
 
-  function opponentList(opponents) {
+  function duelOpponents() {
 
-    if (!opponents.length) {
-      return ': none';
-    }
+    return filter(map(duels, duel => {
 
-    const res = [
-      ` (<b>${opponents.length}</b>):`,
-      '',
-    ];
+      const { winner, loser, isChallenge } = duel;
 
-    if (opponents.length > 10) {
-      res.push(...opponentsCastles(opponents));
-    } else {
-      res.push(...map(opponents, opponentFormat));
-    }
+      const isWinner = winner.id === id;
 
-    return res.join('\n');
+      const player = isWinner ? winner : loser;
+      const opponent = isWinner ? loser : winner;
+
+      const { hp: undamaged } = opponent;
+
+      return {
+        isWinner,
+        ...opponent,
+        isChallenge,
+        undamaged,
+        saved: player.hp,
+      };
+
+    }));
 
   }
 
+
 }
+
+
+function opponentList(opponents) {
+
+  if (!opponents.length) {
+    return ': none';
+  }
+
+  const res = [
+    ` (<b>${opponents.length}</b>):`,
+    '',
+  ];
+
+  if (opponents.length > 10) {
+    res.push(...opponentsCastles(opponents));
+  } else {
+    res.push(...map(opponents, opponentFormat));
+  }
+
+  return res.join('\n');
+
+}
+
 
 function opponentFormat(duel) {
 

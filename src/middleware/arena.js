@@ -16,7 +16,6 @@ import { format, addDays, addHours } from 'date-fns';
 
 import log from '../services/log';
 import Duel from '../models/Duel';
-// import { refreshProfile } from '../services/auth';
 import User from '../models/User';
 import * as ar from '../services/arena';
 import { LEVEL_ICON } from './profile';
@@ -281,7 +280,7 @@ async function guildDuels(tag, shift, shiftTo) {
 
   const opponents = duelOpponents(duels, { tag });
 
-  debug(opponents);
+  debug('guildDuels', opponents.length);
 
   const byName = groupBy(opponents, fpGet('player.name'));
 
@@ -318,9 +317,6 @@ async function guildDuels(tag, shift, shiftTo) {
 const hours = Math.floor(DUEL_RESET_HOUR);
 const minutes = (DUEL_RESET_HOUR - hours) * 60;
 
-function dateToCW(date) {
-  return addHours(date, -DUEL_RESET_HOUR);
-}
 
 function duelTimeFilter(shift, shiftTo = shift) {
 
@@ -345,6 +341,9 @@ function dateFormat(date) {
   return format(date, 'D/MM');
 }
 
+function dateToCW(date) {
+  return addHours(date, -DUEL_RESET_HOUR);
+}
 
 function formatDuels(duels, id, primaryName) {
 
@@ -381,9 +380,9 @@ function formatDuels(duels, id, primaryName) {
   function wonLostList() {
 
     return [
-      opponentList(wonOver(opponents)),
+      opponentList(wonOver(opponents), 'Won'),
       '',
-      opponentList(lostTo(opponents)),
+      opponentList(lostTo(opponents), 'Lost'),
     ].join('\n');
 
   }
@@ -496,10 +495,10 @@ function gainInfo(opponents) {
 }
 
 
-function opponentList(opponents) {
+function opponentList(opponents, type) {
 
   if (!opponents.length) {
-    return ': none';
+    return `${type}: none`;
   }
 
   return [

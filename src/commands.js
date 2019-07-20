@@ -11,6 +11,7 @@ import * as trades from './middleware/trades';
 import * as ord from './middleware/order';
 import * as traders from './middleware/traders';
 import * as users from './middleware/hello';
+import * as battles from './middleware/battles';
 
 import start from './middleware/start';
 import stock from './middleware/stock';
@@ -108,6 +109,12 @@ botHears('du[ ](.+)', arena);
 
 bot.command('dug', ownArena);
 bot.command('du', ownArena);
+
+/*
+Battles
+ */
+
+bot.on('message', Telegraf.optional(battles.reportFilter, battles.onReportForward));
 
 /*
 Other

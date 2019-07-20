@@ -285,16 +285,23 @@ async function guildDuels(tag, shift, shiftTo) {
 
   const byName = groupBy(opponents, fpGet('player.name'));
 
+
   const res = map(byName, (nameDuels, name) => {
-    const { won = [], lost = [] } = groupBy(nameDuels, ({ isWinner }) => (isWinner ? 'won' : 'lost'));
+
+    const { wins = [], loses = [] } = groupBy(nameDuels, ({ isWinner }) => (isWinner ? 'wins' : 'loses'));
     const { player: { level } } = maxBy(nameDuels, fpGet('player.level'));
+
+    const won = wins.length;
+    const lost = loses.length;
+
     return {
       gain: gainTotal(nameDuels),
       gainInfo: gainInfo(nameDuels),
       name,
       level,
-      won: won.length,
-      lost: lost.length,
+      won,
+      lost,
+      rate: won - lost,
     };
   });
 
@@ -303,7 +310,7 @@ async function guildDuels(tag, shift, shiftTo) {
   return {
     period,
     opponents,
-    res: orderBy(res, ['gain', 'level'], ['desc', 'asc']),
+    res: orderBy(res, ['rate', 'level'], ['desc', 'desc']),
   };
 
 }

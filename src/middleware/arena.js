@@ -12,7 +12,7 @@ import isEqual from 'lodash/isEqual';
 import pick from 'lodash/pick';
 import fpGet from 'lodash/fp/get';
 
-import { format, addDays } from 'date-fns';
+import { format, addDays, addHours } from 'date-fns';
 
 import log from '../services/log';
 import Duel from '../models/Duel';
@@ -50,12 +50,14 @@ export async function arena(ctx) {
 
     if (tag) {
 
-      const { period, res: data } = await guildDuels(tag, shift, shiftTo);
+      const { period, res: data, opponents } = await guildDuels(tag, shift, shiftTo);
 
       const reply = [
-        `<b>[${tag}]</b> duels ${period}\n`,
+        `<b>[${tag}]</b> duels ${period}`,
+        '',
         ...map(data, formatGuildMemberDuels),
-        `\n<b>${data.length}</b> active fighters won ${formatGuildTotalDuels(data)}`,
+        '',
+        `<b>${data.length}</b> fighters ${gainInfo(opponents)} won ${formatGuildTotalDuels(data)}`,
       ];
 
       await ctx.replyWithHTML(reply.join('\n'));
@@ -241,8 +243,10 @@ function formatGuildMemberDuels(duels) {
   } = duels;
   return [
     duels.gainInfo,
-    `<b>${won}</b>/<b>${lost}</b>`,
-    `<code>${level}</code> ${name}`,
+    winRateBold([won, lost]).join('/'),
+    // `<b>${won}</b>/<b>${lost}</b>`,
+    name,
+    `<code>${level}</code>`,
   ].join(' ');
 }
 
@@ -296,17 +300,25 @@ async function guildDuels(tag, shift, shiftTo) {
 
   const period = formatPeriod(duels);
 
-  return { period, res: orderBy(res, ['gain', 'level'], ['desc', 'asc']) };
+  return {
+    period,
+    opponents,
+    res: orderBy(res, ['gain', 'level'], ['desc', 'asc']),
+  };
 
+}
+
+const hours = Math.floor(DUEL_RESET_HOUR);
+const minutes = (DUEL_RESET_HOUR - hours) * 60;
+
+function dateToCW(date) {
+  return addHours(date, -DUEL_RESET_HOUR);
 }
 
 function duelTimeFilter(shift, shiftTo = shift) {
 
   const today = addDays(new Date(), -shiftTo);
   let $lt = addDays(new Date(), -shiftTo);
-
-  const hours = Math.floor(DUEL_RESET_HOUR);
-  const minutes = (DUEL_RESET_HOUR - hours) * 60;
 
   $lt.setHours(hours, minutes, 0, 0);
 
@@ -335,31 +347,102 @@ function formatDuels(duels, id, primaryName) {
 
   const opponents = duelOpponents(duels, { id });
 
-  const wonOver = filter(opponents, 'isWinner');
-  const lostTo = filter(opponents, { isWinner: false });
-
-  const { ts: maxTs, winner: duelWinner, loser: duelLoser } = duels[0];
-  const { ts: minTs } = last(duels);
-
-  const duelPlayer = duelWinner.id === id ? duelWinner : duelLoser;
+  const { ts: maxTs, player: duelPlayer } = opponents[0];
+  const { ts: minTs } = last(opponents);
 
   const minDate = dateFormat(minTs);
   const maxDate = dateFormat(maxTs);
 
-  const period = minDate !== maxDate
+  const isPeriod = minDate !== maxDate && opponents.length > 10;
+
+  const period = isPeriod
     ? `from <b>${minDate}</b> to <b>${maxDate}</b>` : `on <b>${minDate}</b>`;
 
   const { tag, level, name } = duelPlayer;
 
+  const winRate = [wonOver(opponents).length, lostTo(opponents).length];
+
   return [
-    `${LEVEL_ICON}${level} <b>${tag ? `[${tag}] ` : ''}${name}</b> duels`,
-    `${gainInfo(opponents)} ${period}`,
+    `${LEVEL_ICON}${level} <b>${tag ? `[${tag}] ` : ''}${name}</b>`,
+    `${gainInfo(opponents)} for duels ${period}`,
     '',
-    `Won${opponentList(wonOver)}`,
+    isPeriod ? statsByDate() : wonLostList(),
     '',
-    `Lost${opponentList(lostTo)}`,
+    `Total ${winRateBold(winRate).join('/')}`,
   ].join('\n');
 
+  function wonLostList() {
+
+    return [
+      opponentList(wonOver(opponents)),
+      '',
+      opponentList(lostTo(opponents)),
+    ].join('\n');
+
+  }
+
+  function statsByDate() {
+
+    const byDate = groupBy(opponents, ({ ts }) => dateFormat(ts));
+
+    if (Object.keys(byDate).length < 60) {
+      return statsByDatePart(byDate);
+    }
+
+    const byWeek = groupBy(opponents, ({ ts }) => format(ts, 'Wo week'));
+
+    return statsByDatePart(byWeek);
+
+  }
+
+}
+
+function statsByDatePart(stats) {
+  return map(stats, (dateOpponents, datePart) => {
+
+    const winRate = [
+      wonOver(dateOpponents).length,
+      lostTo(dateOpponents).length,
+    ];
+
+    const gain = gainTotal(dateOpponents);
+
+    return [
+      `<code>${datePart}</code>`,
+      winRateBold(winRate).join(' / '),
+      // `(${gain > 0 ? '👍' : ''}${gain})`,
+      gain > 0 ? `👍 ${gain}` : `(${gain})`,
+      // gainInfo(dateOpponents),
+      winRateIcon(winRate),
+    ].join(' ');
+
+  }).join('\n');
+}
+
+function winRateBold(winRate) {
+  const total = sumBy(winRate);
+  return winRate.map(rate => {
+    const isBold = rate >= total / 2;
+    return isBold ? `<b>${rate}</b>` : rate;
+  });
+}
+
+function winRateIcon(winRate) {
+
+  const total = sumBy(winRate);
+  const prizes = ['🥇', '🥈', '🥉'];
+  const prize = total - winRate[0];
+
+  return (prize < prizes.length) ? prizes[prize] : '';
+
+}
+
+function wonOver(opponents) {
+  return filter(opponents, 'isWinner');
+}
+
+function lostTo(opponents) {
+  return filter(opponents, { isWinner: false });
 }
 
 function duelOpponents(duels, cond) {
@@ -383,6 +466,8 @@ function duelOpponents(duels, cond) {
       isChallenge,
       undamaged,
       saved: player.hp,
+      // ts: duel.ts,
+      ts: dateToCW(duel.ts),
     };
 
   }));
@@ -400,7 +485,7 @@ function gainTotal(opponents) {
 
 function gainInfo(opponents) {
   const gain = gainTotal(opponents);
-  return gain ? `${gain > 0 ? '❤️' : '💔'}${gain > 0 ? '+' : ''}${gain}` : '⚡️';
+  return gain ? `${gain > 0 ? `❤+${gain}` : `💔-${-gain}`}` : '⚡️';
 }
 
 
@@ -410,18 +495,10 @@ function opponentList(opponents) {
     return ': none';
   }
 
-  const res = [
-    ` ${gainInfo(opponents)} (<b>${opponents.length}</b>)`,
-    '',
-  ];
-
-  if (opponents.length > 10) {
-    res.push(...opponentsCastles(opponents));
-  } else {
-    res.push(...map(opponents, opponentFormat));
-  }
-
-  return res.join('\n');
+  return [
+    `${gainInfo(opponents)}`,
+    ...map(opponents, opponentFormat),
+  ].join('\n');
 
 }
 
@@ -432,7 +509,7 @@ function opponentFormat(duel) {
   const { castle, tag, name } = opponent;
   const { isChallenge, level } = opponent;
   // const { saved, undamaged } = duel;
-  const gain = gainInfo([duel]);
+  const gain = gainTotal([duel]);
 
   return filter([
     `<code>${level}</code>`,
@@ -440,21 +517,7 @@ function opponentFormat(duel) {
     tag ? `[${tag}]` : '',
     isChallenge ? '🤺‍' : '',
     name,
-    gain,
+    `<b>${gain > 0 ? '+' : ''}${gain}</b>`,
   ]).join(' ');
-
-}
-
-function opponentsCastles(opponents) {
-
-  const byCastle = groupBy(opponents, 'castle');
-
-  const data = map(byCastle, (duels, key) => ({
-    text: `${key} : ${duels.length}`,
-    key,
-    count: duels.length,
-  }));
-
-  return map(orderBy(data, ['count'], ['desc']), 'text');
 
 }

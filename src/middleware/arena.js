@@ -283,7 +283,7 @@ async function guildDuels(tag, shift, shiftTo) {
 
   const res = map(byName, (nameDuels, name) => {
     const { won = [], lost = [] } = groupBy(nameDuels, ({ isWinner }) => (isWinner ? 'won' : 'lost'));
-    const { level } = maxBy(nameDuels, 'level');
+    const { player: { level } } = maxBy(nameDuels, fpGet('player.level'));
     return {
       gain: gainTotal(nameDuels),
       gainInfo: gainInfo(nameDuels),

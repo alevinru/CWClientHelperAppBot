@@ -400,7 +400,7 @@ function gainTotal(opponents) {
 
 function gainInfo(opponents) {
   const gain = gainTotal(opponents);
-  return gain ? `${gain > 0 ? '❤️' : '💔'}${gain}` : '⚡️';
+  return gain ? `${gain > 0 ? '❤️' : '💔'}${gain > 0 ? '+' : ''}${gain}` : '⚡️';
 }
 
 

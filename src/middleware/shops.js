@@ -130,7 +130,7 @@ export async function shopsByItem(ctx) {
   if (matchingItems.length > 1) {
 
     const replyMultipleItems = [
-      `There are more than one items matching <code>${search}</code>:`,
+      `There are more than one item's matching <code>${search}</code>:`,
       '',
       ...matchingItems.map(({ item, price, mana }) => {
         const code = itemCodeByName(item);

@@ -330,8 +330,9 @@ function gearItemHtml(gear) {
 
   const stats = [
     quality && `(${qualityLetter[quality]})`,
-    atk && `+${atk}⚔`,
-    def && `+${def}🛡`,
+    atk && `⚔${atk}`,
+    def && `🛡${def}`,
+    gear.mana && `💧${gear.mana}`,
     stam && `+${stam}🔋`,
   ];
 

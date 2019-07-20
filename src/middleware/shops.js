@@ -1,16 +1,18 @@
 import map from 'lodash/map';
 import find from 'lodash/find';
+import groupBy from 'lodash/groupBy';
 import filter from 'lodash/filter';
 import take from 'lodash/take';
 import upperFirst from 'lodash/upperFirst';
 import orderBy from 'lodash/orderBy';
-import uniq from 'lodash/uniq';
+import minBy from 'lodash/minBy';
 import flatten from 'lodash/flatten';
 
 import { distanceInWordsToNow, addMinutes } from 'date-fns';
 
 import { searchRe } from '../services/util';
 import log from '../services/log';
+import { itemNameByCode, itemCodeByName } from '../services/cw';
 
 import Shop from '../models/Shop';
 
@@ -105,9 +107,11 @@ export async function shopsByItem(ctx) {
 
   const lastOpened = await lastDigestOpened();
 
-  debug('shopsByItem', `"${search}"`);
+  const itemName = itemNameByCode(search);
 
-  const $regex = searchRe(search);
+  debug('shopsByItem', `"${search}"`, itemName);
+
+  const $regex = itemName ? new RegExp(itemName) : searchRe(search);
 
   const shops = await Shop.find({
     lastOpened,
@@ -121,14 +125,17 @@ export async function shopsByItem(ctx) {
     return;
   }
 
-  const matchingItems = shopsItems(shops, $regex);
+  const matchingItems = orderBy(shopsItems(shops, $regex), ['mana', 'name']);
 
   if (matchingItems.length > 1) {
 
     const replyMultipleItems = [
       `There are more than one items matching <code>${search}</code>:`,
       '',
-      ...matchingItems.map(item => `▪︎ ${item}`),
+      ...matchingItems.map(({ item, price, mana }) => {
+        const code = itemCodeByName(item);
+        return `${code ? `/wf_${code}` : '▪︎'} ${item} 💰${price} 💧${mana}`;
+      }),
       '',
       'Please specify',
     ];
@@ -139,7 +146,8 @@ export async function shopsByItem(ctx) {
 
   }
 
-  const item = matchingItems[0];
+  const { item } = matchingItems[0];
+  const itemCode = itemCodeByName(item);
 
   const itemShops = orderBy(shopsItem(shops, item), ['price', 'mana'], ['asc', 'desc']);
 
@@ -149,6 +157,10 @@ export async function shopsByItem(ctx) {
     ...take(itemShops, 12).map(shopAsListItem),
   ];
 
+  if (itemCode && !itemName) {
+    reply.push(`\n/wf_${itemCode}`);
+  }
+
   await ctx.replyWithHTML(reply.join('\n'));
 
 }
@@ -157,8 +169,8 @@ function shopsItem(shops, itemName) {
 
   const res = map(shops, shop => {
 
-    const offer = find(shop.offers, ({ item, mana }) => {
-      return itemName === item && mana <= shop.mana * 1.5;
+    const offer = find(shop.offers, ({ item }) => {
+      return itemName === item;
     });
 
     return offer && { ...shop.toObject(), price: offer.price };
@@ -173,10 +185,17 @@ function shopsItems(shops, $regex) {
 
   const allItems = map(shops, ({ offers }) => {
     const matchingOffers = filter(offers, ({ item }) => $regex.test(item));
-    return map(matchingOffers, 'item');
+    return matchingOffers;
   });
 
-  return uniq(flatten(allItems));
+  return map(groupBy(flatten(allItems), 'item'), (offers, item) => {
+    const { price, mana } = minBy(offers, 'price');
+    return {
+      item,
+      price,
+      mana,
+    };
+  });
 
 }
 

@@ -116,6 +116,10 @@ Battles
 
 bot.on('message', Telegraf.optional(battles.reportFilter, battles.onReportForward));
 
+botHears('rb', battles.userReport);
+botHears('rbg', battles.guildReport);
+botHears('rbg[ _]([^ ]+)', battles.guildReport);
+
 /*
 Other
  */

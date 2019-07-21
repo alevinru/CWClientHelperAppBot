@@ -136,7 +136,9 @@ const BATTLE_EFFECTS = {
   luckyDefender: '⚡Lucky Defender!',
   criticalStrike: '⚡Critical strike',
   battleCry: /⚡Battle Cry\. You were inspired by (.+)/,
+  taunts: 'Your taunts were successful',
   medal: /🏅(.+)/,
+  ga: '🔱Guardian angel',
 };
 
 function battleEffects(results) {

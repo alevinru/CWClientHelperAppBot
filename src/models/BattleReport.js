@@ -11,6 +11,8 @@ const schema = new Schema({
   gold: Number,
   hp: Number,
   userId: Number,
+  results: Array,
+  effects: Object,
 }, { collection: 'BattleReport' });
 
 // schema.index({ lastOpened: -1 });

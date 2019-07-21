@@ -338,7 +338,7 @@ function duelTimeFilter(shift, shiftTo = shift) {
 }
 
 function dateFormat(date) {
-  return format(date, 'D/MM');
+  return format(date, 'DD/MM');
 }
 
 function dateToCW(date) {

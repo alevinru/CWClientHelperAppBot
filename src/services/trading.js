@@ -206,7 +206,7 @@ async function reportUpdatedFunds(userId) {
 
       const reply = `You have ${trader.funds}💰 now`;
 
-      await bot.telegram.sendMessage(userId, reply, { parse_mode: 'HTML' });
+      await botMessage(userId, reply);
 
     } else {
       debug('reportUpdatedFunds', `same ${currentFunds}💰`);
@@ -239,7 +239,7 @@ async function replyOrderFail(e, offer, order, deal) {
   const notify = await settingValue(userId, NOTIFY_ORDER_FAIL);
 
   if (notify) {
-    bot.telegram.sendMessage(userId, errMsg.join(''), { parse_mode: 'HTML' })
+    botMessage(userId, errMsg.join(''))
       .catch(errBot => error('replyOrderFail', errBot.message));
   }
 
@@ -263,7 +263,7 @@ function replyOrderSuccess(offer, order, dealParams, tries) {
     reply.push(` on attempt №${tries}`);
   }
 
-  bot.telegram.sendMessage(order.userId, reply.join(''), { parse_mode: 'HTML' })
+  botMessage(order.userId, reply.join(''))
     .catch(({ name, message }) => error('onGotOffer', name, message));
 
 }
@@ -281,4 +281,9 @@ export async function setTraderActive(traderId, isActive) {
 
   return saveTrader(trader);
 
+}
+
+async function botMessage(userId, reply) {
+  const options = { parse_mode: 'HTML', disable_notification: true };
+  return bot.telegram.sendMessage(userId, reply, options);
 }

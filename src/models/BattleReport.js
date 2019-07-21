@@ -14,6 +14,7 @@ const schema = new Schema({
   userId: Number,
   results: Array,
   effects: Object,
+  ts: Date,
 }, { collection: 'BattleReport' });
 
 // schema.index({ lastOpened: -1 });

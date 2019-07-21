@@ -7,6 +7,7 @@ import groupBy from 'lodash/groupBy';
 import orderBy from 'lodash/orderBy';
 import fpGet from 'lodash/fp/get';
 import fpSumBy from 'lodash/fp/sumBy';
+import omit from 'lodash/omit';
 
 import log from '../services/log';
 import { fromCWFilter } from '../config/filters';
@@ -80,7 +81,18 @@ export async function onReportForward(ctx) {
 
   debug('onReportForward:', battle);
 
-  await new BattleReport(battle).save();
+  const { date, name } = battle;
+  const key = { date, name };
+
+  const $setOnInsert = omit(battle, ['date', 'name']);
+
+  await BattleReport.updateOne(key, {
+    $setOnInsert,
+    $set: {
+      ts: new Date(),
+    },
+    // $currentDate: { ts: true },
+  }, { upsert: true });
 
   if (chat.id !== from.id) {
     return;
@@ -160,7 +172,7 @@ export async function guildReport(ctx) {
 
   const reply = [
 
-    `<b>[${tag}]</b> battle report on ${dateFormat(date)}`,
+    `<b>[${tag}]</b> battle report ${dateFormat(date)}`,
     '',
     map(reports, (userReports, name) => {
 
@@ -249,7 +261,9 @@ function effectIcon(val, e) {
 
 function battleEffects(results) {
 
-  return mapValues(BATTLE_EFFECTS, ({ test }) => {
+  const res = {};
+
+  map(BATTLE_EFFECTS, ({ test }, key) => {
 
     const simple = find(results, result => {
       // debug(result, cond);
@@ -257,17 +271,19 @@ function battleEffects(results) {
     });
 
     if (simple) {
-      return true;
+      res[key] = true;
+      return;
     }
 
     const valued = find(results, result => result.match(test));
 
     if (valued) {
-      return valued.match(test)[1];
+      const [, value] = valued.match(test);
+      res[key] = value;
     }
 
-    return undefined;
-
   });
+
+  return res;
 
 }

@@ -1,4 +1,4 @@
-import { format, addHours } from 'date-fns';
+import { format, addHours, addDays } from 'date-fns';
 import filter from 'lodash/filter';
 import map from 'lodash/map';
 import mapValues from 'lodash/mapValues';
@@ -8,6 +8,7 @@ import orderBy from 'lodash/orderBy';
 import fpGet from 'lodash/fp/get';
 import fpSumBy from 'lodash/fp/sumBy';
 import omit from 'lodash/omit';
+import set from 'lodash/set';
 
 import log from '../services/log';
 import { fromCWFilter } from '../config/filters';
@@ -112,24 +113,82 @@ export async function userReport(ctx) {
 
   const { from: { id: userId } } = ctx;
 
-  const report = await BattleReport.findOne({ userId }).sort({ date: -1 });
+  const reply = await userReportByDate({ userId });
 
-  if (!report) {
+  await ctx.replyWithHTML(reply.join('\n'));
+
+}
+
+
+export async function userReportForPeriod(ctx) {
+
+  const { match, session: { profile } } = ctx;
+  const [, from, to] = match;
+
+  if (!profile || !from) {
     return;
   }
 
-  const { effects, name } = report;
-  const { stats: { atk, def }, exp, gold } = report;
+  const { userName, guild_tag: tag } = profile;
 
-  const reply = [
-    `${report.castle} <b>${name}</b> battle report`,
-    '',
-    `<b>${dateFormat(report.date)}</b> 🔥${exp} 💰${gold} ⚔️${atk} 🛡${def}`,
-    '',
-    ...map(effects, effectInfo),
-  ];
+  const name = `${tag && `[${tag}]`}${userName}`;
+
+  debug('userReportForPeriod', name, from, to);
+
+  const dateB = addDays(battleDate(new Date()), -parseInt(from, 0));
+
+  const reply = await userReportByDate({ name }, dateB);
 
   await ctx.replyWithHTML(reply.join('\n'));
+
+}
+
+
+async function userReportByDate(filters, dateB, dateE) {
+
+  if (dateB) {
+    set(filters, 'date.$gte', dateB);
+    if (dateE) {
+      set(filters, 'date.$lte', dateE);
+    }
+  }
+
+  const query = BattleReport.find(filters).sort({ date: -1 });
+
+  if (!dateB) {
+    query.limit(1);
+  }
+
+  const reports = await query;
+
+  if (!reports.length) {
+    return [`No battle report found for <b>${JSON.stringify(filters)}</b>`];
+  }
+
+  const rows = reports.map(report => {
+    const { stats: { atk, def }, exp, gold } = report;
+    return [
+      `<b>${dateFormat(report.date)}</b> 🔥${exp} 💰${gold} ⚔️${atk} 🛡${def}`,
+      map(report.effects, effectIcon).join(''),
+    ].join(' ');
+  });
+
+  const { effects, name, castle } = reports[0];
+
+  const res = [
+    `${castle} <b>${name}</b> battle report`,
+    '',
+    ...rows,
+  ];
+
+  if (reports.length === 1) {
+    res.push([
+      '',
+      ...map(effects, effectInfo),
+    ]);
+  }
+
+  return res;
 
 }
 
@@ -202,10 +261,6 @@ function tagName(name) {
   return tag;
 }
 
-function effectInfo(val, e) {
-  return `✅️ ${e}${val && val !== true ? `: ${val}` : ''}`;
-}
-
 function battleDate(reportDate) {
 
   const date = addHours(reportDate, BATTLE_HOUR);
@@ -257,6 +312,11 @@ const BATTLE_EFFECTS = {
 
 function effectIcon(val, e) {
   return fpGet('icon')(BATTLE_EFFECTS[e]);
+}
+
+function effectInfo(val, e) {
+  const { icon = '✅️' } = BATTLE_EFFECTS[e] || {};
+  return `${icon} ${val && val !== true ? val : ''}`;
 }
 
 function battleEffects(results) {

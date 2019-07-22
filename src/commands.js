@@ -116,9 +116,11 @@ Battles
 
 bot.on('message', Telegraf.optional(battles.reportFilter, battles.onReportForward));
 
-botHears('rb[ _](\\d+)', battles.userReportForPeriod);
+botHears('rb[ _](\\d{1,4})', battles.userReportForPeriod);
 
+botHears('rb[ _]([\\da-h]{24})', battles.userReport);
 botHears('rb', battles.userReport);
+
 botHears('rbg', battles.guildReport);
 botHears('rbg[ _]([^ ]+)', battles.guildReport);
 

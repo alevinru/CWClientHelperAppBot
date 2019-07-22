@@ -112,9 +112,15 @@ export async function onReportForward(ctx) {
 
 export async function userReport(ctx) {
 
-  const { from: { id: userId } } = ctx;
+  const { from: { id: userId }, match } = ctx;
 
-  const reply = await userReportByDate({ userId });
+  const [, reportId] = match;
+
+  debug('userReport', userId, reportId);
+
+  const filters = reportId ? { _id: reportId } : { userId };
+
+  const reply = await userReportByDate(filters);
 
   await ctx.replyWithHTML(reply.join('\n'));
 
@@ -168,10 +174,10 @@ async function userReportByDate(filters, dateB, dateE) {
 
   const rows = reports.map(report => {
     const { stats: { atk, def }, exp, gold } = report;
-    return [
+    return filter([
       `<b>${dateFormat(report.date)}</b> 🔥${exp} 💰${gold} ⚔️${atk} 🛡${def}`,
-      map(report.effects, effectIcon).join(''),
-    ].join(' ');
+      reports.length > 1 && map(report.effects, effectIcon).join(''),
+    ]).join(' ');
   });
 
   const { stats: { level }, name, castle } = reports[0];
@@ -185,7 +191,7 @@ async function userReportByDate(filters, dateB, dateE) {
   if (reports.length === 1) {
     res.push(
       '',
-      map(reports[0].effects, effectInfo).join(' '),
+      map(reports[0].effects, effectInfo).join('\n'),
     );
   }
 
@@ -305,13 +311,14 @@ function battleStats(text) {
 }
 
 const BATTLE_EFFECTS = {
-  staminaRestored: { test: '🔋Stamina restored', icon: '🔋' },
-  luckyDefender: { test: '⚡Lucky Defender!', icon: '⚡' },
-  criticalStrike: { test: '⚡Critical strike', icon: '⚡' },
-  inspiredBy: { test: /⚡Battle Cry\. You were inspired by (.+)/, icon: '🤟' },
-  taunts: { test: 'Your taunts were successful', icon: '🕺' },
-  medal: { test: /🏅(.+)/, icon: '🏅' },
-  ga: { test: '🔱Guardian angel', icon: '🔱' },
+  battleCries: { test: 'Your battle cries were successful', icon: '🗣', label: 'Successful battle cries' },
+  staminaRestored: { test: '🔋Stamina restored', icon: '🔋', label: 'Stamina restored' },
+  luckyDefender: { test: '⚡Lucky Defender!', icon: '✌️', label: 'Lucky Defender' },
+  criticalStrike: { test: '⚡Critical strike', icon: '⚡', label: 'Critical strike' },
+  inspiredBy: { test: /⚡Battle Cry\. You were inspired by (.+)/, icon: '🤟', label: 'Inspired by' },
+  taunts: { test: 'Your taunts were successful', icon: '🕺', label: 'Successful taunts' },
+  medal: { test: /🏅(.+)/, icon: '🏅', label: '' },
+  ga: { test: '🔱Guardian angel', icon: '🔱', label: 'Guardian angel' },
 };
 
 function effectIcon(val, e) {
@@ -319,8 +326,15 @@ function effectIcon(val, e) {
 }
 
 function effectInfo(val, e) {
-  const { icon = '✅️' } = BATTLE_EFFECTS[e] || {};
-  return `${icon} ${val && val !== true ? val : ''}`;
+
+  const { icon, label } = BATTLE_EFFECTS[e] || {};
+
+  return filter([
+    icon || '✅️',
+    label,
+    `${val && val !== true ? val : ''}`,
+  ]).join(' ');
+
 }
 
 function battleEffects(results) {

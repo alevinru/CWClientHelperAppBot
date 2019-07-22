@@ -70,7 +70,7 @@ export function reportFilter(ctx) {
   return isReport;
 
   function getValue(label) {
-    const [, res] = text.match(`${label}: (\\d+)`) || [];
+    const [, res] = text.match(`${label}: ([-]?\\d+)`) || [];
     return res ? parseInt(res, 0) : 0;
   }
 
@@ -85,12 +85,13 @@ export async function onReportForward(ctx) {
   const { date, name } = battle;
   const key = { date, name };
 
-  const $setOnInsert = omit(battle, ['date', 'name']);
+  const $setOnInsert = omit(battle, ['date', 'name', 'gold']);
 
   await BattleReport.updateOne(key, {
     $setOnInsert,
     $set: {
       ts: new Date(),
+      gold: battle.gold,
     },
     // $currentDate: { ts: true },
   }, { upsert: true });
@@ -173,19 +174,19 @@ async function userReportByDate(filters, dateB, dateE) {
     ].join(' ');
   });
 
-  const { effects, name, castle } = reports[0];
+  const { stats: { level }, name, castle } = reports[0];
 
   const res = [
-    `${castle} <b>${name}</b> battle report`,
+    `<code>${level}</code> ${castle} <b>${name}</b> battle report`,
     '',
     ...rows,
   ];
 
   if (reports.length === 1) {
-    res.push([
+    res.push(
       '',
-      ...map(effects, effectInfo),
-    ]);
+      map(reports[0].effects, effectInfo).join(' '),
+    );
   }
 
   return res;
@@ -241,8 +242,11 @@ export async function guildReport(ctx) {
       const { stats: { atk, def, level }, exp, gold } = report;
 
       return [
-        [`<code>${level}</code> <b>${name.replace(/(\[.+])/, '')}</b>`,
-          ...map(effects, effectIcon)].join(' '),
+        filter([
+          `<code>${level}</code>`,
+          map(effects, effectIcon).join(' '),
+          `<b>${name.replace(/(\[.+])/, '')}</b>`,
+        ]).join(' '),
         `🔥${exp} 💰${gold} ⚔️${atk} 🛡${def}`,
       ].join('\n');
 
@@ -301,7 +305,7 @@ function battleStats(text) {
 }
 
 const BATTLE_EFFECTS = {
-  staminaRestored: { test: 'Stamina restored', icon: '🔋' },
+  staminaRestored: { test: '🔋Stamina restored', icon: '🔋' },
   luckyDefender: { test: '⚡Lucky Defender!', icon: '⚡' },
   criticalStrike: { test: '⚡Critical strike', icon: '⚡' },
   inspiredBy: { test: /⚡Battle Cry\. You were inspired by (.+)/, icon: '🤟' },
@@ -339,7 +343,7 @@ function battleEffects(results) {
 
     if (valued) {
       const [, value] = valued.match(test);
-      res[key] = value;
+      res[key] = value || '';
     }
 
   });

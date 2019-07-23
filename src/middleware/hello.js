@@ -1,4 +1,5 @@
 import get from 'lodash/get';
+import orderBy from 'lodash/orderBy';
 
 import { refreshProfile } from '../services/auth';
 import { saveUser, getAuthorizedUsers, saveTrust } from '../services/users';
@@ -65,15 +66,17 @@ export async function hello(ctx) {
 
 }
 
-
 export async function listUsers(ctx) {
+
+  const cmd = ctx.match[0] === '/gg' ? 'gear' : 'profile';
 
   try {
 
     const users = await getAuthorizedUsers(ctx.session);
 
     if (users.length) {
-      await ctx.replyHTML(users.map(formatUser).join('\n'));
+      const sorted = orderBy(users, ({ profile: { userName } }) => userName.toLowerCase());
+      await ctx.replyHTML(sorted.map(formatUser(cmd)).join('\n'));
     } else {
       await ctx.replyHTML([
         'There are no users for your session.',
@@ -88,8 +91,10 @@ export async function listUsers(ctx) {
 }
 
 
-function formatUser({ userId, profile, teamId }) {
-  return `/profile_${userId} <b>${profile.userName}</b> from <b>${teamId}</b>`;
+function formatUser(cmd) {
+  return ({ id: userId, profile: { userName } }) => {
+    return `/${cmd}_${userId} <b>${userName}</b>`;
+  };
 }
 
 

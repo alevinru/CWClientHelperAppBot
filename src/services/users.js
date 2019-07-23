@@ -11,14 +11,15 @@ const { debug } = log('users');
 
 export const USERS_HASH = 'users';
 
-export async function getAuthorizedUsers(session) {
+export async function getAuthorizedUsers({ profile }) {
 
-  const { teamId } = session;
+  if (!profile) {
+    return [];
+  }
 
-  const users = await hgetallAsync(USERS_HASH)
-    .then(fpMap(JSON.parse));
+  const { guild_tag: tag } = profile;
 
-  return filter(users, user => user.teamId === teamId);
+  return User.find({ 'profile.guild_tag': tag }).sort({ 'profile.userName': 1, id: 1 });
 
 }
 

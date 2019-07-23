@@ -63,7 +63,8 @@ bot.command('authCraftBook', auth.authCraftBook);
 bot.command('authGear', auth.authGearInfo);
 bot.hears(/^\/hello[ _](\d+)$/, users.hello);
 bot.command('hello', users.hello);
-bot.command('users', users.listUsers);
+botHears('users', users.listUsers);
+botHears('gg', users.listUsers);
 
 bot.hears(/^\/(trust|untrust)$/, users.trust);
 

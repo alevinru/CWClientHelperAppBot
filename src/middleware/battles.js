@@ -173,11 +173,15 @@ async function userReportByDate(filters, dateB, dateE) {
   }
 
   const rows = reports.map(report => {
+
     const { stats: { atk, def }, exp, gold } = report;
+    const icons = map(report.effects, effectIcon).join('');
+
     return filter([
-      `<b>${dateFormat(report.date)}</b> 🔥${exp} 💰${gold} ⚔️${atk} 🛡${def}`,
-      reports.length > 1 && map(report.effects, effectIcon).join(''),
-    ]).join(' ');
+      `<b>${dateFormat(report.date)}</b> ${reports.length > 1 ? icons : ''}`,
+      ` ⚔️${atk} 🛡${def} 🔥${exp} 💰${gold}`,
+    ]).join('\n');
+
   });
 
   const { stats: { level }, name, castle } = reports[0];
@@ -185,7 +189,7 @@ async function userReportByDate(filters, dateB, dateE) {
   const res = [
     `<code>${level}</code> ${castle} <b>${name}</b> battle report`,
     '',
-    ...rows,
+    rows.join('\n\n'),
   ];
 
   if (reports.length === 1) {
@@ -250,13 +254,13 @@ export async function guildReport(ctx) {
       return [
         filter([
           `<code>${level}</code>`,
-          map(effects, effectIcon).join(' '),
           `<b>${name.replace(/(\[.+])/, '')}</b>`,
+          map(effects, effectIcon).join(''),
         ]).join(' '),
-        `🔥${exp} 💰${gold} ⚔️${atk} 🛡${def}`,
+        `⚔️${atk} 🛡${def} 🔥${exp} 💰${gold}`,
       ].join('\n');
 
-    }).join('\n'),
+    }).join('\n\n'),
     '',
     `👤${dateReports.length} ${totals.atk} ${totals.def}`,
   ];
@@ -285,7 +289,11 @@ function battleDate(reportDate) {
 }
 
 function dateFormat(date) {
-  return `${battleIcon(date)} ${format(date, 'DD/MM')}`;
+  return `${battleIcon(date)} ${dayPart(date)}`;
+}
+
+function dayPart(date) {
+  return format(date, 'DD/MM');
 }
 
 function battleIcon(date) {

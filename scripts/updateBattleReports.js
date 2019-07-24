@@ -6,18 +6,23 @@ let page = 0;
 
 while (cursor.hasNext()) {
 
-  const { _id, tag, name } = cursor.next();
+  const { _id, results, gold } = cursor.next();
 
-  if (tag) {
+  if (gold !== 0) {
     continue;
   }
 
-  const [, guildTag = null] = name.match(/\[(.+)\]/) || [];
+  const result = results.join('\n');
+  const [, updatedGold] = result.match(/Gold: ([-]?\d+)/) || [];
+
+  if (!updatedGold) {
+    continue;
+  }
 
   ops.push({
     updateOne: {
       filter: { _id },
-      update: { $set: { tag: guildTag } },
+      update: { $set: { gold: updatedGold } },
     },
   });
 

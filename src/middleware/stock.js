@@ -10,11 +10,11 @@ const { debug } = log('mw:stock');
 
 export default async function (ctx) {
 
-  const { session, from: { id: sessionUserId }, message } = ctx;
-  const match = message.text.match(/\/stock[ _]?(\d*)$/) || [];
-  const [, matchUserId] = match;
+  const { session, from: { id: sessionUserId } } = ctx;
+  const [, matchUserId] = ctx.match;
   const userId = matchUserId || sessionUserId;
-  debug(userId, match);
+
+  debug(userId);
 
   try {
     const token = matchUserId ? await getToken(matchUserId) : getAuthToken(session);

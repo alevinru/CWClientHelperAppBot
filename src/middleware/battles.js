@@ -31,7 +31,7 @@ export function reportFilter(ctx) {
   const { state, message, from: { id: userId } } = ctx;
   const { text, forward_date: forwardDate } = message;
 
-  if (!text && !fromCWFilter(ctx)) {
+  if (!text || !fromCWFilter(ctx)) {
     return false;
   }
 

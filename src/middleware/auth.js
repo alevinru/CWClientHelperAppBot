@@ -105,6 +105,10 @@ export async function authGearInfo(ctx) {
 
 }
 
+const { CW_APP_NAME } = process.env;
+
+const AUTH_CODE_RE = new RegExp(`^Code (\\d+) to authorize ${CW_APP_NAME}`);
+
 export async function authCode(ctx, next) {
 
   const {
@@ -113,7 +117,7 @@ export async function authCode(ctx, next) {
     from: { id: userId },
   } = ctx;
 
-  if (!text || !text.match(/^Code .+/)) {
+  if (!AUTH_CODE_RE.test(text)) {
     await next();
     return;
   }

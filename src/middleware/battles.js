@@ -26,6 +26,8 @@ const BATTLE_STATS_RE = new RegExp(`(${CASTLES.join('|')})(.*) .:(.+) ..:(.+) Lv
 
 const ADMIN_ID = parseInt(process.env.ADMIN_ID, 0);
 
+const aggregate = path => fpSumBy(fpGet(path));
+
 export function reportFilter(ctx) {
 
   const { state, message, from: { id: userId } } = ctx;
@@ -214,6 +216,8 @@ export async function guildReport(ctx) {
   const { guild_tag: ownTag } = profile;
   const [, matchTag] = (userId === ADMIN_ID && ctx.match) || ['', ownTag];
 
+  const [, days = 1] = ctx.match;
+
   const tag = matchTag || ownTag;
 
   if (!tag) {
@@ -221,20 +225,29 @@ export async function guildReport(ctx) {
     return;
   }
 
-  const tagReports = await BattleReport.find({ tag }).sort({ date: -1 }).limit(20);
+  const lastReports = await BattleReport.find({ tag })
+    .sort({ date: -1 })
+    .limit(1);
 
-  debug('rbg', tag, tagReports.length);
+  debug('rbg', tag, lastReports.length);
 
-  if (!tagReports.length) {
+  if (!lastReports.length) {
     return;
   }
 
-  const { date } = tagReports[0];
+  const { date } = lastReports[0];
 
-  const dateReports = orderBy(filter(tagReports, { date }), ['exp'], ['desc']);
+  const repFilter = {
+    tag,
+    date: { $lte: date, $gte: addDays(date, days - 1) },
+  };
+
+  const tagReports = await BattleReport.find(repFilter)
+    .sort({ date: -1 });
+
+  const dateReports = orderBy(tagReports, ['exp'], ['desc']);
 
   const reports = groupBy(dateReports, fpGet('name'));
-  const aggregate = path => fpSumBy(fpGet(path));
 
   const totals = mapValues(
     { atk: '⚔', def: '🛡' },

@@ -234,38 +234,42 @@ export async function guildReport(ctx) {
   const dateReports = orderBy(filter(tagReports, { date }), ['exp'], ['desc']);
 
   const reports = groupBy(dateReports, fpGet('name'));
+  const aggregate = path => fpSumBy(fpGet(path));
 
   const totals = mapValues(
     { atk: '⚔', def: '🛡' },
-    (val, key) => `${val}${fpSumBy(fpGet(`stats.${key}`))(dateReports) || 0}`,
+    (val, key) => `${val}${aggregate(`stats.${key}`)(dateReports) || 0}`,
   );
 
-  const reply = [
+  totals.exp = `🔥${aggregate('exp')(dateReports)}`;
 
+  const reply = [
     `<b>[${tag}]</b> battle report ${dateFormat(date)}`,
     '',
-    map(reports, (userReports, name) => {
-
-      const report = userReports[0];
-      const { effects } = report;
-
-      const { stats: { atk, def, level }, exp, gold } = report;
-
-      return [
-        filter([
-          `<code>${level}</code>`,
-          `<b>${name.replace(/(\[.+])/, '')}</b>`,
-          map(effects, effectIcon).join(''),
-        ]).join(' '),
-        `⚔️${atk} 🛡${def} 🔥${exp} 💰${gold}`,
-      ].join('\n');
-
-    }).join('\n\n'),
+    map(reports, guildUserDayReport).join('\n\n'),
     '',
-    `👤${dateReports.length} ${totals.atk} ${totals.def}`,
+    `👤${dateReports.length} ${totals.atk} ${totals.def} ${totals.exp}`,
   ];
 
   await ctx.replyWithHTML(reply.join('\n'));
+
+}
+
+function guildUserDayReport(userReports, name) {
+
+  const report = userReports[0];
+  const { effects } = report;
+
+  const { stats: { atk, def, level }, exp, gold } = report;
+
+  return [
+    filter([
+      `<code>${level}</code>`,
+      `<b>${name.replace(/(\[.+])/, '')}</b>`,
+      map(effects, effectIcon).join(''),
+    ]).join(' '),
+    `⚔️${atk} 🛡${def} 🔥${exp} 💰${gold}`,
+  ].join('\n');
 
 }
 

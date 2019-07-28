@@ -9,6 +9,7 @@ import fpGet from 'lodash/fp/get';
 import fpSumBy from 'lodash/fp/sumBy';
 import omit from 'lodash/omit';
 import set from 'lodash/set';
+import max from 'lodash/max';
 
 import log from '../services/log';
 import { fromCWFilter } from '../config/filters';
@@ -216,9 +217,10 @@ export async function guildReport(ctx) {
   const { guild_tag: ownTag } = profile;
   const [, matchTag] = (userId === ADMIN_ID && ctx.match) || ['', ownTag];
 
-  const [, days = 1] = ctx.match;
+  const [, daysMatch] = ctx.match;
 
-  const tag = matchTag || ownTag;
+  const days = parseInt(daysMatch, 0) || 1;
+  const tag = ownTag || matchTag;
 
   if (!tag) {
     error('rbg', ownTag, ctx.match);
@@ -229,7 +231,7 @@ export async function guildReport(ctx) {
     .sort({ date: -1 })
     .limit(1);
 
-  debug('rbg', tag, lastReports.length);
+  debug('rbg', tag, days, lastReports.length);
 
   if (!lastReports.length) {
     return;
@@ -239,7 +241,7 @@ export async function guildReport(ctx) {
 
   const repFilter = {
     tag,
-    date: { $lte: date, $gte: addDays(date, days - 1) },
+    date: { $lte: date, $gte: addDays(date, 1 - days) },
   };
 
   const tagReports = await BattleReport.find(repFilter)
@@ -247,7 +249,11 @@ export async function guildReport(ctx) {
 
   const dateReports = orderBy(tagReports, ['exp'], ['desc']);
 
-  const reports = groupBy(dateReports, fpGet('name'));
+  const groupedReports = groupBy(dateReports, ({ name }) => name.replace(/🎗/, ''));
+
+  const groups = map(groupedReports, (userReports, name) => ({ userReports, name }));
+
+  const reports = orderBy(groups, ({ userReports }) => -aggregate('exp')(userReports));
 
   const totals = mapValues(
     { atk: '⚔', def: '🛡' },
@@ -255,20 +261,56 @@ export async function guildReport(ctx) {
   );
 
   totals.exp = `🔥${aggregate('exp')(dateReports)}`;
+  totals.gold = `💰${aggregate('gold')(dateReports)}`;
+
+  const formatter = days > 1 ? guildUserWeeklyReport : guildUserDayReport;
+
+  const totalsRow = [`👤${reports.length}`, totals.exp, totals.gold];
+
+  const dateLabel = [dateFormat(date)];
+
+  if (days > 1) {
+    dateLabel.push(`for <b>${days}</b> days`);
+  }
 
   const reply = [
-    `<b>[${tag}]</b> battle report ${dateFormat(date)}`,
+    `<b>[${tag}]</b> battle report ${dateLabel.join(' ')}`,
     '',
-    map(reports, guildUserDayReport).join('\n\n'),
+    map(reports, formatter).join('\n\n'),
     '',
-    `👤${dateReports.length} ${totals.atk} ${totals.def} ${totals.exp}`,
+    totalsRow.join(' '),
   ];
+
+  if (days <= 1) {
+    reply.push([totals.atk, totals.def].join(' '));
+  }
 
   await ctx.replyWithHTML(reply.join('\n'));
 
 }
 
-function guildUserDayReport(userReports, name) {
+function guildUserWeeklyReport({ userReports, name }) {
+
+  // const { effects } = groupBy(userReports, fpGet('effects.medal'));
+  const level = max(map(userReports, fpGet('stats.level')));
+
+  const totals = mapValues(
+    { exp: '🔥', gold: '💰' },
+    (val, key) => `${val}${aggregate(key)(userReports) || 0}`,
+  );
+
+  return [
+    filter([
+      `<code>${level}</code>`,
+      `<b>${name.replace(/(\[.+])/, '')}</b>`,
+      // map(effects, effectIcon).join(''),
+    ]).join(' '),
+    `👊${userReports.length} ${totals.exp} ${totals.gold}`,
+  ].join('\n');
+
+}
+
+function guildUserDayReport({ userReports, name }) {
 
   const report = userReports[0];
   const { effects } = report;

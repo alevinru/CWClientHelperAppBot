@@ -124,6 +124,7 @@ botHears('rb', battles.userReport);
 
 botHears('rbg', battles.guildReport);
 botHears('rbg[ _]([^ ]+)', battles.guildReport);
+botHears('rbgw[ _](\\d+)', battles.guildReport);
 
 /*
 Other

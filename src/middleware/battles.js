@@ -25,6 +25,8 @@ const BATTLE_TEXT_RE = new RegExp(BATTLE_TEXT);
 const CASTLES = map(JSON.parse(process.env.CASTLES));
 const BATTLE_STATS_RE = new RegExp(`(${CASTLES.join('|')})(.*) .:(.+) ..:(.+) Lvl: (\\d+)`);
 
+const MOB_BATTLE_REPORT = /Hit.*\nMiss/i;
+
 const ADMIN_ID = parseInt(process.env.ADMIN_ID, 0);
 
 const aggregate = path => fpSumBy(fpGet(path));
@@ -41,6 +43,10 @@ export function reportFilter(ctx) {
   const isReport = BATTLE_TEXT_RE.test(text);
 
   if (!isReport) {
+    return false;
+  }
+
+  if (MOB_BATTLE_REPORT.test(text)) {
     return false;
   }
 

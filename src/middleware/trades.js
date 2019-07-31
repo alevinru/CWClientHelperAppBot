@@ -1,5 +1,6 @@
 import sumBy from 'lodash/sumBy';
 import round from 'lodash/round';
+import take from 'lodash/take';
 import orderBy from 'lodash/orderBy';
 import addHours from 'date-fns/add_hours';
 import addMinutes from 'date-fns/add_minutes';
@@ -97,6 +98,89 @@ export async function itemStats(ctx) {
   await ctx.replyWithHTML(res.join('\n'));
 
 }
+
+const NAMES_LIMIT = 12;
+
+export async function itemBuyers(ctx) {
+
+  const { match } = ctx;
+  const [command, itemCode, priceParam, hoursParam, hm = 'h'] = match;
+  const itemName = itemNameByCode(itemCode);
+
+  debug(command, itemCode, priceParam, hoursParam, itemName || 'unknown itemCode');
+
+  const hours = parseInt(hoursParam, 0) || 1;
+
+  if (!itemName) {
+    await ctx.replyWithHTML(`Unknown item code <b>${itemCode}</b>`);
+    return;
+  }
+
+  const dealsPrice = parseInt(priceParam, 0);
+
+  if (!dealsPrice) {
+    await ctx.replyWithHTML('You must specify price');
+    return;
+  }
+
+  const add = hm === 'h' ? addHours : addMinutes;
+
+  const dealsFilter = {
+    ts: { $gt: add(new Date(), -hours) },
+    itemCode,
+    price: dealsPrice,
+  };
+
+  const pipeline = [
+    { $match: dealsFilter },
+    {
+      $group: {
+        _id: '$buyerName',
+        qty: { $sum: '$qty' },
+        cnt: { $sum: 1 },
+      },
+    },
+    // { $addFields: { price: '$_id' } },
+  ];
+
+  const data = await Deal.aggregate(pipeline);
+  const deals = orderBy(data, ['qty'], ['desc']);
+  const hms = `${hm === 'h' ? 'hour' : 'minute'}${hours > 1 ? 's' : ''}`;
+
+  if (!deals.length) {
+    const replyNoDeals = [
+      `No deals on <b>${itemName}</b> in last <b>${hours}</b> ${hms}`,
+      `for the price of <b>${dealsPrice}</b>`,
+    ];
+    await ctx.replyHTML(replyNoDeals.join(' '));
+    return;
+  }
+
+  // const totalSum = sumBy(deals, ({ price, qty }) => price * qty);
+  const totalQty = sumBy(deals, 'qty');
+
+  const namesToShow = take(deals, NAMES_LIMIT);
+
+  const res = [
+    `<b>${itemNameByCode(itemCode)}</b> deals in last <b>${hours}</b> ${hms}`,
+    `for the price of <b>${dealsPrice}</b>:`,
+    '',
+    ...namesToShow.map(({ _id: name, qty }) => `<code>${name}</code> x <b>${qty}</b>`),
+  ];
+
+  if (deals.length > NAMES_LIMIT) {
+    const othersQty = totalQty - sumBy(namesToShow, 'qty');
+    res.push('', `<b>${deals.length - NAMES_LIMIT}</b> others x <b>${othersQty}</b>`);
+  }
+
+  if (deals.length > 1) {
+    res.push('', `Total qty: <b>${totalQty}</b>`);
+  }
+
+  await ctx.replyWithHTML(res.join('\n'));
+
+}
+
 
 /**
  * Returns higher limit calculated on given sex_digest data

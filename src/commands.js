@@ -35,6 +35,7 @@ bot.hears(/^\/traders$/, traders.traders);
 bot.hears(/^\/grant[ _]trading[ _](\d*)[ ]?(\d*)$/, traders.grantTrading);
 
 bot.hears(/^\/t[_ ]?([a-z0-9]{1,2}\d+)[ _]?(\d+)?([hm])?$/, trades.itemStats);
+botHears('who[_ ]?([a-z0-9]{1,2}\\d+)[ _](\\d+)[ _](\\d+)([hm])?', trades.itemBuyers);
 
 /*
 Orders

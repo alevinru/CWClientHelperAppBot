@@ -1,4 +1,4 @@
-import { format, addHours, addDays } from 'date-fns';
+import { format, addHours, differenceInHours } from 'date-fns';
 import filter from 'lodash/filter';
 import map from 'lodash/map';
 import mapValues from 'lodash/mapValues';
@@ -139,15 +139,19 @@ export async function userReportForPeriod(ctx) {
     return;
   }
 
+  const battles = parseInt(from, 0) || 1;
+
   const { userName, guild_tag: tag } = profile;
 
   const name = `${tag && `[${tag}]`}${userName}`;
 
-  debug('userReportForPeriod', name, from, to);
+  const dateE = battleDate(new Date());
 
-  const dateB = addDays(battleDate(new Date()), -parseInt(from, 0));
+  const dateB = addHours(dateE, (1 - battles) * 8);
 
-  const reply = await userReportByDate({ name }, dateB);
+  debug('userReportForPeriod', name, from, to, dateB);
+
+  const reply = await userReportByDate({ name }, dateB, dateE);
 
   await ctx.replyWithHTML(reply.join('\n'));
 
@@ -200,6 +204,16 @@ async function userReportByDate(filters, dateB, dateE) {
       '',
       map(reports[0].effects, effectInfo).join('\n'),
     );
+  } else {
+
+    const battlesCnt = differenceInHours(dateE, dateB) / 8 + 1;
+
+    const attendInfo = `<b>${reports.length}/${battlesCnt}</b>`;
+
+    res.push(
+      '',
+      `${attendInfo} 🔥${aggregate('exp')(reports)} 💰${aggregate('gold')(reports)}`,
+    );
   }
 
   return res;
@@ -238,10 +252,11 @@ export async function guildReport(ctx) {
   }
 
   const { date } = lastReports[0];
+  const $gte = addHours(date, (1 - days) * 8);
 
   const repFilter = {
     tag,
-    date: { $lte: date, $gte: addDays(date, 1 - days) },
+    date: { $lte: date, $gte },
   };
 
   const tagReports = await BattleReport.find(repFilter)
@@ -265,24 +280,22 @@ export async function guildReport(ctx) {
 
   const formatter = days > 1 ? guildUserWeeklyReport : guildUserDayReport;
 
-  const totalsRow = [`👤${reports.length}`, totals.exp, totals.gold];
-
   const dateLabel = [dateFormat(date)];
 
   if (days > 1) {
-    dateLabel.push(`for <b>${days}</b> days`);
+    dateLabel.splice(0, 0, [`for <b>${days}</b> battles`, `from ${dateFormat($gte)} to`].join('\n'));
   }
 
   const reply = [
     `<b>[${tag}]</b> battle report ${dateLabel.join(' ')}`,
+    [`\n👤${reports.length}`, totals.exp, totals.gold].join(' '),
     '',
     map(reports, formatter).join('\n\n'),
     '',
-    totalsRow.join(' '),
   ];
 
   if (days <= 1) {
-    reply.push([totals.atk, totals.def].join(' '));
+    reply.push(['Total:', totals.atk, totals.def].join(' '));
   }
 
   await ctx.replyWithHTML(reply.join('\n'));
@@ -342,6 +355,7 @@ function battleDate(reportDate) {
   date.setUTCHours(hours);
   date.setSeconds(0);
   date.setMinutes(0);
+  date.setMilliseconds(0);
 
   return date;
 

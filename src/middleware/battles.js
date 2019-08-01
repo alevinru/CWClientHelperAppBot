@@ -94,13 +94,12 @@ export async function onReportForward(ctx) {
   const { date, name } = battle;
   const key = { date, name };
 
-  const $setOnInsert = omit(battle, ['date', 'name', 'gold']);
+  const $setOnInsert = omit(battle, Object.keys(key));
 
   await BattleReport.updateOne(key, {
     $setOnInsert,
     $set: {
       ts: new Date(),
-      gold: battle.gold,
     },
     // $currentDate: { ts: true },
   }, { upsert: true });

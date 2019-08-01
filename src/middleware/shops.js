@@ -115,6 +115,7 @@ export async function shopsByItem(ctx) {
 
   const shops = await Shop.find({
     lastOpened,
+    mana: { $gt: 0 },
     'offers.item': { $regex },
   });
   // .sort({ mana: -1 })
@@ -127,10 +128,15 @@ export async function shopsByItem(ctx) {
 
   const matchingItems = orderBy(shopsItems(shops, $regex), ['mana', 'name']);
 
+  if (matchingItems.length > 12) {
+    await ctx.replyWithHTML(`<b>${search}</b> matches too many items`);
+    return;
+  }
+
   if (matchingItems.length > 1) {
 
     const replyMultipleItems = [
-      `There are more than one item's matching <code>${search}</code>:`,
+      `There are more than one item's matching <b>${search}</b>:`,
       '',
       ...matchingItems.map(({ item, price, mana }) => {
         const code = itemCodeByName(item);

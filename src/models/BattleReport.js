@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 
-const schema = new Schema({
+const battle = {
   tag: String,
   name: String,
   castle: String,
@@ -15,8 +15,18 @@ const schema = new Schema({
   results: Array,
   effects: Object,
   ts: Date,
-}, { collection: 'BattleReport' });
+};
+
+const schema = new Schema(Object.assign({}, battle), { collection: 'BattleReport' });
 
 // schema.index({ lastOpened: -1 });
 
 export default model('BattleReport', schema);
+
+const mobSchema = new Schema(Object.assign({
+  hit: Number,
+  miss: Number,
+  lastHit: Number,
+}, battle), { collection: 'MobBattleReport' });
+
+export const MobBattleReport = model('MobBattleReport', mobSchema);

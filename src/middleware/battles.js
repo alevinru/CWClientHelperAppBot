@@ -14,7 +14,7 @@ import max from 'lodash/max';
 import log from '../services/log';
 import { fromCWFilter } from '../config/filters';
 
-import BattleReport from '../models/BattleReport';
+import BattleReport, { MobBattleReport } from '../models/BattleReport';
 // import User from '../models/User';
 
 const { debug, error } = log('mw:battles');
@@ -23,7 +23,7 @@ const BATTLE_HOUR = parseInt(process.env.BATTLE_HOUR || '1', 0);
 const { BATTLE_TEXT = 'Your result on the battlefield' } = process.env;
 const BATTLE_TEXT_RE = new RegExp(BATTLE_TEXT);
 const CASTLES = map(JSON.parse(process.env.CASTLES));
-const BATTLE_STATS_RE = new RegExp(`(${CASTLES.join('|')})(.*) .:(.+) ..:(.+) Lvl: (\\d+)`);
+const BATTLE_STATS_RE = new RegExp(`(${CASTLES.join('|')})[🎗]?(.*) ⚔:(.+) 🛡:(.+) Lvl: (\\d+)`);
 
 const MOB_BATTLE_REPORT = /Hit.*\nMiss/i;
 
@@ -46,10 +46,6 @@ export function reportFilter(ctx) {
     return false;
   }
 
-  if (MOB_BATTLE_REPORT.test(text)) {
-    return false;
-  }
-
   const results = filter(text.split('\n'), result => result && !BATTLE_TEXT_RE.test(result));
   const [, castle, name] = text.match(BATTLE_STATS_RE) || [];
 
@@ -57,19 +53,29 @@ export function reportFilter(ctx) {
 
   debug('reportFilter', isReport, forwardDate);
 
+  const isMob = MOB_BATTLE_REPORT.test(ctx.message.text);
+
   const battle = {
-    userId,
-    castle,
+
     name,
-    tag: tagName(name),
-    date: battleDate(reportDate),
-    reportDate,
+    castle,
+    userId,
     results,
-    stats: battleStats(results[0]),
+    reportDate,
+    isMob,
+
+    tag: tagName(name),
+    date: isMob ? reportDate : battleDate(reportDate),
+    stats: battleStats(text),
+    effects: battleEffects(results),
+
     gold: getValue('Gold'),
     exp: getValue('Exp'),
     hp: getValue('Hp'),
-    effects: battleEffects(results),
+    hit: getValue('Hit'),
+    miss: getValue('Miss'),
+    lastHit: getValue('Last hit'),
+
   };
 
   Object.assign(state, { battle });
@@ -96,27 +102,50 @@ export async function onReportForward(ctx) {
 
   const $setOnInsert = omit(battle, Object.keys(key));
 
-  await BattleReport.updateOne(key, {
-    $setOnInsert,
-    $set: {
-      ts: new Date(),
+  const args = [
+    key,
+    {
+      $setOnInsert,
+      $set: {
+        ts: new Date(),
+      },
+      // $currentDate: { ts: true },
     },
-    // $currentDate: { ts: true },
-  }, { upsert: true });
+    { upsert: true },
+  ];
+
+  const { nModified } = battle.isMob
+    ? await MobBattleReport.updateOne(...args)
+    : await BattleReport.updateOne(...args);
+
+  debug('onReportForward:', nModified);
 
   if (chat.id !== from.id) {
     return;
   }
 
-  const reply = [
-    `${battle.castle} Got <b>${battle.name}</b> report`,
-    `for <b>${dateFormat(battle.date)}</b>`,
-  ].join(' ');
+  const got = nModified ? 'Updated' : 'Got';
 
-  await ctx.replyWithHTML(reply);
+  const reply = !battle.isMob ? gotBattleReport(battle, got) : gotMobReport(battle, got);
+
+  await ctx.replyWithHTML(reply.join('\n'));
 
 }
 
+function gotBattleReport(battle, got) {
+  return [
+    `${battle.castle} ${got} <b>${battle.name}</b> report`,
+    `for <b>${dateFormat(battle.date)}</b>`,
+  ];
+}
+
+function gotMobReport(battle, got) {
+  return [
+    `👹 ${got} mob report`,
+    `of ${battle.castle}<b>${battle.name}</b>`,
+    `at <b>${dayTime(battle.reportDate)}</b>`,
+  ];
+}
 
 export async function userReport(ctx) {
 
@@ -374,6 +403,10 @@ function dayPart(date) {
   return format(date, 'DD/MM');
 }
 
+function dayTime(date) {
+  return format(date, 'hh:mm DD/MM');
+}
+
 function battleIcon(date) {
   const num = date.getUTCHours() / 8;
   return ['🌚', '🌝', '🌞'][num];
@@ -382,6 +415,8 @@ function battleIcon(date) {
 function battleStats(text) {
 
   const [, , , atkInfo = '', defInfo = '', level] = text.match(BATTLE_STATS_RE) || [];
+
+  debug('battleStats:', text.match(BATTLE_STATS_RE));
 
   const [, atk, healAtk = '0'] = atkInfo.match(/(\d+)\(([-+]\d+)\)/) || ['', atkInfo];
   const [, def, healDef = '0'] = defInfo.match(/(\d+)\(([-+]\d+)\)/) || ['', defInfo];

@@ -57,7 +57,7 @@ export function reportFilter(ctx) {
     reportDate,
     text,
     results,
-    result: mapValues(keyBy(results, 'name'), fpOmit(['name'])),
+    result: mapValues(keyBy(results, 'code'), fpOmit(['code'])),
 
   };
 
@@ -73,7 +73,7 @@ export function reportFilter(ctx) {
     const ga = !!resultText.match(/🔱/);
 
     const BATTLE_RESULT_RE = new RegExp(`(${CASTLES.join('|')})(.*): ([^ ]+) (.+)`);
-    const [, castle, name, smileys, etc] = resultText.match(BATTLE_RESULT_RE) || [];
+    const [, castle, , smileys, etc] = resultText.match(BATTLE_RESULT_RE) || [];
     if (!castle) return null;
     const gold = getValue('💰') || 0;
 
@@ -87,7 +87,7 @@ export function reportFilter(ctx) {
 
     return {
       castle,
-      name: name || b.castleCode(castle),
+      code: b.castleCode(castle),
       gold,
       stock: getValue('📦'),
       result: gold >= 0 ? 'protected' : 'breached',

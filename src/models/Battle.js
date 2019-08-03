@@ -50,6 +50,7 @@ const resultsSchema = new Schema({
   _id: false,
   castle: String,
   name: String,
+  code: String,
   gold: Number,
   stock: Number,
   result: String,

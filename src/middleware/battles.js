@@ -1,7 +1,9 @@
 import filter from 'lodash/filter';
 import map from 'lodash/map';
+import mapValues from 'lodash/mapValues';
 import find from 'lodash/find';
 import omit from 'lodash/omit';
+import fpOmit from 'lodash/fp/omit';
 import keyBy from 'lodash/keyBy';
 
 import log from '../services/log';
@@ -29,7 +31,7 @@ export function reportFilter(ctx) {
 
   // const { id: forwardFromId } = forward_from_chat;
 
-  if (digestName === BATTLE_DIGEST) {
+  if (digestName !== BATTLE_DIGEST) {
     debug('not digest', BATTLE_DIGEST, digestName);
     return false;
   }
@@ -54,7 +56,7 @@ export function reportFilter(ctx) {
     reportDate,
     text,
     results,
-    result: keyBy(results, 'name'),
+    result: mapValues(keyBy(results, 'name'), fpOmit(['name'])),
 
   };
 

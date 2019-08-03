@@ -1,4 +1,4 @@
-import { format, addHours, differenceInHours } from 'date-fns';
+import { addHours, differenceInHours } from 'date-fns';
 import filter from 'lodash/filter';
 import map from 'lodash/map';
 import mapValues from 'lodash/mapValues';
@@ -13,7 +13,7 @@ import max from 'lodash/max';
 
 import log from '../services/log';
 import { fromCWFilter } from '../config/filters';
-import { BATTLE_HOUR } from '../services/battles';
+import * as b from '../services/battles';
 
 import BattleReport, { MobBattleReport } from '../models/BattleReport';
 // import User from '../models/User';
@@ -65,7 +65,7 @@ export function reportFilter(ctx) {
     isMob,
 
     tag: tagName(name),
-    date: isMob ? reportDate : battleDate(reportDate),
+    date: isMob ? reportDate : b.battleDate(reportDate),
     stats: battleStats(text),
     effects: battleEffects(results),
 
@@ -135,7 +135,7 @@ export async function onReportForward(ctx) {
 function gotBattleReport(battle, got) {
   return [
     `${battle.castle} ${got} <b>${battle.name}</b>`,
-    `report for <b>${dateFormat(battle.date)}</b>`,
+    `report for <b>${b.dateFormat(battle.date)}</b>`,
   ];
 }
 
@@ -143,7 +143,7 @@ function gotMobReport(battle, got) {
   return [
     `👹 ${got} mob report`,
     `of ${battle.castle}<b>${battle.name}</b>`,
-    `at <b>${dayTime(battle.reportDate)}</b>`,
+    `at <b>${b.dayTime(battle.reportDate)}</b>`,
   ];
 }
 
@@ -179,7 +179,7 @@ export async function userReportForPeriod(ctx) {
 
   const name = `${tag && `[${tag}]`}${userName}`;
 
-  const dateE = battleDate(new Date());
+  const dateE = b.battleDate(new Date());
 
   const dateB = addHours(dateE, (1 - battles) * 8);
 
@@ -219,7 +219,7 @@ async function userReportByDate(filters, dateB, dateE) {
     const icons = map(report.effects, effectIcon).join('');
 
     return filter([
-      `<b>${dateFormat(report.date)}</b> ${reports.length > 1 ? icons : ''}`,
+      `<b>${b.dateFormat(report.date)}</b> ${reports.length > 1 ? icons : ''}`,
       ` ⚔️${atk} 🛡${def} 🔥${exp} 💰${gold}`,
     ]).join('\n');
 
@@ -314,10 +314,10 @@ export async function guildReport(ctx) {
 
   const formatter = days > 1 ? guildUserWeeklyReport : guildUserDayReport;
 
-  const dateLabel = [dateFormat(date)];
+  const dateLabel = [b.dateFormat(date)];
 
   if (days > 1) {
-    dateLabel.splice(0, 0, [`for <b>${days}</b> battles`, `from ${dateFormat($gte)} to`].join('\n'));
+    dateLabel.splice(0, 0, [`for <b>${days}</b> battles`, `from ${b.dateFormat($gte)} to`].join('\n'));
   }
 
   const reply = [
@@ -379,37 +379,6 @@ function guildUserDayReport({ userReports, name }) {
 function tagName(name) {
   const [, tag = null] = name.match(/\[(.+)\]/) || [];
   return tag;
-}
-
-function battleDate(reportDate) {
-
-  const date = addHours(reportDate, BATTLE_HOUR);
-  const hours = Math.floor(date.getUTCHours() / 8) * 8;
-
-  date.setUTCHours(hours);
-  date.setSeconds(0);
-  date.setMinutes(0);
-  date.setMilliseconds(0);
-
-  return date;
-
-}
-
-function dateFormat(date) {
-  return `${battleIcon(date)} ${dayPart(date)}`;
-}
-
-function dayPart(date) {
-  return format(date, 'DD/MM');
-}
-
-function dayTime(date) {
-  return format(date, 'hh:mm DD/MM');
-}
-
-function battleIcon(date) {
-  const num = date.getUTCHours() / 8;
-  return ['🌚', '🌝', '🌞'][num];
 }
 
 function battleStats(text) {

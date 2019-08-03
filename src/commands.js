@@ -11,6 +11,7 @@ import * as trades from './middleware/trades';
 import * as ord from './middleware/order';
 import * as traders from './middleware/traders';
 import * as users from './middleware/hello';
+import * as battleReports from './middleware/battleReports';
 import * as battles from './middleware/battles';
 
 import start from './middleware/start';
@@ -116,16 +117,17 @@ bot.command('du', ownArena);
 Battles
  */
 
-bot.on('message', Telegraf.optional(battles.reportFilter, battles.onReportForward));
+botMessage(Telegraf.optional(battleReports.reportFilter, battleReports.onReportForward));
+botMessage(Telegraf.optional(battles.reportFilter, battles.onReportForward));
 
-botHears('rb[ _](\\d{1,4})', battles.userReportForPeriod);
+botHears('rb[ _](\\d{1,4})', battleReports.userReportForPeriod);
 
-botHears('rb[ _]([\\da-h]{24})', battles.userReport);
-botHears('rb', battles.userReport);
+botHears('rb[ _]([\\da-h]{24})', battleReports.userReport);
+botHears('rb', battleReports.userReport);
 
-botHears('rbg', battles.guildReport);
-botHears('rbg[ _]([^ ]+)', battles.guildReport);
-botHears('rbgw[ _](\\d+)', battles.guildReport);
+botHears('rbg', battleReports.guildReport);
+botHears('rbg[ _]([^ ]+)', battleReports.guildReport);
+botHears('rbgw[ _](\\d+)', battleReports.guildReport);
 
 /*
 Other
@@ -145,4 +147,8 @@ function hearsRe(command) {
 
 function botHears(command, mw) {
   bot.hears(hearsRe(command), mw);
+}
+
+function botMessage(mw) {
+  bot.on('message', mw);
 }

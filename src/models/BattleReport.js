@@ -19,8 +19,6 @@ const battle = {
 
 const schema = new Schema(Object.assign({}, battle), { collection: 'BattleReport' });
 
-// schema.index({ lastOpened: -1 });
-
 export default model('BattleReport', schema);
 
 const mobSchema = new Schema(Object.assign({

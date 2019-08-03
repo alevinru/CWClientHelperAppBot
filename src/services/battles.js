@@ -1,6 +1,16 @@
 import { addHours, format } from 'date-fns';
+import find from 'lodash/find';
+import map from 'lodash/map';
+import get from 'lodash/get';
 
 export const BATTLE_HOUR = parseInt(process.env.BATTLE_HOUR || '1', 0);
+export const CASTLES_HASH = JSON.parse(process.env.CASTLES);
+
+const CASTLES = map(CASTLES_HASH, (castle, code) => ({ castle, code }));
+
+export function castleCode(castle) {
+  return get(find(CASTLES, { castle }), 'code');
+}
 
 export function dateFormat(date) {
   return `${battleIcon(date)} ${dayPart(date)}`;

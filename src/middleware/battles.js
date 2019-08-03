@@ -17,7 +17,8 @@ const { BATTLE_DIGEST } = process.env;
 
 const { BATTLE_RESULTS = '⛳️Battle results:' } = process.env;
 const BATTLE_TEXT_RE = new RegExp(BATTLE_RESULTS);
-const CASTLES = map(JSON.parse(process.env.CASTLES));
+const CASTLES_HASH = JSON.parse(process.env.CASTLES);
+const CASTLES = map(CASTLES_HASH);
 
 export function reportFilter(ctx) {
 
@@ -71,12 +72,14 @@ export function reportFilter(ctx) {
 
     const ga = !!resultText.match(/🔱/);
 
-    const BATTLE_RESULT_RE = new RegExp(`(${CASTLES.join('|')})(.+): ([^ ]+) (.+)`);
+    const BATTLE_RESULT_RE = new RegExp(`(${CASTLES.join('|')})(.*): ([^ ]+) (.+)`);
     const [, castle, name, smileys, etc] = resultText.match(BATTLE_RESULT_RE) || [];
     if (!castle) return null;
     const gold = getValue('💰') || 0;
 
-    let difficulty = (smileys.match(/👌/) && 0) || (smileys.match(/⚡/) && 2) || 1;
+    // debug('resultFromText', castle, name || CASTLES_HASH[castle], `"${smileys}"`, `"${etc}"`);
+
+    let difficulty = smileys.match(/👌|😎/) ? 0 : ((smileys.match(/⚡/) && 2) || 1);
 
     if (etc === '😴') {
       difficulty = 0;
@@ -84,7 +87,7 @@ export function reportFilter(ctx) {
 
     return {
       castle,
-      name,
+      name: name || b.castleCode(castle),
       gold,
       stock: getValue('📦'),
       result: gold >= 0 ? 'protected' : 'breached',

@@ -129,6 +129,7 @@ botHears('rb[ _](\\d{1,4})[ _](\\d{1,4})', battleReports.userReportForPeriod);
 botHears('rb[ _](\\d{1,4})', battleReports.userReportForPeriod);
 
 botHears('rb[ _]([\\da-h]{24})', battleReports.userReport);
+botHears('bm[ _]([\\da-h]{24})[ _](.+)', battles.setMaster);
 
 botHears('rbg', battleReports.guildReport);
 botHears('rbg[ _]([^ ]+)', battleReports.guildReport);

@@ -23,7 +23,7 @@ const { debug, error } = log('mw:battles');
 const { BATTLE_TEXT = 'Your result on the battlefield' } = process.env;
 const BATTLE_TEXT_RE = new RegExp(BATTLE_TEXT);
 const CASTLES = map(JSON.parse(process.env.CASTLES));
-const BATTLE_STATS_RE = new RegExp(`(${CASTLES.join('|')})[🎗]?(.*) ⚔:(.+) 🛡:(.+) Lvl: (\\d+)`);
+const BATTLE_STATS_RE = new RegExp(`(${CASTLES.join('|')})(.*) ⚔:(.+) 🛡:(.+) Lvl: (\\d+)`);
 
 const MOB_BATTLE_REPORT = /Hit.*\nMiss/i;
 
@@ -57,7 +57,7 @@ export function reportFilter(ctx) {
 
   const battle = {
 
-    name,
+    name: name.replace(/🎗/, ''),
     castle,
     userId,
     results,
@@ -126,16 +126,20 @@ export async function onReportForward(ctx) {
 
   const got = nModified ? 'Updated' : 'Got';
 
-  const reply = !battle.isMob ? gotBattleReport(battle, got) : gotMobReport(battle, got);
+  const { _id: id } = battle.isMob
+    ? await MobBattleReport.findOne(key) : await BattleReport.findOne(key);
+
+  const reply = !battle.isMob ? gotBattleReport(battle, got, id) : gotMobReport(battle, got);
 
   await ctx.replyWithHTML(reply.join('\n'));
 
 }
 
-function gotBattleReport(battle, got) {
+function gotBattleReport(battle, got, id) {
   return [
     `${battle.castle} ${got} <b>${battle.name}</b>`,
     `report for <b>${b.dateFormat(battle.date)}</b>`,
+    `/rb_${id}`,
   ];
 }
 
@@ -235,20 +239,20 @@ async function userReportByDate(filters, dateB, dateE) {
   ];
 
   if (reports.length === 1) {
-    res.push(
-      '',
-      map(reports[0].effects, effectInfo).join('\n'),
-    );
+    const effectsInfo = map(reports[0].effects, effectInfo);
+    if (effectsInfo.length) {
+      res.push('', effectsInfo.join('\n'));
+    }
+    if (!fpGet('_id')(filters)) {
+      res.push('', `/rb_${fpGet('[0]._id')(reports)}`);
+    }
   } else {
 
     const battlesCnt = differenceInHours(dateE, dateB) / 8 + 1;
-
     const attendInfo = `<b>${reports.length}/${battlesCnt}</b>`;
 
-    res.push(
-      '',
-      `${attendInfo} 🔥${aggregate('exp')(reports)} 💰${aggregate('gold')(reports)}`,
-    );
+    res.push('', `${attendInfo} 🔥${aggregate('exp')(reports)} 💰${aggregate('gold')(reports)}`);
+
   }
 
   return res;

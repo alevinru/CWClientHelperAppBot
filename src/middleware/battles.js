@@ -7,11 +7,13 @@ import fpOmit from 'lodash/fp/omit';
 import keyBy from 'lodash/keyBy';
 import groupBy from 'lodash/groupBy';
 import padStart from 'lodash/padStart';
+// import set from 'lodash/set';
 
 import log from '../services/log';
 import * as b from '../services/battles';
 
 import Battle from '../models/Battle';
+import BattleReport from '../models/BattleReport';
 
 const { debug } = log('mw:battles');
 
@@ -172,7 +174,7 @@ function battleView(battle) {
     ...map(resultsByStatus, (r, code) => {
       return [
         '',
-        `${resultStatus(code)} <b>${code}</b>`,
+        `${resultStatus(code)} <b>${r.length}</b> ${code}`,
         '',
         ...map(r, battleResultView),
       ].join('\n');
@@ -221,8 +223,65 @@ function battleResultView(result) {
     `<code>${padStart(result.score, 2, '0')}</code>`,
     difficultyStatus(result),
     gold && `${gold > 0 ? '+' : ''}${gold}💰`,
-    atk && `<b>${atk / 1000}</b>K`,
+    atk && `<b>${Math.ceil(atk / 1000)}</b>K`,
   ]).join(' ');
+
+}
+
+export async function setMaster(ctx) {
+
+  const [, reportId, castleCode] = ctx.match;
+
+  const castle = b.castleByCode(castleCode);
+
+  debug('setMaster:', reportId, castleCode, castle);
+
+  if (!castle) {
+    await ctx.replyWithHTML(`Invalid castle code <b>${castleCode}</b>`);
+    return;
+  }
+
+  const report = await BattleReport.findOne({ _id: reportId });
+
+  if (!report) {
+    await ctx.replyWithHTML(`Not found report <b>${reportId}</b>`);
+    return;
+  }
+
+  const { date, _id: id } = report;
+  const { gold, stats: { atk } } = report;
+  const dateLabel = `<b>${b.dateFormat(date)}</b>`;
+
+  const battle = await Battle.findOne({ date });
+
+  if (!battle) {
+    await ctx.replyWithHTML(`Not found battle ${dateLabel}`);
+    return;
+  }
+
+  const result = battle.result[castleCode];
+  const castleAtk = -Math.ceil(result.gold * atk / gold);
+
+  const masterData = {
+    atk: castleAtk,
+    masterReport: {
+      atk, gold, id,
+    },
+  };
+
+  const resultsRow = find(battle.results, { code: castleCode });
+
+  Object.assign(result, masterData);
+  Object.assign(resultsRow, masterData);
+
+  await battle.save();
+
+  const reply = [
+    `${dateLabel} set master report`,
+    `${battleResultView(resultsRow)}`,
+  ];
+
+  await ctx.replyWithHTML(reply.join('\n'));
 
 }
 

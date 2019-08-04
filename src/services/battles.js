@@ -13,6 +13,10 @@ export function castleCode(castle) {
   return get(find(CASTLES, { castle }), 'code');
 }
 
+export function castleByCode(code) {
+  return CASTLES_HASH[code];
+}
+
 export function dateFormat(date) {
   return `${battleIcon(date)} ${dayPart(date)}`;
 }

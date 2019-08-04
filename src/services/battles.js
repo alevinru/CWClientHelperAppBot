@@ -2,6 +2,7 @@ import { addHours, format } from 'date-fns';
 import find from 'lodash/find';
 import map from 'lodash/map';
 import get from 'lodash/get';
+import padStart from 'lodash/padStart';
 
 export const BATTLE_HOUR = parseInt(process.env.BATTLE_HOUR || '1', 0);
 export const CASTLES_HASH = JSON.parse(process.env.CASTLES);
@@ -41,4 +42,17 @@ export function battleDate(reportDate) {
 
   return date;
 
+}
+
+export function dateCode(date) {
+  const uh = date.getUTCHours();
+  return `${format(date, 'YYMMDD')}_${padStart(uh, 2, '0')}`;
+}
+
+export function prevDate(date) {
+  return addHours(date, -8);
+}
+
+export function nextDate(date) {
+  return addHours(date, 8);
 }

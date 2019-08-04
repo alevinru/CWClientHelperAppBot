@@ -5,6 +5,7 @@ import find from 'lodash/find';
 import omit from 'lodash/omit';
 import fpOmit from 'lodash/fp/omit';
 import keyBy from 'lodash/keyBy';
+import groupBy from 'lodash/groupBy';
 
 import log from '../services/log';
 import * as b from '../services/battles';
@@ -26,14 +27,10 @@ export function reportFilter(ctx) {
   const { text, forward_date: forwardDate, forward_signature: digestName } = message;
 
   if (!text || !digestName) {
-    debug('not forward', forwardDate);
     return false;
   }
 
-  // const { id: forwardFromId } = forward_from_chat;
-
   if (digestName !== BATTLE_DIGEST) {
-    debug('not digest', BATTLE_DIGEST, digestName);
     return false;
   }
 
@@ -160,4 +157,97 @@ function gotBattleReport(battle) {
   return [
     `Got <b>${b.dateFormat(battle.date)}</b> battle digest`,
   ];
+}
+
+function battleView(battle) {
+
+  const { date, results } = battle;
+
+  const resultsByStatus = groupBy(results, 'result');
+
+  return [
+    `<b>${b.dateFormat(date)}</b> battle`,
+    ...map(resultsByStatus, (r, code) => {
+      return [
+        '',
+        `${resultStatus(code)} <b>${code}</b>`,
+        '',
+        ...map(r, battleResultView),
+      ].join('\n');
+    }),
+  ];
+
+}
+
+function resultStatus(result) {
+
+  switch (result) {
+    case 'breached':
+      return '⚔';
+    case 'protected':
+      return '🛡';
+    default:
+      return '';
+  }
+
+}
+
+function difficultyStatus(result) {
+  switch (result.difficulty) {
+    case 0:
+      return '😎';
+    case 1:
+      return resultStatus(result.result);
+    case 2:
+      return result.ga ? '🔱' : '⚡';
+    default:
+      return '🤷‍️';
+  }
+}
+
+function battleResultView(result) {
+  const { gold } = result;
+  return [
+    result.castle,
+    difficultyStatus(result),
+    `${gold >= 0 ? '+' : ''}${gold}💰`,
+  ].join(' ');
+}
+
+
+export async function showBattle(ctx) {
+
+  const { match } = ctx;
+
+  const [, dateP, hourP] = match;
+
+  const [, year, month, day] = dateP.match(/(\d\d)(\d\d)(\d\d)/);
+
+  const date = new Date(`20${year}-${month}-${day} ${hourP}:00:00.000Z`);
+
+  debug('show', dateP, hourP, date);
+
+  const filters = { date };
+
+  const battle = await Battle.findOne(filters);
+
+  const reply = [];
+
+  if (!battle) {
+    reply.push(`Not found ${b.dateFormat(date)} battle`);
+  } else {
+    reply.push(...battleView(battle));
+  }
+
+  const prevDate = b.prevDate(date);
+  const nextDate = b.nextDate(date);
+
+  reply.push(...[
+    '',
+    `${b.battleIcon(prevDate)} /ba_${b.dateCode(prevDate)}`,
+    `${b.battleIcon(nextDate)} /ba_${b.dateCode(nextDate)}`,
+  ]);
+
+  await ctx.replyWithHTML(reply.join('\n'));
+
 }

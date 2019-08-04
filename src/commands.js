@@ -117,8 +117,11 @@ bot.command('du', ownArena);
 Battles
  */
 
-botMessage(Telegraf.optional(battleReports.reportFilter, battleReports.onReportForward));
 botMessage(Telegraf.optional(battles.reportFilter, battles.onReportForward));
+botHears('ba[ _]([\\d]{6})[ _]([\\d]{2})', battles.showBattle);
+
+
+botMessage(Telegraf.optional(battleReports.reportFilter, battleReports.onReportForward));
 
 botHears('rb[ _](\\d{1,4})', battleReports.userReportForPeriod);
 

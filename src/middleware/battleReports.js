@@ -167,19 +167,20 @@ export async function userReport(ctx) {
 export async function userReportForPeriod(ctx) {
 
   const { match, session: { profile } } = ctx;
-  const [, from, to] = match;
+  const [, from = '1', to] = match;
 
-  if (!profile || !from) {
+  if (!profile) {
     return;
   }
 
   const battles = parseInt(from, 0) || 1;
+  const battlesTo = parseInt(to, 0) || 1;
 
   const { userName, guild_tag: tag } = profile;
 
   const name = `${tag && `[${tag}]`}${userName}`;
 
-  const dateE = b.battleDate(new Date());
+  const dateE = addHours(b.battleDate(new Date()), (1 - battlesTo) * 8);
 
   const dateB = addHours(dateE, (1 - battles) * 8);
 

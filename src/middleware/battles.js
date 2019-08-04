@@ -213,13 +213,17 @@ function difficultyStatus(result) {
 }
 
 function battleResultView(result) {
-  const { gold } = result;
+
+  const { gold, atk } = result;
+
   return filter([
     result.castle,
     `<code>${padStart(result.score, 2, '0')}</code>`,
     difficultyStatus(result),
     gold && `${gold > 0 ? '+' : ''}${gold}💰`,
+    atk && `<b>${atk / 1000}</b>K`,
   ]).join(' ');
+
 }
 
 export async function showLastBattle(ctx) {
@@ -261,8 +265,11 @@ async function showBattle(ctx, date) {
   reply.push(...[
     '',
     `${b.battleIcon(prevDate)} ${battleCommand(prevDate)}`,
-    `${b.battleIcon(nextDate)} ${battleCommand(nextDate)}`,
   ]);
+
+  if (nextDate <= b.battleDate(new Date())) {
+    reply.push(`${b.battleIcon(nextDate)} ${battleCommand(nextDate)}`);
+  }
 
   await ctx.replyWithHTML(reply.join('\n'));
 

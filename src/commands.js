@@ -124,10 +124,11 @@ botHears('ba', battles.showLastBattle);
 
 botMessage(Telegraf.optional(battleReports.reportFilter, battleReports.onReportForward));
 
+botHears('rb', battleReports.userReportForPeriod);
+botHears('rb[ _](\\d{1,4})[ _](\\d{1,4})', battleReports.userReportForPeriod);
 botHears('rb[ _](\\d{1,4})', battleReports.userReportForPeriod);
 
 botHears('rb[ _]([\\da-h]{24})', battleReports.userReport);
-botHears('rb', battleReports.userReport);
 
 botHears('rbg', battleReports.guildReport);
 botHears('rbg[ _]([^ ]+)', battleReports.guildReport);

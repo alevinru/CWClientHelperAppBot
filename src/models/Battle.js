@@ -57,6 +57,12 @@ const resultsSchema = new Schema({
   ga: Boolean,
   difficulty: Number,
   score: Number,
+  atk: Number,
+  masterReport: {
+    atk: Number,
+    gold: Number,
+    id: Schema.Types.ObjectId,
+  },
 });
 
 const battle = {

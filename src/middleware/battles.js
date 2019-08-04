@@ -6,6 +6,7 @@ import omit from 'lodash/omit';
 import fpOmit from 'lodash/fp/omit';
 import keyBy from 'lodash/keyBy';
 import groupBy from 'lodash/groupBy';
+import padStart from 'lodash/padStart';
 
 import log from '../services/log';
 import * as b from '../services/battles';
@@ -153,9 +154,10 @@ export async function onReportForward(ctx) {
 
 }
 
-function gotBattleReport(battle) {
+function gotBattleReport({ date }) {
   return [
-    `Got <b>${b.dateFormat(battle.date)}</b> battle digest`,
+    `Got <b>${b.dateFormat(date)}</b> battle digest`,
+    battleCommand(date),
   ];
 }
 
@@ -193,9 +195,14 @@ function resultStatus(result) {
 }
 
 function difficultyStatus(result) {
+
+  if (!result.gold) {
+    return '😴';
+  }
+
   switch (result.difficulty) {
     case 0:
-      return '😎';
+      return result.result === 'breached' ? '😎' : '👌';
     case 1:
       return resultStatus(result.result);
     case 2:
@@ -207,25 +214,34 @@ function difficultyStatus(result) {
 
 function battleResultView(result) {
   const { gold } = result;
-  return [
+  return filter([
     result.castle,
+    `<code>${padStart(result.score, 2, '0')}</code>`,
     difficultyStatus(result),
-    `${gold >= 0 ? '+' : ''}${gold}💰`,
-  ].join(' ');
+    gold && `${gold > 0 ? '+' : ''}${gold}💰`,
+  ]).join(' ');
 }
 
+export async function showLastBattle(ctx) {
 
-export async function showBattle(ctx) {
+  await showBattle(ctx, b.battleDate(new Date()));
 
-  const { match } = ctx;
+}
 
-  const [, dateP, hourP] = match;
+export async function showBattleByCode(ctx) {
 
+  const [, dateP, hourP] = ctx.match;
   const [, year, month, day] = dateP.match(/(\d\d)(\d\d)(\d\d)/);
 
   const date = new Date(`20${year}-${month}-${day} ${hourP}:00:00.000Z`);
 
   debug('show', dateP, hourP, date);
+
+  await showBattle(ctx, date);
+
+}
+
+async function showBattle(ctx, date) {
 
   const filters = { date };
 
@@ -234,7 +250,7 @@ export async function showBattle(ctx) {
   const reply = [];
 
   if (!battle) {
-    reply.push(`Not found ${b.dateFormat(date)} battle`);
+    reply.push(`<code>Not found</code> ${b.dateFormat(date)} battle`);
   } else {
     reply.push(...battleView(battle));
   }
@@ -244,10 +260,15 @@ export async function showBattle(ctx) {
 
   reply.push(...[
     '',
-    `${b.battleIcon(prevDate)} /ba_${b.dateCode(prevDate)}`,
-    `${b.battleIcon(nextDate)} /ba_${b.dateCode(nextDate)}`,
+    `${b.battleIcon(prevDate)} ${battleCommand(prevDate)}`,
+    `${b.battleIcon(nextDate)} ${battleCommand(nextDate)}`,
   ]);
 
   await ctx.replyWithHTML(reply.join('\n'));
 
+}
+
+
+function battleCommand(date) {
+  return `/ba_${b.dateCode(date)}`;
 }

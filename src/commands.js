@@ -118,7 +118,8 @@ Battles
  */
 
 botMessage(Telegraf.optional(battles.reportFilter, battles.onReportForward));
-botHears('ba[ _]([\\d]{6})[ _]([\\d]{2})', battles.showBattle);
+botHears('ba[ _]([\\d]{6})[ _]([\\d]{2})', battles.showBattleByCode);
+botHears('ba', battles.showLastBattle);
 
 
 botMessage(Telegraf.optional(battleReports.reportFilter, battleReports.onReportForward));

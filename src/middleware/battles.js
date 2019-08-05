@@ -223,7 +223,7 @@ function battleResultView(result) {
     `<code>${padStart(result.score, 2, '0')}</code>`,
     difficultyStatus(result),
     gold && `${gold > 0 ? '+' : ''}${gold}💰`,
-    atk && `<b>${Math.ceil(atk / 1000)}</b>K`,
+    atk && `${Math.ceil(atk / 1000)}K👊`,
   ]).join(' ');
 
 }

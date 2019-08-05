@@ -145,7 +145,7 @@ function gotBattleReport(battle, got, id) {
 
 function gotMobReport(battle, got) {
   return [
-    `👹 ${got} mob report`,
+    `👾 ${got} mob report`,
     `of ${battle.castle}<b>${battle.name}</b>`,
     `at <b>${b.dayTime(battle.reportDate)}</b>`,
   ];

@@ -202,13 +202,17 @@ function difficultyStatus(result) {
     return '😴';
   }
 
+  if (result.ga) {
+    return '🔱';
+  }
+
   switch (result.difficulty) {
     case 0:
       return result.result === 'breached' ? '😎' : '👌';
     case 1:
       return resultStatus(result.result);
     case 2:
-      return result.ga ? '🔱' : '⚡';
+      return '⚡';
     default:
       return '🤷‍️';
   }
@@ -256,6 +260,11 @@ export async function setMaster(ctx) {
 
   if (!battle) {
     await ctx.replyWithHTML(`Not found battle ${dateLabel}`);
+    return;
+  }
+
+  if (atk < 100 || gold < 8) {
+    await ctx.replyWithHTML('<code>Invalid report</code> need at least 8 gold and 100 attack');
     return;
   }
 

@@ -60,6 +60,7 @@ const resultsSchema = new Schema({
   atk: Number,
   masterReport: {
     atk: Number,
+    def: Number,
     gold: Number,
     id: Schema.Types.ObjectId,
   },

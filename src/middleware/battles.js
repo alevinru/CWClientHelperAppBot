@@ -241,7 +241,7 @@ export async function setMaster(ctx) {
   debug('setMaster:', reportId, castleCode, castle);
 
   if (!castle) {
-    await ctx.replyWithHTML(`Invalid castle code <b>${castleCode}</b>`);
+    await ctx.replyWithHTML(`⚠ invalid castle code <b>${castleCode}</b>`);
     return;
   }
 
@@ -253,7 +253,7 @@ export async function setMaster(ctx) {
   }
 
   const { date, _id: id } = report;
-  const { gold, stats: { atk } } = report;
+  const { gold, stats: { atk, def } } = report;
   const dateLabel = `<b>${b.dateFormat(date)}</b>`;
 
   const battle = await Battle.findOne({ date });
@@ -263,18 +263,23 @@ export async function setMaster(ctx) {
     return;
   }
 
-  if (atk < 100 || gold < 8) {
-    await ctx.replyWithHTML('<code>Invalid report</code> need at least 8 gold and 100 attack');
+  const result = battle.result[castleCode];
+  const stat = result.result === 'breached' ? atk : def;
+
+  if (stat < 100 || gold < 8) {
+    await ctx.replyWithHTML('⚠ <code>Invalid report</code> need at least 8 gold and 100 stat');
     return;
   }
 
-  const result = battle.result[castleCode];
-  const castleAtk = -Math.ceil(result.gold * atk / gold);
+  const castleAtk = Math.ceil(Math.abs(result.gold) * stat / gold);
 
   const masterData = {
     atk: castleAtk,
     masterReport: {
-      atk, gold, id,
+      atk,
+      def,
+      gold,
+      id,
     },
   };
 

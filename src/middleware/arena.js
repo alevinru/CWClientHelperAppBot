@@ -436,6 +436,11 @@ function winRateBold(winRate) {
 function winRateIcon(winRate) {
 
   const total = sumBy(winRate);
+
+  if (total < 5) {
+    return '⚠️';
+  }
+
   const prizes = ['🥇', '🥈', '🥉'];
   const prize = total - winRate[0];
 

@@ -104,10 +104,10 @@ const NAMES_LIMIT = 12;
 export async function itemBuyers(ctx) {
 
   const { match } = ctx;
-  const [command, itemCode, priceParam, hoursParam, hm = 'h'] = match;
+  const [, cmd, itemCode, priceParam, hoursParam, hm = 'h'] = match;
   const itemName = itemNameByCode(itemCode);
 
-  debug(command, itemCode, priceParam, hoursParam, itemName || 'unknown itemCode');
+  debug(cmd, itemCode, priceParam, hoursParam, itemName || 'unknown itemCode');
 
   const hours = parseInt(hoursParam, 0) || 1;
 
@@ -131,11 +131,16 @@ export async function itemBuyers(ctx) {
     price: dealsPrice,
   };
 
+  const cmdType = cmd === 'who' ? 'buyer' : 'seller';
+
   const pipeline = [
     { $match: dealsFilter },
     {
       $group: {
-        _id: '$buyerName',
+        _id: {
+          name: `$${cmdType}Name`,
+          castle: `$${cmdType}Castle`,
+        },
         qty: { $sum: '$qty' },
         cnt: { $sum: 1 },
       },
@@ -162,10 +167,10 @@ export async function itemBuyers(ctx) {
   const namesToShow = take(deals, NAMES_LIMIT);
 
   const res = [
-    `<b>${itemNameByCode(itemCode)}</b> deals in last <b>${hours}</b> ${hms}`,
+    `<b>${itemNameByCode(itemCode)}</b> ${cmdType}s in last <b>${hours}</b> ${hms}`,
     `for the price of <b>${dealsPrice}</b>:`,
     '',
-    ...namesToShow.map(({ _id: name, qty }) => `<code>${name}</code> x <b>${qty}</b>`),
+    ...namesToShow.map(({ _id: { name, castle }, qty }) => `${castle} ${name} x <b>${qty}</b>`),
   ];
 
   if (deals.length > NAMES_LIMIT) {

@@ -215,7 +215,14 @@ async function userReportByDate(filters, dateB, dateE) {
   const reports = await query;
 
   if (!reports.length) {
-    return [`No battle report found for <b>${JSON.stringify(filters)}</b>`];
+    const dateELabel = b.dateFormat(dateE);
+    const periodLabel = differenceInHours(dateB, dateE)
+      ? `${b.dateFormat(dateB)} - ${dateELabel}` : dateELabel;
+    return [
+      'No battle report found',
+      `of <b>${filters.name}</b>`,
+      `for <b>${periodLabel}</b>`,
+    ];
   }
 
   const rows = reports.map(report => {

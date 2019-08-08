@@ -26,9 +26,9 @@ import settings, * as ss from './middleware/settings';
 /*
 Trading
  */
-
-bot.hears(/^\/trading[ _](on|off)$/, traders.tradingActive);
-bot.command('trading', traders.tradingStatus);
+botHears('trading', traders.tradingStatus);
+botHears('trading[ _]help', traders.tradingHelp);
+botHears('trading[ _](on|off)', traders.tradingActive);
 
 bot.hears(/^\/trades[ _]([a-z0-9]+)$/, trades.itemTrades);
 

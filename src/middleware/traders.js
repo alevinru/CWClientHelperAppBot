@@ -10,6 +10,10 @@ const { debug } = log('mw:traders');
 const ADMIN_ID = parseInt(process.env.ADMIN_ID, 0);
 const ADMIN_PRIORITY = parseInt(process.env.ADMIN_PRIORITY, 0) || 10;
 
+export async function tradingHelp(ctx) {
+  await ctx.replyWithHTML(helpReply());
+}
+
 export async function tradingStatus(ctx) {
 
   const command = '/trading';
@@ -23,7 +27,7 @@ export async function tradingStatus(ctx) {
     let trader = trading.getCachedTrader(userId);
 
     if (!trader) {
-      await ctx.replyWithHTML(replyNotAuthorized());
+      await ctx.replyWithHTML(helpReply());
       return;
     }
 
@@ -145,13 +149,20 @@ function formatTrader(trader) {
 }
 
 
-function replyNotAuthorized() {
+function helpReply() {
   return [
-    'For a start try /t_01 for Thread market statistics tof the past day',
-    'Try /t01_8 and /t01_20m to narrow the time range',
-    '\nUse <code>/wtb_{itemCode}_{qty}_{price}</code> for exact price requests',
-    'For example /wtb_01_1_8 will try to buy 1 thread for 8 gold',
-    '\nUnderscores could be substituted with spaces like <code>/t_01 2</code>',
+    '<b>Trading</b>',
+    '',
+    ['For a start try /t_01 for Thread market statistics tof the past day.',
+      'Use /t01_8 and /t01_20m to narrow the time range'].join(' '),
+    '',
+    ['Use <code>/wtb_{itemCode}_{qty}_{price}</code> for exact price requests.',
+      'For example /wtb_01_1_8 will try to buy 1 thread for 8 gold <b>exactly</b>'].join(' '),
+    '',
+    'Underscore symbols _ could be substituted with spaces like <code>/t 01 2</code>',
+    '',
+    ['/who_07_1_20m shows top powder <b>buyers</b> over the last 20 minutes.',
+      'While /whos_07_1_24 shows top powder <b>sellers</b> of the past day'].join(' '),
   ].join('\n');
 }
 

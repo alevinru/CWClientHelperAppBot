@@ -104,10 +104,10 @@ const NAMES_LIMIT = 12;
 export async function itemBuyers(ctx) {
 
   const { match } = ctx;
-  const [, cmd, itemCode, priceParam, hoursParam, hm = 'h'] = match;
+  const [, cmd, itemCode, priceType, priceParam, hoursParam, hm = 'h'] = match;
   const itemName = itemNameByCode(itemCode);
 
-  debug(cmd, itemCode, priceParam, hoursParam, itemName || 'unknown itemCode');
+  debug(cmd, itemCode, priceType, priceParam, hoursParam, itemName || 'unknown itemCode');
 
   const hours = parseInt(hoursParam, 0) || 1;
 
@@ -128,7 +128,7 @@ export async function itemBuyers(ctx) {
   const dealsFilter = {
     ts: { $gt: add(new Date(), -hours) },
     itemCode,
-    price: dealsPrice,
+    price: !priceType ? dealsPrice : { [eOperator(priceType)]: dealsPrice },
   };
 
   const cmdType = cmd === 'who' ? 'buyer' : 'seller';
@@ -166,9 +166,11 @@ export async function itemBuyers(ctx) {
 
   const namesToShow = take(deals, NAMES_LIMIT);
 
+  const operatorLabel = priceType ? eOperator(priceType).replace('$', '') : 'of';
+
   const res = [
     `<b>${itemNameByCode(itemCode)}</b> ${cmdType}s in last <b>${hours}</b> ${hms}`,
-    `for the price of <b>${dealsPrice}</b>:`,
+    `for the price ${operatorLabel} <b>${dealsPrice}</b>:`,
     '',
     ...namesToShow.map(({ _id: { name, castle }, qty }) => `${castle} ${name} x <b>${qty}</b>`),
   ];
@@ -184,6 +186,21 @@ export async function itemBuyers(ctx) {
 
   await ctx.replyWithHTML(res.join('\n'));
 
+}
+
+function eOperator(op) {
+  switch (op) {
+    case '<':
+      return '$lt';
+    case '>':
+      return '$gt';
+    case '<=':
+      return '$lte';
+    case '>=':
+      return '$gte';
+    default:
+      return '$eq';
+  }
 }
 
 

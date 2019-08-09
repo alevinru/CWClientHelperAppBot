@@ -229,8 +229,7 @@ async function replyOrderFail(e, offer, order, deal) {
   const errMsg = [
     `⚠️ Missed ${qty} x ${offer.price}💰`,
     ` of <b>${itemName}</b> from ${offer.sellerCastle} <b>${sellerName}</b>\n`,
-    `/order_${order.id} deal failed with`,
-    ` ${name.toLocaleLowerCase()}: <b>${message}</b>\n`,
+    `/order_${order.id} ${name.toLocaleLowerCase()}: <b>${message}</b>\n`,
     `Retry ${wtb}`,
   ];
 

@@ -115,12 +115,17 @@ export function applyDefaults(settings) {
 }
 
 export const NOTIFY_ORDER_FAIL = 'notifyOrderFail';
+export const NOTIFY_SALES = 'notifySales';
 
 export function allSettings() {
   return {
     [NOTIFY_ORDER_FAIL]: {
       type: Boolean,
       defaults: true,
+    },
+    [NOTIFY_SALES]: {
+      type: Boolean,
+      defaults: false,
     },
   };
 }

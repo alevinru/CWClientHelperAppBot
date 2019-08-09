@@ -5,6 +5,8 @@ import session from './services/session';
 import bot, { BOT_ID, BOT_USER_NAME } from './services/bot';
 import * as mongo from './models';
 
+import Notificator from './services/notificator';
+
 const { debug, error } = log('index');
 
 require('./config/context').default(bot);
@@ -19,10 +21,22 @@ bot.use(session({ botId: BOT_ID }).middleware());
 require('./commands');
 
 cw.connect({ timeout: process.env.CW_TIMEOUT })
-  .then(() => mongo.connect())
-  .then(() => bot.startPolling())
-  .then(() => getTraders())
-  .then(() => debug('Start polling', BOT_USER_NAME));
+  .then(run);
+
+async function run() {
+
+  await mongo.connect();
+  await bot.startPolling();
+  await getTraders();
+
+  const notificator = new Notificator();
+
+  await notificator.init();
+
+  debug('Start polling', BOT_USER_NAME);
+
+}
+
 
 /*
 Exception handlers

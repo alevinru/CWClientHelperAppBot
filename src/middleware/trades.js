@@ -4,6 +4,8 @@ import take from 'lodash/take';
 import orderBy from 'lodash/orderBy';
 import addHours from 'date-fns/add_hours';
 import addMinutes from 'date-fns/add_minutes';
+import addDays from 'date-fns/add_days';
+import addWeeks from 'date-fns/add_weeks';
 import log from '../services/log';
 import Deal from '../models/Deal';
 import { pricesByItemCode, itemNameByCode } from '../services/cw';
@@ -104,10 +106,10 @@ const NAMES_LIMIT = 12;
 export async function itemBuyers(ctx) {
 
   const { match } = ctx;
-  const [, cmd, itemCode, priceType, priceParam, hoursParam, hm = 'h'] = match;
+  const [, cmd, shares, itemCode, priceType, priceParam, hoursParam, hm = 'h'] = match;
   const itemName = itemNameByCode(itemCode);
 
-  debug(cmd, itemCode, priceType, priceParam, hoursParam, itemName || 'unknown itemCode');
+  debug(cmd, shares, itemCode, priceType, priceParam, hoursParam, itemName || 'unknown itemCode');
 
   const hours = parseInt(hoursParam, 0) || 1;
 
@@ -123,10 +125,8 @@ export async function itemBuyers(ctx) {
     return;
   }
 
-  const add = hm === 'h' ? addHours : addMinutes;
-
   const dealsFilter = {
-    ts: { $gt: add(new Date(), -hours) },
+    ts: { $gt: timeFn(hm)(new Date(), -hours) },
     itemCode,
     price: !priceType ? dealsPrice : { [eOperator(priceType)]: dealsPrice },
   };
@@ -168,16 +168,24 @@ export async function itemBuyers(ctx) {
 
   const operatorLabel = priceType ? eOperator(priceType).replace('$', '') : 'of';
 
+  const CROSS = shares ? ' ~ ' : ' x ';
+  const PERCENT = shares ? '%' : '';
+
   const res = [
-    `<b>${itemNameByCode(itemCode)}</b> ${cmdType}s in last <b>${hours}</b> ${hms}`,
+    `<b>${itemNameByCode(itemCode)}</b> ${cmdType}s in last <b>${hours}</b> ${datePartLabel(hm, hours)}`,
     `for the price ${operatorLabel} <b>${dealsPrice}</b>:`,
     '',
-    ...namesToShow.map(({ _id: { name, castle }, qty }) => `${castle} ${name} x <b>${qty}</b>`),
+    ...namesToShow.map(({ _id: { name, castle }, qty }) => {
+      return `${castle} ${name}${CROSS}<b>${sharePercent(qty)}</b>${PERCENT}`;
+    }),
   ];
 
   if (deals.length > NAMES_LIMIT) {
     const othersQty = totalQty - sumBy(namesToShow, 'qty');
-    res.push('', `<b>${deals.length - NAMES_LIMIT}</b> others x <b>${othersQty}</b>`);
+    res.push('', [
+      `<b>${deals.length - NAMES_LIMIT}</b>`,
+      `others${CROSS}<b>${sharePercent(othersQty)}</b>${PERCENT}`,
+    ].join(' '));
   }
 
   if (deals.length > 1) {
@@ -185,6 +193,10 @@ export async function itemBuyers(ctx) {
   }
 
   await ctx.replyWithHTML(res.join('\n'));
+
+  function sharePercent(qty) {
+    return shares ? round(100 * qty / totalQty, 1) : qty;
+  }
 
 }
 
@@ -203,6 +215,30 @@ function eOperator(op) {
   }
 }
 
+function timeFn(op) {
+  switch (op) {
+    case 'm':
+      return addMinutes;
+    case 'd':
+      return addDays;
+    case 'w':
+      return addWeeks;
+    case 'h':
+    default:
+      return addHours;
+  }
+}
+
+const DATE_PARTS = {
+  h: 'hour',
+  m: 'minute',
+  d: 'day',
+  w: 'week',
+};
+
+function datePartLabel(dp, num) {
+  return `${DATE_PARTS[dp]}${num === 1 ? '' : 's'}`;
+}
 
 /**
  * Returns higher limit calculated on given sex_digest data

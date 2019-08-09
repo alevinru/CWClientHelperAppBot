@@ -255,15 +255,16 @@ function replyOrderSuccess(offer, order, dealParams, tries) {
 
   const reply = [
     `✅ Got <b>${itemName}</b> ${dealParams.quantity} x ${dealParams.price}💰`,
-    ` of <b>${qty}</b> from ${offer.sellerCastle} <b>${sellerName}</b>`,
-    ` by /order_${order.id}`,
+    qty > dealParams.quantity ? `of <b>${qty}</b> ` : '',
+    `from ${offer.sellerCastle} <b>${sellerName}</b>`,
+    `by /order_${order.id}`,
   ];
 
   if (tries > 1) {
-    reply.push(` on attempt №${tries}`);
+    reply.push(`on attempt №${tries}`);
   }
 
-  botMessage(order.userId, reply.join(''))
+  botMessage(order.userId, filter(reply).join(' '))
     .catch(({ name, message }) => error('onGotOffer', name, message));
 
 }

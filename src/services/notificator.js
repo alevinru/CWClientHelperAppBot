@@ -24,10 +24,10 @@ export default class Notificator {
 
     await this.hookUsers();
 
-    this.user = User.watch()
+    User.watch()
       .on('change', () => this.hookUsers());
 
-    this.deal = Deal.watch()
+    Deal.watch()
       .on('change', change => {
 
         const { fullDocument: deal } = change;
@@ -42,7 +42,7 @@ export default class Notificator {
 
         // debug(operationType, msg);
 
-        return this.notifyDeal(sellerId, msg);
+        this.notifyDeal(sellerId, msg).catch(error);
 
       });
   }

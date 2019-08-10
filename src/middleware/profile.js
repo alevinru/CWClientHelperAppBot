@@ -85,7 +85,7 @@ function formatProfile(profile, userId) {
   debug('formatProfile', userName);
 
   const res = [
-    `<code>${lvl}</code>${cls}${castle} <b>${nameTag || ''}${userName}</b>`,
+    `<code>${lvl}</code> ${cls}${castle} <b>${nameTag || ''}${userName}</b>`,
     '',
     `⚔${atk} 🛡${def} ❤️${hp}${mana ? `💧${mana}` : ''}`,
     `💰${gold || 0} 👝${pouches || 0} 🔥${exp} 🔋${stamina}`,

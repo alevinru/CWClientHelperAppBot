@@ -1,4 +1,6 @@
 import fpMap from 'lodash/fp/map';
+import filter from 'lodash/filter';
+
 import { getCachedTrader } from '../services/trading';
 import * as ordering from '../services/ordering';
 import { itemNameByCode } from '../services/cw';
@@ -95,7 +97,7 @@ export async function orders(ctx) {
       res.push(' not found.');
     } else {
       res.push('\n\n');
-      res.push(items.map(o => formatOrder(o)).join('\n'));
+      res.push(items.map(o => formatOrder(o, { withUser: true })).join('\n'));
     }
 
     ctx.replyHTML(res.join(''));
@@ -126,12 +128,12 @@ export async function orderById(ctx) {
     }
 
     const res = [
-      formatOrder(order, true),
-      `To remove issue /rmorder_${id} command`,
+      formatOrder(order, { withItem: true, list: true }),
+      `/orders_${order.itemCode} or /rmorder_${id} to delete`,
     ];
 
     if (!order.isActive) {
-      res.push(`To set active issue /saorder_${id}`);
+      res.push(`/saorder_${id} to set active`);
     }
 
     await ctx.replyHTML(res.join('\n'));
@@ -167,7 +169,7 @@ export async function setOrderActive(ctx) {
 
     await ordering.hookOffers();
 
-    await ctx.replyWithHTML(formatOrder(order, true));
+    await ctx.replyWithHTML(formatOrder(order, { withUser: true }));
 
   } catch (e) {
     ctx.replyError(command, e);
@@ -219,7 +221,7 @@ export async function rmById(ctx) {
 
 }
 
-export function formatOrder(order, withItem = false, withUser = true) {
+export function formatOrder(order, { withItem = false, withUser = true, list = false }) {
 
   const {
     id, qty, price, itemCode, userName,
@@ -227,7 +229,7 @@ export function formatOrder(order, withItem = false, withUser = true) {
 
   const res = [
     order.isActive ? '✅' : '⏸',
-    `/order_${id}`,
+    !list && `/order_${id}`,
     withItem ? `<b>${itemNameByCode(itemCode)}</b>` : '',
     `${qty} x ${price}💰`,
   ];
@@ -236,7 +238,7 @@ export function formatOrder(order, withItem = false, withUser = true) {
     res.push(`for <b>${userName}</b>`);
   }
 
-  return res.join(' ');
+  return filter(res).join(' ');
 
 }
 
@@ -255,7 +257,7 @@ export async function ordersTop(ctx) {
       res.push(' not found.');
     } else {
       res.push(':\n\n');
-      res.push(items.map(o => formatOrder(o, true)).join('\n'));
+      res.push(items.map(o => formatOrder(o, { withItem: true })).join('\n'));
     }
 
     ctx.replyHTML(res.join(''));
@@ -281,6 +283,6 @@ export async function userOrders(ctx) {
 
 export async function userOrderList(userId) {
   const res = await ordering.getOrdersByUserId(userId)
-    .then(fpMap(order => formatOrder(order, true, false)));
+    .then(fpMap(order => formatOrder(order, { withItem: true, withUser: false })));
   return Array.isArray(res) ? res.join('\n') : 'You have no orders';
 }

@@ -181,35 +181,35 @@ export async function getTopOrders() {
 
 }
 
-
 export async function hookOffers() {
+  return hookOffersAsync()
+    .catch(error);
+}
 
-  try {
+export async function hookOffersAsync() {
 
-    const top = await getTopOrders();
+  const top = await getTopOrders();
 
-    dropOfferHooks();
+  dropOfferHooks();
 
-    top.forEach(async order => {
+  const hooks = map(top, async order => {
 
-      const { itemCode, userId } = order;
-      const itemName = itemNameByCode(itemCode);
+    const { itemCode, userId } = order;
+    const itemName = itemNameByCode(itemCode);
 
-      const trader = await refreshTraderCache(userId);
+    const trader = await refreshTraderCache(userId);
 
-      if (trader.isPaused) {
-        debug('hookOffers', itemName, `/order_${order.id}`, 'trader is paused');
-        return;
-      }
+    if (trader.isPaused) {
+      debug('hookOffers', itemName, `/order_${order.id}`, 'trader is paused');
+      return;
+    }
 
-      addOfferHook(itemName, offer => onGotOffer(offer, order));
+    addOfferHook(itemName, offer => onGotOffer(offer, order));
 
-      debug('hookOffers', itemName, `/order_${order.id}`);
+    debug('hookOffers', itemName, `/order_${order.id}`);
 
-    });
+  });
 
-  } catch (e) {
-    error(e);
-  }
+  await Promise.all(hooks);
 
 }

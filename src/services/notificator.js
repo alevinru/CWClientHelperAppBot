@@ -52,10 +52,9 @@ export default class Notificator {
     const funds = addTraderFunds(tgId, price * qty);
 
     const msg = [
-      // `🤝 ${qty} <b>${item}</b> ${price * qty}💰`,
       `🤝 <b>${item}</b> ${qty} x ${price}💰`,
       ` to ${buyerCastle} ${buyerName}`,
-      funds && `\nhave ${funds}💰 now`,
+      funds && `\n💸${price * qty} 💰${funds}`,
     ];
 
     await notify(tgId, lo.filter(msg).join(''));

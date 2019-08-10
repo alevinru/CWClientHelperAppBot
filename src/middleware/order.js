@@ -227,16 +227,16 @@ export function formatOrder(order, withItem = false, withUser = true) {
 
   const res = [
     order.isActive ? '✅' : '⏸',
-    ` /order_${id} `,
-    withItem ? `<b>${itemNameByCode(itemCode)}</b> ` : '',
+    `/order_${id}`,
+    withItem ? `<b>${itemNameByCode(itemCode)}</b>` : '',
     `${qty} x ${price}💰`,
   ];
 
   if (withUser) {
-    res.push(` for <b>${userName}</b>`);
+    res.push(`for <b>${userName}</b>`);
   }
 
-  return res.join('');
+  return res.join(' ');
 
 }
 

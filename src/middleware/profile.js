@@ -75,17 +75,20 @@ function formatProfile(profile, userId) {
   const { class: cls, castle } = profile;
 
   const { mana, gold, pouches } = profile;
-  const { stamina, exp } = profile;
+  const { stamina, exp, hp } = profile;
   const { atk, def, lvl } = profile;
 
   const nameTag = tag ? `[${tag}] ` : '';
 
   const withUserId = userId ? `_${userId}` : '';
 
+  debug('formatProfile', userName);
+
   const res = [
-    `${cls}${castle} <b>${nameTag || ''}${userName}</b>`,
-    `${LEVEL_ICON}${lvl} ⚔${atk} 🛡${def} 🔥${exp}`,
-    `💰${gold || 0} 👝${pouches || 0} 🔋${stamina}${mana ? `💧${mana}` : ''}`,
+    `<code>${lvl}</code>${cls}${castle} <b>${nameTag || ''}${userName}</b>`,
+    '',
+    `⚔${atk} 🛡${def} ❤️${hp}${mana ? `💧${mana}` : ''}`,
+    `💰${gold || 0} 👝${pouches || 0} 🔥${exp} 🔋${stamina}`,
     '',
     `/gear${withUserId} /stock${withUserId}`,
   ];

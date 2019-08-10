@@ -7,6 +7,7 @@ import log from './log';
 import Deal from '../models/Deal';
 import User from '../models/User';
 
+import { addTraderFunds } from './trading';
 import { getSession } from './session';
 import bot, { BOT_ID } from './bot';
 
@@ -31,28 +32,34 @@ export default class Notificator {
       .on('change', change => {
 
         const { fullDocument: deal } = change;
-
-        const { buyerName, buyerCastle, sellerId } = deal;
-        const { item, qty, price } = deal;
-
-        const msg = [
-          `🤝 <b>${item}</b> ${qty} x ${price}💰`,
-          `to ${buyerCastle} ${buyerName}`,
-        ].join(' ');
-
-        // debug(operationType, msg);
-
-        this.notifyDeal(sellerId, msg).catch(error);
+        this.notifyDeal(deal).catch(error);
 
       });
   }
 
-  async notifyDeal(cwId, msg) {
-    const user = lo.find(this.users, { cwId });
+  async notifyDeal(deal) {
+
+    const { buyerName, buyerCastle, sellerId } = deal;
+    const user = lo.find(this.users, { cwId: sellerId });
+
     if (!user) {
       return;
     }
-    await notify(user.tgId, msg);
+
+    const { tgId } = user;
+    const { item, qty, price } = deal;
+
+    const funds = addTraderFunds(tgId, price * qty);
+
+    const msg = [
+      // `🤝 ${qty} <b>${item}</b> ${price * qty}💰`,
+      `🤝 <b>${item}</b> ${qty} x ${price}💰`,
+      ` to ${buyerCastle} ${buyerName}`,
+      funds && `\nhave ${funds}💰 now`,
+    ];
+
+    await notify(tgId, lo.filter(msg).join(''));
+
   }
 
   async hookUsers() {
@@ -80,7 +87,7 @@ export default class Notificator {
 }
 
 async function notify(userId, msg) {
-  debug('notify', userId, msg);
+  debug('notify', userId, msg.replace(/\n/g, ' '));
   const options = { parse_mode: 'HTML', disable_notification: true };
   return bot.telegram.sendMessage(userId, msg, options);
 }

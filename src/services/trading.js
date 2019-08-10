@@ -1,5 +1,6 @@
 import map from 'lodash/map';
 import filter from 'lodash/filter';
+// import set from 'lodash/set';
 
 import fpMap from 'lodash/fp/map';
 import * as CW from 'cw-rest-api';
@@ -23,6 +24,17 @@ const DEAL_MAX_REPEAT = parseInt(process.env.DEAL_MAX_REPEAT, 0) || 1;
 
 export function getCachedTrader(userId) {
   return TRADERS_BY_ID[userId];
+}
+
+export function addTraderFunds(userId, gold) {
+  const trader = TRADERS_BY_ID[userId];
+  if (!(trader)) {
+    return null;
+  }
+  const { funds = 0 } = trader;
+  const newFunds = funds + gold;
+  trader.funds = newFunds;
+  return newFunds;
 }
 
 export async function refreshTraderCache(userId) {

@@ -53,5 +53,7 @@ module.exports = {
     'arrow-parens': ['error', 'as-needed'],
     'arrow-body-style': 'off',
     'import/prefer-default-export': 'off',
+    'no-mixed-operators': 'off',
+    'prefer-object-spread': 'off',
   }
 };

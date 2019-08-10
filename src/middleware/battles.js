@@ -7,7 +7,8 @@ import fpOmit from 'lodash/fp/omit';
 import keyBy from 'lodash/keyBy';
 import groupBy from 'lodash/groupBy';
 import padStart from 'lodash/padStart';
-// import set from 'lodash/set';
+import orderBy from 'lodash/orderBy';
+import sumBy from 'lodash/sumBy';
 
 import log from '../services/log';
 import * as b from '../services/battles';
@@ -169,17 +170,25 @@ function battleView(battle) {
 
   const resultsByStatus = groupBy(results, 'result');
 
-  return [
+  const res = [
     `<b>${b.dateFormat(date)}</b> battle`,
     ...map(resultsByStatus, (r, code) => {
       return [
         '',
         `${resultStatus(code)} <b>${r.length}</b> ${code}`,
         '',
-        ...map(r, battleResultView),
+        ...map(orderBy(r, ['score'], ['desc']), battleResultView),
       ].join('\n');
     }),
   ];
+
+  const atk = sumBy(results, 'atk');
+
+  if (atk) {
+    res.push('', `👊 <b>${Math.ceil(atk / 1000.0)}</b>K total`);
+  }
+
+  return res;
 
 }
 

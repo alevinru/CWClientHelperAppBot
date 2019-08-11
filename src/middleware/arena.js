@@ -294,10 +294,10 @@ async function guildDuels(tag, shift, shiftTo) {
     const lost = loses.length;
 
     return {
-      gain: gainTotal(nameDuels),
-      gainInfo: gainInfo(nameDuels),
-      name,
+      // gain: gainTotal(nameDuels),
+      // gainInfo: gainInfo(nameDuels),
       level,
+      name,
       won,
       lost,
       rate: won - lost,
@@ -361,7 +361,7 @@ function formatDuels(duels, id, primaryName) {
 
   const isPeriod = minDate !== maxDate && opponents.length > 10;
 
-  const period = isPeriod
+  const period = minDate !== maxDate
     ? `from <b>${minDate}</b> to <b>${maxDate}</b>` : `on <b>${minDate}</b>`;
 
   const { tag, level, name } = duelPlayer;

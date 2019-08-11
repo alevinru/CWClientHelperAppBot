@@ -59,6 +59,8 @@ export async function getTraders() {
 
   const reallyTraders = filter(traders, 'priority');
 
+  debug('getTraders', traders.length);
+
   return Promise.all(map(reallyTraders, trader => refreshTraderCache(trader.id)));
 
 }

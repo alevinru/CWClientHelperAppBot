@@ -1,12 +1,12 @@
 import filter from 'lodash/filter';
-import keyBy from 'lodash/keyBy';
 import map from 'lodash/map';
-import fpMap from 'lodash/fp/map';
-import fpFilter from 'lodash/fp/filter';
 import find from 'lodash/find';
+import first from 'lodash/first';
 
 import log from './log';
 import * as redis from './redis';
+
+import Order from '../models/Order';
 
 import { getProfile } from './profile';
 import { onGotOffer, refreshTraderCache, getCachedTrader } from './trading';
@@ -15,7 +15,6 @@ import { itemNameByCode } from './cw';
 import { addOfferHook, dropOfferHooks } from '../consumers/offersConsumer';
 
 const ORDERS_PREFIX = 'orders';
-const ID_TO_ITEM_CODE_HASH = 'orders_idx_itemCode';
 
 const { debug, error } = log('ordering');
 
@@ -29,13 +28,9 @@ function ordersQueueKey(code) {
   return `${ORDERS_PREFIX}_queue_${code}`;
 }
 
-function orderKey(id) {
-  return `order_${id}`;
-}
-
 export async function getOrderById(id) {
 
-  const order = await redis.hgetallAsync(orderKey(id));
+  const order = await Order.findOne({ id });
 
   if (!order) {
     return order;
@@ -43,27 +38,23 @@ export async function getOrderById(id) {
 
   const { itemCode } = order;
 
-  const [topId] = await redis.lrangeAsync(ordersQueueKey(itemCode), -1, -1) || [];
+  const topId = await topOrderId(itemCode);
 
-  debug('getOrderById:', itemCode, id, topId);
-
-  return Object.assign(order, {
-    qty: parseInt(order.qty, 0),
-    price: parseInt(order.price, 0),
-    userId: parseInt(order.userId, 0),
-    isActive: parseInt(topId, 0) === parseInt(id, 0),
-  });
+  return {
+    ...order.toObject(),
+    isActive: topId === order.id,
+  };
 
 }
 
 export async function removeOrder(id) {
-  const itemCode = await redis.hgetAsync(ID_TO_ITEM_CODE_HASH, id);
-  if (itemCode) {
-    await redis.hdelAsync(ID_TO_ITEM_CODE_HASH, id);
-    await redis.lremAsync(ordersQueueKey(itemCode), 0, id);
-    await redis.delAsync(orderKey(id));
+  const order = await Order.findOne({ id });
+  if (!order) {
+    return false;
   }
-  return !!itemCode;
+  await redis.lremAsync(ordersQueueKey(order.itemCode), 0, id);
+  await Order.deleteOne({ id });
+  return true;
 }
 
 export async function addOrder(userId, itemCode, qty, price, token) {
@@ -82,26 +73,31 @@ export async function addOrder(userId, itemCode, qty, price, token) {
 
   const topId = await setOrderTop(id, userId, itemCode);
 
-  const order = {
+  const order = new Order({
     id,
+    userId,
+    userName,
     itemCode,
     itemName,
     qty: parseInt(qty, 0),
     price: parseInt(price, 0),
-    userId: parseInt(userId, 0),
-    userName,
     token,
-  };
+    ts: new Date(),
+  });
 
   debug('addOrder', itemName, order, topId);
 
-  await redis.hsetAsync(ID_TO_ITEM_CODE_HASH, id, itemCode);
-  await redis.hmsetAsync(orderKey(id), order);
+  await order.save();
 
-  return Object.assign(order, {
-    isActive: parseInt(topId, 0) === parseInt(id, 0),
-  });
+  return {
+    ...order.toObject(),
+    isActive: topId === id,
+  };
 
+}
+
+export async function setTopOrders() {
+  debug('setTopOrders');
 }
 
 export async function setOrderTop(id, userId, itemCode) {
@@ -124,16 +120,14 @@ export async function setOrderTop(id, userId, itemCode) {
     await redis.linsertAsync(queueKey, 'BEFORE', pos.id, id);
   }
 
-  const [topId] = await redis.lrangeAsync(queueKey, -1, -1) || [];
-
-  return topId;
+  return topOrderId(itemCode);
 
 }
 
 export async function getOrdersByItemCode(itemCode) {
 
-  const ids = await redis.lrangeAsync(ordersQueueKey(itemCode), 0, -1);
-  const promises = ids.map(id => getOrderById(id));
+  const ids = await Order.find({ itemCode });
+  const promises = ids.map(({ id }) => getOrderById(id));
   const orders = await Promise.all(promises);
 
   debug('getOrdersByItemCode', itemCode, orders.length);
@@ -143,41 +137,33 @@ export async function getOrdersByItemCode(itemCode) {
 }
 
 
-export async function getOrdersByUserId(theUserId) {
+export async function getOrdersByUserId(userId) {
 
-  const idx = await redis.hgetallAsync(ID_TO_ITEM_CODE_HASH);
+  const idx = await Order.find({ userId });
 
-  const getIdx = (itemCode, id) => redis
-    .hgetAsync(orderKey(id), 'userId')
-    .then(userId => {
+  return Promise.all(map(idx, o => getOrderById(o.id)));
 
-      debug('getOrdersByUserId', itemCode, id, userId);
+}
 
-      return {
-        userId: parseInt(userId, 0),
-        id,
-        itemCode,
-      };
-
-    });
-
-  return Promise.all(map(idx, getIdx))
-    .then(fpFilter({ userId: theUserId }))
-    .then(fpMap(o => getOrderById(o.id)))
-    .then(res => Promise.all(res));
-
+async function topOrderId(itemCode) {
+  const ids = await redis.lrangeAsync(ordersQueueKey(itemCode), -1, -1);
+  return ids && parseInt(first(ids), 0);
 }
 
 
 export async function getTopOrders() {
 
-  const index = await redis.hgetallAsync(ID_TO_ITEM_CODE_HASH);
-  const itemCodes = map(keyBy(index, itemCode => itemCode));
-  const promises = map(itemCodes, itemCode => redis.lrangeAsync(ordersQueueKey(itemCode), -1, -1));
+  const itemCodes = await Order.aggregate([
+    { $group: { _id: '$itemCode' } },
+  ]);
 
-  return Promise.all(promises)
+  const promises = map(itemCodes, ({ _id: itemCode }) => topOrderId(itemCode));
+
+  const orders = await Promise.all(promises)
     .then(res => map(res, getOrderById))
     .then(res => Promise.all(res));
+
+  return filter(orders);
 
 }
 

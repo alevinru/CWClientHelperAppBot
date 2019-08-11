@@ -370,7 +370,7 @@ function formatDuels(duels, id, primaryName) {
 
   return [
     `${LEVEL_ICON}${level} <b>${tag ? `[${tag}] ` : ''}${name}</b>`,
-    `${gainInfo(opponents)} for duels ${period}`,
+    `duels ${period}`,
     '',
     isPeriod ? statsByDate() : wonLostList(),
     '',
@@ -411,13 +411,13 @@ function statsByDatePart(stats) {
       lostTo(dateOpponents).length,
     ];
 
-    const gain = gainTotal(dateOpponents);
+    // const gain = gainTotal(dateOpponents);
 
     return [
       `<code>${datePart}</code>`,
       winRateBold(winRate).join(' / '),
       // `(${gain > 0 ? '👍' : ''}${gain})`,
-      gain > 0 ? `👍 ${gain}` : `(${gain})`,
+      // gain > 0 ? `👍 ${gain}` : `(${gain})`,
       // gainInfo(dateOpponents),
       winRateIcon(winRate),
     ].join(' ');
@@ -496,7 +496,7 @@ function gainTotal(opponents) {
 
 function gainInfo(opponents) {
   const gain = gainTotal(opponents);
-  return gain ? `${gain > 0 ? `❤+${gain}` : `💔-${-gain}`}` : '⚡️';
+  return gain ? `${gain > 0 ? `❤️+${gain}` : `💔-${-gain}`}` : '⚡️';
 }
 
 
@@ -507,7 +507,7 @@ function opponentList(opponents, type) {
   }
 
   return [
-    `${gainInfo(opponents)}`,
+    `${type === 'Won' ? '❤️' : '💔'} ${type} <b>${opponents.length}</b>`,
     ...map(opponents, opponentFormat),
   ].join('\n');
 
@@ -520,7 +520,7 @@ function opponentFormat(duel) {
   const { castle, tag, name } = opponent;
   const { isChallenge, level } = opponent;
   // const { saved, undamaged } = duel;
-  const gain = gainTotal([duel]);
+  // const gain = gainTotal([duel]);
 
   return filter([
     `<code>${level}</code>`,
@@ -528,7 +528,7 @@ function opponentFormat(duel) {
     tag ? `[${tag}]` : '',
     isChallenge ? '🤺‍' : '',
     name,
-    `<b>${gain > 0 ? '+' : ''}${gain}</b>`,
+    // `<b>${gain > 0 ? '+' : ''}${gain}</b>`,
   ]).join(' ');
 
 }

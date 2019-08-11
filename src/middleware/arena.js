@@ -49,14 +49,14 @@ export async function arena(ctx) {
 
     if (tag) {
 
-      const { period, res: data, opponents } = await guildDuels(tag, shift, shiftTo);
+      const { period, res: data } = await guildDuels(tag, shift, shiftTo);
 
       const reply = [
         `<b>[${tag}]</b> duels ${period}`,
         '',
         ...map(data, formatGuildMemberDuels),
         '',
-        `<b>${data.length}</b> fighters ${gainInfo(opponents)} won ${formatGuildTotalDuels(data)}`,
+        `<b>${data.length}</b> fighters won ${formatGuildTotalDuels(data)}`,
       ];
 
       await ctx.replyWithHTML(reply.join('\n'));
@@ -486,18 +486,18 @@ function duelOpponents(duels, cond) {
 }
 
 
-function gainTotal(opponents) {
-  return sumBy(opponents, duel => {
-    const { saved, undamaged } = duel;
-    return saved - undamaged;
-  });
+// function gainTotal(opponents) {
+//   return sumBy(opponents, duel => {
+//     const { saved, undamaged } = duel;
+//     return saved - undamaged;
+//   });
+//
+// }
 
-}
-
-function gainInfo(opponents) {
-  const gain = gainTotal(opponents);
-  return gain ? `${gain > 0 ? `❤️+${gain}` : `💔-${-gain}`}` : '⚡️';
-}
+// function gainInfo(opponents) {
+//   const gain = gainTotal(opponents);
+//   return gain ? `${gain > 0 ? `❤️+${gain}` : `💔-${-gain}`}` : '⚡️';
+// }
 
 
 function opponentList(opponents, type) {

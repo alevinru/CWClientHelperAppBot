@@ -25,7 +25,7 @@ const BATTLE_TEXT_RE = new RegExp(BATTLE_TEXT);
 const CASTLES = map(JSON.parse(process.env.CASTLES));
 const BATTLE_STATS_RE = new RegExp(`(${CASTLES.join('|')})(.*) ⚔:(.+) 🛡:(.+) Lvl: (\\d+)`);
 
-const MOB_BATTLE_REPORT = /Hit.*\nMiss/i;
+const MOB_BATTLE_REPORT = /👾Encounter/i;
 
 const ADMIN_ID = parseInt(process.env.ADMIN_ID, 0);
 

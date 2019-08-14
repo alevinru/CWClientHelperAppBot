@@ -3,6 +3,7 @@ import { checkPrice } from './trades';
 import { getProfile } from '../services/profile';
 import { getToken } from '../services/auth';
 import log from '../services/log';
+import { checkViewAuth } from './profile';
 
 const { debug } = log('mw:wtb');
 
@@ -23,12 +24,14 @@ export default async function (ctx) {
     return;
   }
 
-
   try {
 
     const token = matchUserId ? await getToken(matchUserId) : getAuthToken(session);
     const profile = matchUserId ? await getProfile(matchUserId) : session.profile;
     const { userName } = profile;
+    const { guild_tag: ownTag } = session.profile;
+
+    await checkViewAuth(ctx, ownTag, profile.guild_tag, matchUserId || userId, userId);
 
     // const token = getAuthToken(session);
     const dealParams = {

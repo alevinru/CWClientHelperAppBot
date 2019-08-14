@@ -45,7 +45,7 @@ export default async function (ctx) {
 }
 
 
-async function getOwnTag(ctx) {
+export async function getOwnTag(ctx) {
 
   const { profile: ownProfile } = ctx.session;
 
@@ -61,7 +61,7 @@ async function getOwnTag(ctx) {
 }
 
 
-async function checkViewAuth(ctx, ownTag, userTag, userId, fromUserId) {
+export async function checkViewAuth(ctx, ownTag, userTag, userId, fromUserId) {
   if (ownTag !== userTag || (!ownTag && !userTag && userId !== fromUserId)) {
     const notAuthorized = `You have no permission to view <code>${userId}</code>`;
     await ctx.replyWithHTML(notAuthorized);

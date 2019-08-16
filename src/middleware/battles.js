@@ -1,10 +1,7 @@
 import filter from 'lodash/filter';
 import map from 'lodash/map';
-import mapValues from 'lodash/mapValues';
 import find from 'lodash/find';
 import omit from 'lodash/omit';
-import fpOmit from 'lodash/fp/omit';
-import keyBy from 'lodash/keyBy';
 import groupBy from 'lodash/groupBy';
 import padStart from 'lodash/padStart';
 import orderBy from 'lodash/orderBy';
@@ -58,7 +55,6 @@ export function reportFilter(ctx) {
     reportDate,
     text,
     results,
-    result: mapValues(keyBy(results, 'code'), fpOmit(['code'])),
 
   };
 
@@ -272,7 +268,8 @@ export async function setMaster(ctx) {
     return;
   }
 
-  const result = battle.result[castleCode];
+
+  const result = find(battle.results, { code: castleCode });
   const stat = result.result === 'breached' ? atk : def;
 
   if (stat < 100 || gold < 8) {
@@ -292,16 +289,13 @@ export async function setMaster(ctx) {
     },
   };
 
-  const resultsRow = find(battle.results, { code: castleCode });
-
   Object.assign(result, masterData);
-  Object.assign(resultsRow, masterData);
 
   await battle.save();
 
   const reply = [
     `${dateLabel} set master report`,
-    `${battleResultView(resultsRow)}`,
+    `${battleResultView(result)}`,
   ];
 
   await ctx.replyWithHTML(reply.join('\n'));

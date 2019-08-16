@@ -72,7 +72,6 @@ const battle = {
   reportDate: Date,
 
   results: [resultsSchema],
-  result: Object,
 
   text: String,
   userId: Number,

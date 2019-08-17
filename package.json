@@ -4,7 +4,7 @@
   "description": "ChatWars Telegram bot",
   "main": "src/index.js",
   "scripts": {
-    "lint": "eslint src",
+    "lint": "eslint src --fix",
     "babel-node": "babel-node",
     "start": "nodemon --exec 'npm run lint && babel-node' -- src/index.js",
     "pkg": "cp package.json dist",

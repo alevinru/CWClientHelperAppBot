@@ -6,6 +6,7 @@ import bot, { BOT_ID, BOT_USER_NAME } from './services/bot';
 import * as mongo from './models';
 
 import Notificator from './services/notificator';
+import BattleDigests from './notify/battleDigests';
 
 const { debug, error } = log('index');
 
@@ -32,6 +33,10 @@ async function run() {
   const notificator = new Notificator();
 
   await notificator.init();
+
+  const battleDigests = new BattleDigests();
+
+  await battleDigests.init();
 
   debug('Start polling', BOT_USER_NAME);
 

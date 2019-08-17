@@ -17,7 +17,7 @@ export default async function (ctx, next) {
   } = ctx;
 
   if (chatId !== userId) {
-    debug('ignore:', `"${title}"`, `@${username}`, text);
+    debug('ignore:', chatId, `"${title}"`, `@${username}`, text);
     return;
   }
 

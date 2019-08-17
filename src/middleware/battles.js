@@ -160,7 +160,7 @@ function gotBattleReport({ date }) {
   ];
 }
 
-function battleView(battle) {
+export function battleView(battle) {
 
   const { date, results } = battle;
 

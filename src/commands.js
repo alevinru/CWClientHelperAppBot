@@ -13,6 +13,7 @@ import * as traders from './middleware/traders';
 import * as users from './middleware/hello';
 import * as battleReports from './middleware/battleReports';
 import * as battles from './middleware/battles';
+import * as chat from './middleware/chat';
 
 import start from './middleware/start';
 import stock from './middleware/stock';
@@ -36,7 +37,12 @@ bot.hears(/^\/traders$/, traders.traders);
 bot.hears(/^\/grant[ _]trading[ _](\d*)[ ]?(\d*)$/, traders.grantTrading);
 
 bot.hears(/^\/t[_ ]?([a-z0-9]{1,2}\d+)[ _]?(\d+)?([hm])?$/, trades.itemStats);
-botHears('(who|whos)(p?)[_ ]?([a-z0-9]{1,2}\\d+)[ _]([><=]{0,2})(\\d+)[ _](\\d+)([hmdw])?', trades.itemBuyers);
+
+const who = [
+  '(who|whos)(p?)[_ ]?([a-z0-9]{1,2}\\d+)',
+  '[ _]([><=]{0,2})(\\d+)[ _](\\d+)([hmdw])?',
+];
+botHears(who.join(''), trades.itemBuyers);
 
 /*
 Orders
@@ -69,6 +75,13 @@ botHears('users', users.listUsers);
 botHears('gg', users.listUsers);
 
 bot.hears(/^\/(trust|untrust)$/, users.trust);
+
+/*
+Chats
+ */
+
+botHears('chat[ _]set[ _]([a-z]+)[ _](on|off)', chat.setting);
+botHears('chat[ _]get[ _]([a-z]+)', chat.viewSetting);
 
 /*
 ChatWars

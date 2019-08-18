@@ -18,7 +18,7 @@ import log from '../services/log';
 import Duel from '../models/Duel';
 import User from '../models/User';
 import * as ar from '../services/arena';
-import { LEVEL_ICON } from './profile';
+// import { LEVEL_ICON } from './profile';
 
 const { debug, error } = log('mw:arena');
 
@@ -369,7 +369,7 @@ function formatDuels(duels, id, primaryName) {
   const winRate = [wonOver(opponents).length, lostTo(opponents).length];
 
   return [
-    `${LEVEL_ICON}${level} <b>${tag ? `[${tag}] ` : ''}${name}</b>`,
+    `<code>${level}</code> <b>${tag ? `[${tag}] ` : ''}${name}</b>`,
     `duels ${period}`,
     '',
     isPeriod ? statsByDate() : wonLostList(),

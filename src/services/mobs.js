@@ -57,11 +57,11 @@ export function mobsFromText(text) {
 
 export function mobOfferView({ mobs, command }) {
 
-  const reply = lo.map(mobs, mob => {
-    return [
-      `<code>${mob.level}</code> ${mob.name}`,
-    ].join(' ');
-  });
+  const reply = [
+    '👾 help fighting',
+    '',
+    ...lo.map(mobs, mob => `<code>${mob.level}</code> ${mob.name}`),
+  ];
 
   const { level } = lo.maxBy(mobs, 'level');
 

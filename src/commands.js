@@ -14,6 +14,7 @@ import * as users from './middleware/hello';
 import * as battleReports from './middleware/battleReports';
 import * as battles from './middleware/battles';
 import * as chat from './middleware/chat';
+import * as mobs from './middleware/mobs';
 
 import start from './middleware/start';
 import stock from './middleware/stock';
@@ -148,6 +149,12 @@ botHears('rbg', battleReports.guildReport);
 botHears('rbg[ _]([^ ]+)', battleReports.guildReport);
 botHears('rbgw[ _](\\d+)', battleReports.guildReport);
 
+/*
+Mobs
+ */
+
+botMessage(Telegraf.optional(mobs.metMobFilter, mobs.onMobForward));
+bot.action(/mob_helping/, mobs.onHelpingClick);
 /*
 Other
  */

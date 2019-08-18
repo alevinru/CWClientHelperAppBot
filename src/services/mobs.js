@@ -1,7 +1,9 @@
 import lo from 'lodash';
-// import log from './log';
+import Markup from 'telegraf/markup';
+import Chat from '../models/Chat';
+import log from './log';
 
-// const { debug } = log('mobs');
+const { debug } = log('mobs');
 
 const MOBS_HEADERS = [
   'You met some hostile creatures. Be careful:',
@@ -15,7 +17,6 @@ const MOBS_MODIFIERS = /[ ][ ]╰ (.+)/;
 export function mobsFromText(text) {
 
   const [, mobHeader] = text.match(MOBS_RE) || [];
-
 
   if (!mobHeader) {
     // debug('mobsFromText: no mobs');
@@ -47,6 +48,36 @@ export function mobsFromText(text) {
 
   });
 
-  return lo.filter(mobs);
+  const [command] = text.match(/\/fight_[a-z0-9]+/i);
 
+  return { mobs: lo.filter(mobs), command };
+
+}
+
+export function mobOfferView({ mobs, command }) {
+
+  const reply = lo.map(mobs, mob => {
+    return [
+      `<code>${mob.level}</code> ${mob.name}`,
+    ].join(' ');
+  });
+
+  const { level } = lo.maxBy(mobs, 'level');
+
+  const go = `⚔ ${level - 5} - ${level + 5}`;
+
+  const kb = Markup.inlineKeyboard([
+    Markup.urlButton(go, `http://t.me/share/url?url=${command}`),
+    Markup.callbackButton('I will help!', 'mob_helping'),
+  ])
+    .extra();
+
+  debug(JSON.stringify(kb));
+
+  return { text: reply.join('\n'), keyboard: kb };
+
+}
+
+export async function chatMobHunting(chatId) {
+  return Chat.findValue(chatId, 'mobHunting');
 }

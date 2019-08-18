@@ -11,7 +11,7 @@ describe('Met some mob parser', function () {
 
     const mobs = mobsFromText(text.toString());
 
-    expect(mobs).to.eql([
+    expect(mobs.mobs).to.eql([
       {
         level: 68,
         modifiers: ['armored'],
@@ -37,7 +37,7 @@ describe('Met some mob parser', function () {
 
     const mobs = mobsFromText(text.toString());
 
-    expect(mobs).to.eql([
+    expect(mobs.mobs).to.eql([
       {
         level: 62,
         name: 'Forbidden Sentinel',
@@ -52,6 +52,8 @@ describe('Met some mob parser', function () {
         modifiers: ['armored'],
       },
     ]);
+
+    expect(mobs.command).equal('/fight_M5ouGPgXpM43q0IMY1Zu');
 
   });
 

@@ -4,7 +4,7 @@ import Chat from '../models/Chat';
 
 const { debug } = log('chat');
 
-const SETTING_NAMES = ['notifyBattle'];
+const SETTING_NAMES = ['notifyBattle', 'mobHunting'];
 
 export async function setting(ctx) {
 

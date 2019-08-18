@@ -13,6 +13,7 @@ const MOBS_HEADERS = [
 const MOBS_RE = RegExp(`(${MOBS_HEADERS.join('|')})\\n`);
 const MOBS_MODIFIERS = /[ ][ ]╰ (.+)/;
 
+const HELPER_LEVEL_RANGE = 7;
 
 export function mobsFromText(text) {
 
@@ -64,7 +65,7 @@ export function mobOfferView({ mobs, command }) {
 
   const { level } = lo.maxBy(mobs, 'level');
 
-  const go = `⚔ ${level - 5} - ${level + 5}`;
+  const go = `⚔ ${level - HELPER_LEVEL_RANGE} - ${level + HELPER_LEVEL_RANGE}`;
 
   const kb = Markup.inlineKeyboard([
     Markup.urlButton(go, `http://t.me/share/url?url=${command}`),

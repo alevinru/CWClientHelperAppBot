@@ -1,0 +1,8 @@
+You met some hostile creatures. Be careful:
+Forbidden Knight lvl.68
+  ╰ armored
+Forbidden Knight lvl.68
+  ╰ enraged, armored
+Forbidden Knight lvl.61
+
+/fight_xjUzPFcavA4s31FbOvn1

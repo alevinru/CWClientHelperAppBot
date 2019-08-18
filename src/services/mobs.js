@@ -37,7 +37,7 @@ export function mobsFromText(text) {
 
     if (nextLine) {
       const [, modifiersText] = nextLine.match(MOBS_MODIFIERS) || [];
-      const modifiers = lo.split(modifiersText, ', ');
+      const modifiers = modifiersText && lo.split(modifiersText, ', ');
       if (modifiers) {
         mob.modifiers = modifiers;
       }

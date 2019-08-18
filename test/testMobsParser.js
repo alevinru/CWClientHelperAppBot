@@ -4,9 +4,9 @@ import { readFile } from '../src/services/fs';
 
 describe('Met some mob parser', function () {
 
-  it('should parse message text', async function () {
+  it('should parse EN text', async function () {
 
-    const text = await readFile('static/mobsMet.txt');
+    const text = await readFile('static/mobsMet_en.txt');
     assert(text, 'No sample text found');
 
     const mobs = mobsFromText(text.toString());
@@ -25,6 +25,31 @@ describe('Met some mob parser', function () {
       {
         level: 61,
         name: 'Forbidden Knight',
+      },
+    ]);
+
+  });
+
+  it('should parse RU text', async function () {
+
+    const text = await readFile('static/mobsMet_ru.txt');
+    assert(text, 'No sample text found');
+
+    const mobs = mobsFromText(text.toString());
+
+    expect(mobs).to.eql([
+      {
+        level: 62,
+        name: 'Forbidden Sentinel',
+      },
+      {
+        level: 62,
+        name: 'Forbidden Sentinel',
+      },
+      {
+        level: 62,
+        name: 'Forbidden Sentinel',
+        modifiers: ['armored'],
       },
     ]);
 

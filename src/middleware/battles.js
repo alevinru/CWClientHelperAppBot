@@ -162,7 +162,7 @@ function gotBattleReport({ date }) {
 
 export function battleView(battle) {
 
-  const { date, results } = battle;
+  const { date, results, reportLink } = battle;
 
   const resultsByStatus = groupBy(results, 'result');
 
@@ -182,6 +182,10 @@ export function battleView(battle) {
 
   if (atk) {
     res.push('', `👊 <b>${Math.ceil(atk / 1000.0)}</b>K total`);
+  }
+
+  if (reportLink) {
+    res.push('', `<a href="${reportLink}">Full report</a>`);
   }
 
   return res;
@@ -347,7 +351,7 @@ async function showBattle(ctx, date) {
     reply.push(`${b.battleIcon(nextDate)} ${battleCommand(nextDate)}`);
   }
 
-  await ctx.replyWithHTML(reply.join('\n'));
+  await ctx.replyWithHTML(reply.join('\n'), { disable_web_page_preview: true });
 
 }
 

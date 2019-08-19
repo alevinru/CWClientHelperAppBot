@@ -52,6 +52,6 @@ async function notifyBattle(battle) {
 
 async function notify(userId, msg) {
   debug('notify', userId, msg.length);
-  const options = { parse_mode: 'HTML', disable_notification: true };
+  const options = { parse_mode: 'HTML', disable_notification: true, disable_web_page_preview: true };
   return bot.telegram.sendMessage(userId, msg, options);
 }

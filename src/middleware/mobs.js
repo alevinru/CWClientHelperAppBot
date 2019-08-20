@@ -8,8 +8,6 @@ import log from '../services/log';
 
 const { debug } = log('mobs');
 
-// const CHATS = [543541652, -181845764];
-
 const FORWARD_LIFETIME = 180;
 
 const SILENT = { parse_mode: 'HTML', disable_notification: true };

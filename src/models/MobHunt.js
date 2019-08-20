@@ -27,3 +27,16 @@ schema.index({ messageId: 1 });
 schema.index({ date: 1 });
 
 export default model('MobHunt', schema);
+
+export const modifiersMap = new Map([
+  ['blunt resist', '🔨'],
+  ['spear resist', '🔱'],
+  ['enraged', '😡'],
+  ['toughness', '👊'],
+  ['remedy bottles', '❤️'],
+  ['poison bottles', '☠️️'],
+  ['armored', '🛡'],
+  ['golem minion', '🤖'],
+  ['sword resist', '⚔️'],
+  ['wealthy', '💰'],
+]);

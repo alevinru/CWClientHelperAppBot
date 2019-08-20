@@ -1,9 +1,10 @@
 import lo from 'lodash';
 import Markup from 'telegraf/markup';
 import Chat from '../models/Chat';
-import log from './log';
+// import log from './log';
+import { modifiersMap } from '../models/MobHunt';
 
-const { debug } = log('mobs');
+// const { debug } = log('mobs');
 
 const MOBS_HEADERS = [
   'You met some hostile creatures. Be careful:',
@@ -55,12 +56,22 @@ export function mobsFromText(text) {
 
 }
 
+function mobView(mob) {
+  const { level, modifiers, name } = mob;
+  const icons = lo.filter(lo.map(modifiers, modifier => modifiersMap.get(modifier)));
+  return lo.filter([
+    `<code>${level}</code>`,
+    name,
+    icons.length && icons.join(''),
+  ]).join(' ');
+}
+
 export function mobOfferView({ mobs, command }) {
 
   const reply = [
     '👾 help fighting',
     '',
-    ...lo.map(mobs, mob => `<code>${mob.level}</code> ${mob.name}`),
+    ...lo.map(mobs, mobView),
   ];
 
   const { level } = lo.maxBy(mobs, 'level');
@@ -73,7 +84,7 @@ export function mobOfferView({ mobs, command }) {
   ])
     .extra();
 
-  debug(JSON.stringify(kb));
+  // debug(JSON.stringify(kb));
 
   return { text: reply.join('\n'), keyboard: kb };
 

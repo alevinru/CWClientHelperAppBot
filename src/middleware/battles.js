@@ -160,6 +160,18 @@ function gotBattleReport({ date }) {
   ];
 }
 
+
+const DIGEST_IDS = new Map([
+  ['c/1369273162', 'ChatWarsDigest'],
+  // ['', 'chtwrsreports'],
+]);
+
+const DIGEST_IDS_RE = new RegExp(`${[...DIGEST_IDS.keys()].join('|')}`);
+
+function reportLinkHref(reportLink) {
+  return reportLink.replace(DIGEST_IDS_RE, id => DIGEST_IDS.get(id));
+}
+
 export function battleView(battle) {
 
   const { date, results, reportLink } = battle;
@@ -185,7 +197,7 @@ export function battleView(battle) {
   }
 
   if (reportLink) {
-    res.push('', `<a href="${reportLink}">Full report</a>`);
+    res.push('', `<a href="${reportLinkHref(reportLink)}">Full report</a>`);
   }
 
   return res;

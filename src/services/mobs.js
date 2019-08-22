@@ -16,6 +16,12 @@ const MOBS_MODIFIERS = /[ ][ ]╰ (.+)/;
 
 const HELPER_LEVEL_RANGE = 7;
 
+const MOB_TYPE_ICONS = new Map([
+  ['bear', '🐻'],
+  ['wolf', '🐺'],
+  ['boar', '🐗'],
+]);
+
 export function mobsFromText(text) {
 
   const [, mobHeader] = text.match(MOBS_RE) || [];
@@ -66,10 +72,20 @@ function mobView(mob) {
   ]).join(' ');
 }
 
+function mobType({ name }) {
+  const [, type] = name.match(/.* (bear|wolf|boar)/i) || [];
+  return lo.lowerCase(type);
+}
+
+function mobsIcons(mobs) {
+  const types = lo.groupBy(mobs, mobType);
+  return lo.filter(Object.keys(types).map(type => MOB_TYPE_ICONS.get(type)));
+}
+
 export function mobOfferView({ mobs, command }) {
 
   const reply = [
-    '👾 help fighting',
+    `${mobsIcons(mobs).join(' ') || '👾'} help to fight`,
     '',
     ...lo.map(mobs, mobView),
   ];
@@ -80,7 +96,7 @@ export function mobOfferView({ mobs, command }) {
 
   const kb = Markup.inlineKeyboard([
     Markup.urlButton(go, `http://t.me/share/url?url=${command}`),
-    Markup.callbackButton('I will help!', 'mob_helping'),
+    Markup.callbackButton('I am helping!', 'mob_helping'),
   ])
     .extra();
 

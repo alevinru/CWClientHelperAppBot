@@ -1,5 +1,4 @@
 // import lo from 'lodash';
-import secondsDiff from 'date-fns/difference_in_seconds';
 import { fromCWFilter } from '../config/filters';
 import * as m from '../services/mobs';
 import MobHunt from '../models/MobHunt';
@@ -7,8 +6,6 @@ import MobHunt from '../models/MobHunt';
 import log from '../services/log';
 
 const { debug } = log('mobs');
-
-const FORWARD_LIFETIME = 180;
 
 const SILENT = { parse_mode: 'HTML', disable_notification: true };
 
@@ -45,9 +42,9 @@ export async function onMobForward(ctx) {
 
   const date = new Date(forwardDate * 1000);
 
-  const secondsAgo = secondsDiff(new Date(), date);
+  const secondsToFight = m.secondsToFight(date);
 
-  debug('onMobForward:', forwardDate, secondsAgo, messageId);
+  debug('onMobForward:', forwardDate, secondsToFight, messageId);
 
   await MobHunt.updateOne(
     { command },
@@ -61,12 +58,12 @@ export async function onMobForward(ctx) {
     { upsert: true },
   );
 
-  if (secondsAgo > FORWARD_LIFETIME) {
-    await ctx.reply('Mobs expired', { ...SILENT, reply_to_message_id: messageId });
+  if (secondsToFight < 1) {
+    await ctx.reply('🤷 ‍Mobs are expired', { ...SILENT, reply_to_message_id: messageId });
     return;
   }
 
-  const reply = m.mobOfferView({ mobs, command });
+  const reply = m.mobOfferView({ mobs, command, date });
 
   const replyMsg = await ctx.reply(reply.text, { ...SILENT, ...reply.keyboard });
 

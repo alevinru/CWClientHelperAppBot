@@ -1,5 +1,6 @@
 import lo from 'lodash';
 import Markup from 'telegraf/markup';
+import secondsDiff from 'date-fns/difference_in_seconds';
 import Chat from '../models/Chat';
 // import log from './log';
 import { modifiersMap } from '../models/MobHunt';
@@ -21,6 +22,8 @@ const MOB_TYPE_ICONS = new Map([
   ['wolf', '🐺'],
   ['boar', '🐗'],
 ]);
+
+const FORWARD_LIFETIME = 180;
 
 export function mobsFromText(text) {
 
@@ -82,10 +85,14 @@ function mobsIcons(mobs) {
   return lo.filter(Object.keys(types).map(type => MOB_TYPE_ICONS.get(type)));
 }
 
-export function mobOfferView({ mobs, command }) {
+export function mobOfferView({ mobs, command, date }) {
 
   const reply = [
-    `${mobsIcons(mobs).join(' ') || '👾'} help to fight`,
+    [
+      mobsIcons(mobs).join(' ') || '👾',
+      'to fight in',
+      `<b>${timeLeftView(secondsToFight(date))}</b>`,
+    ].join(' '),
     '',
     ...lo.map(mobs, mobView),
   ];
@@ -108,4 +115,14 @@ export function mobOfferView({ mobs, command }) {
 
 export async function chatMobHunting(chatId) {
   return Chat.findValue(chatId, 'mobHunting');
+}
+
+export function secondsToFight(date) {
+  return FORWARD_LIFETIME - secondsDiff(new Date(), date);
+}
+
+function timeLeftView(seconds) {
+  const minutes = Math.floor(seconds / 60.0);
+  const second = seconds - minutes * 60;
+  return `${lo.padStart(minutes, 2, '0')}:${lo.padStart(second, 2, '0')}`;
 }

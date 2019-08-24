@@ -66,7 +66,7 @@ export function mobsFromText(text) {
 }
 
 function mobView(mob) {
-  const { level, modifiers, name } = mob;
+  const { level = 0, modifiers, name } = mob;
   const icons = lo.filter(lo.map(modifiers, modifier => modifiersMap.get(modifier)));
   return lo.filter([
     `<code>${level}</code>`,
@@ -87,19 +87,21 @@ function mobsIcons(mobs) {
 
 export function mobOfferView({ mobs, command, date }) {
 
+  const secondsLeft = secondsToFight(date);
+
   const reply = [
     [
       mobsIcons(mobs).join(' ') || '👾',
-      'to fight in',
-      `<b>${timeLeftView(secondsToFight(date))}</b>`,
+      secondsLeft > 0 ? 'fight in' : 'fight is',
+      `<b>${timeLeftView(secondsLeft)}</b>`,
     ].join(' '),
     '',
     ...lo.map(mobs, mobView),
   ];
 
-  const { level } = lo.maxBy(mobs, 'level');
+  const { level } = lo.maxBy(mobs, 'level') || {};
 
-  const go = `⚔ ${level - HELPER_LEVEL_RANGE} - ${level + HELPER_LEVEL_RANGE}`;
+  const go = level ? `⚔ ${level - HELPER_LEVEL_RANGE} - ${level + HELPER_LEVEL_RANGE}` : '⚔';
 
   const kb = Markup.inlineKeyboard([
     Markup.urlButton(go, `http://t.me/share/url?url=${command}`),
@@ -122,6 +124,9 @@ export function secondsToFight(date) {
 }
 
 function timeLeftView(seconds) {
+  if (seconds < 1) {
+    return 'expired';
+  }
   const minutes = Math.floor(seconds / 60.0);
   const second = seconds - minutes * 60;
   return `${lo.padStart(minutes, 2, '0')}:${lo.padStart(second, 2, '0')}`;

@@ -67,7 +67,9 @@ export async function onMobForward(ctx) {
 
   const replyMsg = await ctx.reply(reply.text, { ...SILENT, ...reply.keyboard });
 
-  await MobHunt.updateOne({ command }, { reply: { messageId: replyMsg.message_id, chatId } });
+  await MobHunt.updateOne({ command }, {
+    $push: { replies: { messageId: replyMsg.message_id, chatId } },
+  });
 
 }
 
@@ -78,14 +80,15 @@ export async function onHelpingClick(ctx) {
 
   debug('onHelpingClick', update);
 
-  debug(message.entities);
-
   if (message.text.match('is helping')) {
     await ctx.answerCbQuery('Already got help');
     return;
   }
 
-  const modified = `${message.text}\n\n✅ @${from.username} is helping`;
+  const hunt = await MobHunt.findOne({ 'replies.messageId': message.message_id });
+
+  const text = hunt ? m.mobOfferView(hunt).text : message.text;
+  const modified = `${text}\n\n✅ @${from.username} is helping`;
 
   const { reply_markup: { inline_keyboard: [kb] } } = message;
   const markup = { reply_markup: { inline_keyboard: [[kb[0]]] } };

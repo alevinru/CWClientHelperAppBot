@@ -11,12 +11,13 @@ const schema = new Schema({
     _id: false,
     name: String,
     modifiers: [String],
+    level: Number,
   }],
 
-  reply: {
+  replies: [{
     messageId: Number,
     chatId: Number,
-  },
+  }],
 
 }, {
   collection: 'MobHunt',

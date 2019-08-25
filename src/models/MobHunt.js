@@ -19,6 +19,13 @@ const schema = new Schema({
     chatId: Number,
   }],
 
+  helper: {
+    userName: String,
+    userId: Number,
+    firstName: String,
+    lastName: String,
+  },
+
 }, {
   collection: 'MobHunt',
 });

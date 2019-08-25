@@ -55,7 +55,7 @@ function exceptionHandler(ctx, next) {
   // .then(() => debug('exceptionHandler', 'end'))
     .catch(({ name, message }) => {
       error('exceptionHandler', name, message);
-      return ctx.replyWithHTML(`Error: ${message}`);
+      return ctx.replyWithHTML(`Error: ${message}`, { disable_notification: true });
     });
 
 }

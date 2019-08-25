@@ -23,7 +23,7 @@ const MOB_TYPE_ICONS = new Map([
   ['boar', '🐗'],
 ]);
 
-const FORWARD_LIFETIME = 180;
+const FORWARD_LIFETIME = 18000;
 
 export function mobsFromText(text) {
 
@@ -85,7 +85,9 @@ function mobsIcons(mobs) {
   return lo.filter(Object.keys(types).map(type => MOB_TYPE_ICONS.get(type)));
 }
 
-export function mobOfferView({ mobs, command, date }) {
+export function mobOfferView({
+  mobs, command, date, helper,
+}) {
 
   const secondsLeft = secondsToFight(date);
 
@@ -99,19 +101,34 @@ export function mobOfferView({ mobs, command, date }) {
     ...lo.map(mobs, mobView),
   ];
 
+  if (helper) {
+    reply.push('', helperView(helper));
+  }
+
   const { level } = lo.maxBy(mobs, 'level') || {};
 
   const go = level ? `⚔ ${level - HELPER_LEVEL_RANGE} - ${level + HELPER_LEVEL_RANGE}` : '⚔';
 
-  const kb = Markup.inlineKeyboard([
-    Markup.urlButton(go, `http://t.me/share/url?url=${command}`),
-    Markup.callbackButton('I am helping!', 'mob_helping'),
-  ])
-    .extra();
+  const buttons = [];
 
-  // debug(JSON.stringify(kb));
+  if (secondsLeft > 0) {
+    buttons.push(Markup.urlButton(go, `http://t.me/share/url?url=${command}`));
+  }
 
-  return { text: reply.join('\n'), keyboard: kb };
+  if (!helper) {
+    buttons.push(Markup.callbackButton('I am helping!', 'mob_helping'));
+  }
+
+  const keyboard = Markup.inlineKeyboard(buttons).extra();
+
+  return { text: reply.join('\n'), keyboard };
+
+  function helperView({ userName, firstName, lastName }) {
+    return [
+      `<a href="https://t.me/${userName}">${firstName} ${lastName}</a>`,
+      secondsLeft > 1 ? 'is helping' : 'was helping',
+    ].join(' ');
+  }
 
 }
 

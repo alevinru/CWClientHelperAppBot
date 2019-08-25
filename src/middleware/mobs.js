@@ -7,7 +7,7 @@ import log from '../services/log';
 
 const { debug } = log('mobs');
 
-const SILENT = { parse_mode: 'HTML', disable_notification: true };
+const SILENT = { parse_mode: 'HTML', disable_notification: true, disable_web_page_preview: true };
 
 export function metMobFilter(ctx) {
 
@@ -75,7 +75,7 @@ export async function onMobForward(ctx) {
 
 export async function onHelpingClick(ctx) {
 
-  const { update } = ctx;
+  const { update, chat } = ctx;
   const { message, from } = update.callback_query;
 
   debug('onHelpingClick', update);
@@ -85,14 +85,35 @@ export async function onHelpingClick(ctx) {
     return;
   }
 
-  const hunt = await MobHunt.findOne({ 'replies.messageId': message.message_id });
+  const { message_id: messageId } = message;
 
-  const text = hunt ? m.mobOfferView(hunt).text : message.text;
-  const modified = `${text}\n\n✅ @${from.username} is helping`;
+  const hunt = await MobHunt.findOne({ 'replies.messageId': messageId });
 
-  const { reply_markup: { inline_keyboard: [kb] } } = message;
-  const markup = { reply_markup: { inline_keyboard: [[kb[0]]] } };
+  if (!hunt) {
+    const oldWay = `${message.text}\n\n✅ @${from.username} is helping`;
+    await ctx.editMessageText(oldWay, SILENT);
+    return;
+  }
 
-  await ctx.editMessageText(modified, { ...SILENT, ...markup });
+  hunt.helper = {
+    userName: from.username,
+    userId: from.id,
+    firstName: from.first_name,
+    lastName: from.last_name,
+  };
+
+  await hunt.save();
+
+  await updateHuntMessage(chat.id, messageId, hunt, ctx.telegram);
+
+}
+
+async function updateHuntMessage(chatId, messageId, hunt, telegram) {
+
+  const { text, keyboard } = m.mobOfferView(hunt);
+
+  const extra = { ...SILENT, ...keyboard };
+
+  await telegram.editMessageText(chatId, messageId, null, text, extra);
 
 }

@@ -55,5 +55,6 @@ module.exports = {
     'import/prefer-default-export': 'off',
     'no-mixed-operators': 'off',
     'prefer-object-spread': 'off',
+    'no-underscore-dangle': ['error', { 'allow': ['_id'] }],
   }
 };

@@ -1,9 +1,8 @@
 import lo from 'lodash';
 import Markup from 'telegraf/markup';
-import secondsDiff from 'date-fns/difference_in_seconds';
 import Chat from '../models/Chat';
 // import log from './log';
-import { modifiersMap } from '../models/MobHunt';
+import { modifiersMap, secondsToFight } from '../models/MobHunt';
 
 // const { debug } = log('mobs');
 
@@ -22,8 +21,6 @@ const MOB_TYPE_ICONS = new Map([
   ['wolf', '🐺'],
   ['boar', '🐗'],
 ]);
-
-const FORWARD_LIFETIME = 18000;
 
 export function mobsFromText(text) {
 
@@ -90,18 +87,19 @@ export function mobOfferView({
 }) {
 
   const secondsLeft = secondsToFight(date);
+  const notExpired = secondsLeft > 0;
 
   const reply = [
     [
       mobsIcons(mobs).join(' ') || '👾',
-      secondsLeft > 0 ? 'fight in' : 'fight is',
+      notExpired ? 'fight in' : 'fight is',
       `<b>${timeLeftView(secondsLeft)}</b>`,
     ].join(' '),
     '',
     ...lo.map(mobs, mobView),
   ];
 
-  if (helper) {
+  if (helper && helper.userName) {
     reply.push('', helperView(helper));
   }
 
@@ -111,12 +109,13 @@ export function mobOfferView({
 
   const buttons = [];
 
-  if (secondsLeft > 0) {
+
+  if (notExpired) {
     buttons.push(Markup.urlButton(go, `http://t.me/share/url?url=${command}`));
   }
 
-  if (!helper) {
-    buttons.push(Markup.callbackButton('I am helping!', 'mob_helping'));
+  if (!helper || !helper.userName) {
+    buttons.push(Markup.callbackButton(`I ${notExpired ? 'am' : 'was'} helping!`, 'mob_helping'));
   }
 
   const keyboard = Markup.inlineKeyboard(buttons).extra();
@@ -124,9 +123,10 @@ export function mobOfferView({
   return { text: reply.join('\n'), keyboard };
 
   function helperView({ userName, firstName, lastName }) {
+    const name = lo.filter([firstName, lastName]).join(' ');
     return [
-      `<a href="https://t.me/${userName}">${firstName} ${lastName}</a>`,
-      secondsLeft > 1 ? 'is helping' : 'was helping',
+      `<a href="https://t.me/${userName}">${name}</a>`,
+      notExpired ? 'is helping' : 'was helping',
     ].join(' ');
   }
 
@@ -134,10 +134,6 @@ export function mobOfferView({
 
 export async function chatMobHunting(chatId) {
   return Chat.findValue(chatId, 'mobHunting');
-}
-
-export function secondsToFight(date) {
-  return FORWARD_LIFETIME - secondsDiff(new Date(), date);
 }
 
 function timeLeftView(seconds) {

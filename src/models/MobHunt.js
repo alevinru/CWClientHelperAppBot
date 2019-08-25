@@ -1,4 +1,7 @@
 import { Schema, model } from 'mongoose';
+import secondsDiff from 'date-fns/difference_in_seconds';
+
+const MOB_HUNT_LIFETIME = 180;
 
 const schema = new Schema({
 
@@ -33,6 +36,7 @@ const schema = new Schema({
 schema.index({ command: 1 }, { unique: true });
 schema.index({ messageId: 1 });
 schema.index({ date: 1 });
+schema.method('isExpired', isExpired);
 
 export default model('MobHunt', schema);
 
@@ -48,3 +52,11 @@ export const modifiersMap = new Map([
   ['sword resist', '⚔️'],
   ['wealthy', '💰'],
 ]);
+
+function isExpired() {
+  return secondsToFight(this.date) < 1;
+}
+
+export function secondsToFight(date) {
+  return MOB_HUNT_LIFETIME - secondsDiff(new Date(), date);
+}

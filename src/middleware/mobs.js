@@ -1,11 +1,13 @@
 // import lo from 'lodash';
 import { fromCWFilter } from '../config/filters';
 import * as m from '../services/mobs';
-import MobHunt from '../models/MobHunt';
+import MobHunt, { secondsToFight } from '../models/MobHunt';
 
 import log from '../services/log';
 
-const { debug } = log('mobs');
+const { debug, error } = log('mobs');
+
+const MOB_HUNT_UPDATE = parseInt(process.env.MOB_HUNT_UPDATE, 0) || 4000;
 
 const SILENT = { parse_mode: 'HTML', disable_notification: true, disable_web_page_preview: true };
 
@@ -42,9 +44,7 @@ export async function onMobForward(ctx) {
 
   const date = new Date(forwardDate * 1000);
 
-  const secondsToFight = m.secondsToFight(date);
-
-  debug('onMobForward:', forwardDate, secondsToFight, messageId);
+  debug('onMobForward:', forwardDate, messageId);
 
   await MobHunt.updateOne(
     { command },
@@ -58,7 +58,7 @@ export async function onMobForward(ctx) {
     { upsert: true },
   );
 
-  if (secondsToFight < 1) {
+  if (secondsToFight(date) < 1) {
     await ctx.reply('🤷 ‍Mobs are expired', { ...SILENT, reply_to_message_id: messageId });
     return;
   }
@@ -70,6 +70,10 @@ export async function onMobForward(ctx) {
   await MobHunt.updateOne({ command }, {
     $push: { replies: { messageId: replyMsg.message_id, chatId } },
   });
+
+  const hunt = await MobHunt.findOne({ command });
+
+  scheduleUpdate(chatId, replyMsg.message_id, hunt, ctx.telegram);
 
 }
 
@@ -104,11 +108,17 @@ export async function onHelpingClick(ctx) {
 
   await hunt.save();
 
-  await updateHuntMessage(chat.id, messageId, hunt, ctx.telegram);
+  await updateHuntMessage(chat.id, messageId, hunt._id, ctx.telegram);
 
 }
 
-async function updateHuntMessage(chatId, messageId, hunt, telegram) {
+async function updateHuntMessage(chatId, messageId, huntId, telegram) {
+
+  const hunt = await MobHunt.findById(huntId);
+
+  if (!hunt) {
+    error('updateHuntMessage', 'no hunt id', huntId);
+  }
 
   const { text, keyboard } = m.mobOfferView(hunt);
 
@@ -116,4 +126,17 @@ async function updateHuntMessage(chatId, messageId, hunt, telegram) {
 
   await telegram.editMessageText(chatId, messageId, null, text, extra);
 
+  // debug(hunt);
+
+  if (!hunt.isExpired()) {
+    scheduleUpdate(chatId, messageId, hunt, telegram);
+  }
+
+}
+
+function scheduleUpdate(chatId, messageId, hunt, telegram) {
+  setTimeout(() => {
+    updateHuntMessage(chatId, messageId, hunt, telegram)
+      .catch(e => error('scheduleUpdate', e));
+  }, MOB_HUNT_UPDATE);
 }

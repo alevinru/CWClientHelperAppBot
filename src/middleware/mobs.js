@@ -121,22 +121,38 @@ async function updateHuntMessage(chatId, messageId, huntId, telegram) {
   }
 
   const { text, keyboard } = m.mobOfferView(hunt);
-
   const extra = { ...SILENT, ...keyboard };
+  const notExpired = !hunt.isExpired();
 
   await telegram.editMessageText(chatId, messageId, null, text, extra);
 
   // debug(hunt);
 
-  if (!hunt.isExpired()) {
+  if (notExpired && !isScheduled(chatId, messageId)) {
     scheduleUpdate(chatId, messageId, hunt, telegram);
   }
 
 }
 
+const SCHEDULED = new Map();
+
+function isScheduled(chatId, messageID) {
+  return !!SCHEDULED.get(`${chatId}-${messageID}`);
+}
+
 function scheduleUpdate(chatId, messageId, hunt, telegram) {
-  setTimeout(() => {
+
+  const key = `${chatId}-${messageId}`;
+
+  SCHEDULED.set(key, true);
+
+  const timeout = setTimeout(() => {
+    SCHEDULED.delete(key);
     updateHuntMessage(chatId, messageId, hunt, telegram)
+      .then(() => debug('scheduleUpdate', key, isScheduled(chatId, messageId)))
       .catch(e => error('scheduleUpdate', e));
   }, MOB_HUNT_UPDATE);
+
+  SCHEDULED.set(key, timeout);
+
 }

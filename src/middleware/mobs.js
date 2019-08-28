@@ -157,7 +157,7 @@ function scheduleUpdate(chatId, messageId, hunt, telegram) {
   const timeout = setTimeout(() => {
     SCHEDULED.delete(key);
     updateHuntMessage(chatId, messageId, hunt, telegram)
-      .then(() => debug('scheduleUpdate', key, isScheduled(chatId, messageId)))
+      // .then(() => debug('scheduleUpdate', key, isScheduled(chatId, messageId)))
       .catch(e => error('scheduleUpdate', e));
   }, MOB_HUNT_UPDATE);
 

@@ -124,27 +124,35 @@ async function updateHuntMessage(chatId, messageId, huntId, telegram) {
   const extra = { ...SILENT, ...keyboard };
   const notExpired = !hunt.isExpired();
 
-  await telegram.editMessageText(chatId, messageId, null, text, extra);
+  try {
+    await telegram.editMessageText(chatId, messageId, null, text, extra);
+  } catch (e) {
+    error('updateHuntMessage', e.message);
+  }
 
   // debug(hunt);
 
-  if (notExpired && !isScheduled(chatId, messageId)) {
+  if (notExpired) {
     scheduleUpdate(chatId, messageId, hunt, telegram);
   }
 
 }
 
+// TODO: refactor with redis
 const SCHEDULED = new Map();
 
-function isScheduled(chatId, messageID) {
-  return !!SCHEDULED.get(`${chatId}-${messageID}`);
+function isScheduled(chatId, messageId) {
+  return SCHEDULED.get(`${chatId}-${messageId}`);
 }
 
 function scheduleUpdate(chatId, messageId, hunt, telegram) {
 
   const key = `${chatId}-${messageId}`;
+  const scheduled = isScheduled(chatId, messageId);
 
-  SCHEDULED.set(key, true);
+  if (scheduled) {
+    clearTimeout(scheduled);
+  }
 
   const timeout = setTimeout(() => {
     SCHEDULED.delete(key);

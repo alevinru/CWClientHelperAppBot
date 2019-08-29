@@ -22,6 +22,13 @@ const schema = new Schema({
     chatId: Number,
   }],
 
+  reporter: {
+    userName: String,
+    userId: Number,
+    firstName: String,
+    lastName: String,
+  },
+
   helper: {
     userName: String,
     userId: Number,

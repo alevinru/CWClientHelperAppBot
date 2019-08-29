@@ -54,6 +54,9 @@ export async function onMobForward(ctx) {
         messageId,
         mobs,
       },
+      $setOnInsert: {
+        reporter: userData(ctx.from),
+      },
     },
     { upsert: true },
   );
@@ -89,6 +92,8 @@ export async function onHelpingClick(ctx) {
     return;
   }
 
+  await ctx.answerCbQuery('Thanks for your helping!');
+
   const { message_id: messageId } = message;
 
   const hunt = await MobHunt.findOne({ 'replies.messageId': messageId });
@@ -99,12 +104,7 @@ export async function onHelpingClick(ctx) {
     return;
   }
 
-  hunt.helper = {
-    userName: from.username,
-    userId: from.id,
-    firstName: from.first_name,
-    lastName: from.last_name,
-  };
+  hunt.helper = userData(from);
 
   await hunt.save();
 
@@ -163,4 +163,13 @@ function scheduleUpdate(chatId, messageId, hunt, telegram) {
 
   SCHEDULED.set(key, timeout);
 
+}
+
+function userData(from) {
+  return {
+    userName: from.username,
+    userId: from.id,
+    firstName: from.first_name,
+    lastName: from.last_name,
+  };
 }

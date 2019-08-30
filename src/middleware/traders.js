@@ -169,13 +169,19 @@ function helpReply() {
 export async function tradingActive(ctx) {
 
   const {
-    from: { id: userId },
+    from: { id: fromUserId },
     match,
   } = ctx;
-  const [, onOff] = match;
+  const [, onOff, matchUserId] = match;
   const command = `/trading_${onOff}`;
 
-  debug(command);
+  debug(command, matchUserId);
+
+  if (fromUserId !== ADMIN_ID && matchUserId) {
+    return;
+  }
+
+  const userId = matchUserId ? parseInt(matchUserId, 0) : fromUserId;
 
   try {
 

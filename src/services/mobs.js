@@ -14,7 +14,7 @@ const MOBS_HEADERS = [
 const MOBS_RE = RegExp(`(${MOBS_HEADERS.join('|')})\\n`);
 const MOBS_MODIFIERS = /[ ][ ]╰ (.+)/;
 
-const HELPER_LEVEL_RANGE = 7;
+const HELPER_LEVEL_RANGE = 10;
 
 const MOB_TYPE_ICONS = new Map([
   ['bear', '🐻'],
@@ -99,13 +99,15 @@ export function mobOfferView({
     ...lo.map(mobs, mobView),
   ];
 
-  if (helper && helper.userName) {
+  const hasHelper = helper && helper.userId;
+
+  if (hasHelper) {
     reply.push('', helperView(helper));
   }
 
   const { level } = lo.maxBy(mobs, 'level') || {};
 
-  const go = level ? `⚔ ${level - HELPER_LEVEL_RANGE} - ${level + HELPER_LEVEL_RANGE}` : '⚔';
+  const go = level ? `⚔ <= ${level + HELPER_LEVEL_RANGE}` : '⚔';
 
   const buttons = [];
 
@@ -114,7 +116,7 @@ export function mobOfferView({
     buttons.push(Markup.urlButton(go, `http://t.me/share/url?url=${command}`));
   }
 
-  if (!helper || !helper.userName) {
+  if (!hasHelper) {
     buttons.push(Markup.callbackButton(`I ${notExpired ? 'am' : 'was'} helping!`, 'mob_helping'));
   }
 
@@ -123,7 +125,7 @@ export function mobOfferView({
   return { text: reply.join('\n'), keyboard };
 
   function helperView({ userName, firstName, lastName }) {
-    const name = lo.filter([firstName, lastName]).join(' ');
+    const name = lo.filter([firstName, lastName]).join(' ') || 'Name unknown';
     return [
       `<a href="https://t.me/${userName}">${name}</a>`,
       notExpired ? 'is helping' : 'was helping',
@@ -138,7 +140,7 @@ export async function chatMobHunting(chatId) {
 
 function timeLeftView(seconds) {
   if (seconds < 1) {
-    return 'expired';
+    return 'over';
   }
   const minutes = Math.floor(seconds / 60.0);
   const second = seconds - minutes * 60;

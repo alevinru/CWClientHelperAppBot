@@ -1,8 +1,12 @@
 import { Schema, model } from 'mongoose';
 
+const { BOT_TOKEN } = process.env;
+export const BOT_ID = parseInt(BOT_TOKEN.match(/^[^:]*/)[0], 0);
+
 const schema = new Schema({
   id: Number,
   setting: Object,
+  botId: Number,
   ts: Date,
 }, {
   collection: 'Chat',
@@ -17,11 +21,12 @@ export default model('Chat', schema);
 
 
 function saveValue(chatId, name, value) {
-  return this.updateOne({ id: chatId }, { $set: { [`setting.${name}`]: value } }, { upsert: true });
+  const key = { id: chatId, botId: BOT_ID };
+  return this.updateOne(key, { $set: { [`setting.${name}`]: value } }, { upsert: true });
 }
 
 async function findValue(chatId, name) {
-  const chat = await this.findOne({ id: chatId });
+  const chat = await this.findOne({ id: chatId, botId: BOT_ID });
   if (!chat) {
     return undefined;
   }

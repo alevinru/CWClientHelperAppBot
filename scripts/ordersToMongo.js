@@ -5,6 +5,7 @@ import log from '../src/services/log';
 import * as redis from '../src/services/redis';
 
 import Order from '../src/models/Order';
+import { BOT_ID } from '../src/services/bot';
 
 const ID_TO_ITEM_CODE_HASH = 'orders_idx_itemCode';
 
@@ -23,6 +24,7 @@ async function run() {
   await eachSeriesAsync(orderIds, async id => {
     const order = await redis.hgetallAsync(`order_${id}`);
     debug(id, order.itemName, order.userName);
+    order.botId = BOT_ID;
     await Order.create(order);
   });
 

@@ -13,6 +13,7 @@ const schema = new Schema({
   price: Number,
   token: String,
   ts: Date,
+  botId: Number,
 
 }, { collection });
 

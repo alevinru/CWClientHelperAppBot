@@ -5,7 +5,7 @@ import first from 'lodash/first';
 
 import log from './log';
 import * as redis from './redis';
-
+import { BOT_ID } from './bot';
 import Order from '../models/Order';
 
 import { getProfile } from './profile';
@@ -30,7 +30,7 @@ function ordersQueueKey(code) {
 
 export async function getOrderById(id) {
 
-  const order = await Order.findOne({ id });
+  const order = await Order.findOne({ id, botId: BOT_ID });
 
   if (!order) {
     return order;
@@ -48,12 +48,12 @@ export async function getOrderById(id) {
 }
 
 export async function removeOrder(id) {
-  const order = await Order.findOne({ id });
+  const order = await Order.findOne({ id, botId: BOT_ID });
   if (!order) {
     return false;
   }
   await redis.lremAsync(ordersQueueKey(order.itemCode), 0, id);
-  await Order.deleteOne({ id });
+  await Order.deleteOne({ id, botId: BOT_ID });
   return true;
 }
 
@@ -83,6 +83,7 @@ export async function addOrder(userId, itemCode, qty, price, token) {
     price: parseInt(price, 0),
     token,
     ts: new Date(),
+    botId: BOT_ID,
   });
 
   debug('addOrder', itemName, order, topId);
@@ -126,7 +127,7 @@ export async function setOrderTop(id, userId, itemCode) {
 
 export async function getOrdersByItemCode(itemCode) {
 
-  const ids = await Order.find({ itemCode });
+  const ids = await Order.find({ itemCode, botId: BOT_ID });
   const promises = ids.map(({ id }) => getOrderById(id));
   const orders = await Promise.all(promises);
 
@@ -139,7 +140,7 @@ export async function getOrdersByItemCode(itemCode) {
 
 export async function getOrdersByUserId(userId) {
 
-  const idx = await Order.find({ userId });
+  const idx = await Order.find({ userId, botId: BOT_ID });
 
   return Promise.all(map(idx, o => getOrderById(o.id)));
 
@@ -154,6 +155,7 @@ async function topOrderId(itemCode) {
 export async function getTopOrders() {
 
   const itemCodes = await Order.aggregate([
+    { $match: { botId: BOT_ID } },
     { $group: { _id: '$itemCode' } },
   ]);
 

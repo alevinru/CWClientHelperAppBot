@@ -65,8 +65,6 @@ export default class Notificator {
     try {
 
       const users = await User.find({ [`settings.${NOTIFY_SALES}`]: true });
-      debug('hookUsers', users.length);
-
       const ids = await mapSeriesAsync(users, async ({ id: tgId }) => {
         const session = await getSession(BOT_ID, tgId);
         const cwId = lo.get(session, 'auth.id');
@@ -77,6 +75,8 @@ export default class Notificator {
       });
 
       this.users = lo.filter(ids);
+
+      debug('hookUsers', this.users.length);
 
     } catch (e) {
       error('hookUsers', e);

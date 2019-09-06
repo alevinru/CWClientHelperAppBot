@@ -14,6 +14,7 @@ import Battle from '../models/Battle';
 import BattleReport from '../models/BattleReport';
 
 const { debug } = log('mw:battles');
+const ADMIN_ID = parseInt(process.env.ADMIN_ID, 0);
 
 const { BATTLE_DIGEST } = process.env;
 
@@ -341,7 +342,13 @@ async function showBattle(ctx, date) {
 
   const filters = { date };
 
-  const battle = await Battle.findOne(filters);
+  const battle = (await Battle.findOne(filters)).toObject();
+
+  if (ADMIN_ID !== ctx.from.id) {
+    battle.results.forEach(result => {
+      delete result.atk; // eslint-disable-line
+    });
+  }
 
   const reply = [];
 

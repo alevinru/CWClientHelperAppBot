@@ -71,6 +71,7 @@ bot.command('auth', auth.auth);
 bot.command('authGuild', auth.authGuildInfo);
 bot.command('authCraftBook', auth.authCraftBook);
 bot.command('authGear', auth.authGearInfo);
+bot.command('authStock', auth.authStock);
 bot.hears(/^\/hello[ _](\d+)$/, users.hello);
 bot.command('hello', users.hello);
 botHears('users', users.listUsers);

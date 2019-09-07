@@ -45,6 +45,10 @@ export function requestGearInfo(userId, token) {
   return cw.authAdditionalOperation(safeUserId(userId), 'GetGearInfo', token);
 }
 
+export function requestStockAccess(userId, token) {
+  return cw.authAdditionalOperation(safeUserId(userId), 'GetStock', token);
+}
+
 export function grantGuildInfoAuth(userId, requestId, code, token) {
   return cw.grantAdditionalOperation(safeUserId(userId), requestId, code, token);
 }
@@ -54,6 +58,10 @@ export function grantCraftBookAuth(userId, requestId, code, token) {
 }
 
 export function grantGearInfoAuth(userId, requestId, code, token) {
+  return cw.grantAdditionalOperation(safeUserId(userId), requestId, code, token);
+}
+
+export function grantAuth(userId, requestId, code, token) {
   return cw.grantAdditionalOperation(safeUserId(userId), requestId, code, token);
 }
 

@@ -15,7 +15,7 @@ export async function auth(ctx) {
     await a.requestAuth(userId);
     const msg = [
       `Auth code has been sent to your telegram account number ${userId}.`,
-      'Please forward this message back here to complete authorization',
+      'Please forward this message here to complete authorization',
     ];
     reply(msg.join(' '));
   } catch (e) {
@@ -38,7 +38,7 @@ export async function authGuildInfo(ctx) {
 
     const msg = [
       `Auth code has been sent to your telegram account number ${userId}.`,
-      'Please forward this message back here to complete <b>Guild Info</b> authorization',
+      'Please forward this message back to complete <b>Guild Info</b> authorization',
     ];
 
     session.authGuildInfoId = uuid;
@@ -65,7 +65,7 @@ export async function authCraftBook(ctx) {
 
     const msg = [
       `Auth code has been sent to your telegram account number ${userId}.`,
-      'Please forward that message back here to complete <b>Craft Book</b> authorization',
+      'Please forward that message here to complete <b>Craft Book</b> authorization',
     ];
 
     session.authCraftBookId = uuid;
@@ -92,7 +92,7 @@ export async function authGearInfo(ctx) {
 
     const msg = [
       `Auth code has been sent to your telegram account number ${userId}.`,
-      'Please forward that message back here to complete <b>Gear Info</b> authorization',
+      'Please forward that message here to complete <b>Gear Info</b> authorization',
     ];
 
     session.authGearInfoId = uuid;
@@ -104,6 +104,34 @@ export async function authGearInfo(ctx) {
   }
 
 }
+
+export async function authStock(ctx) {
+
+  const { from: { id: userId }, session } = ctx;
+
+  debug('authStock:', userId);
+
+  try {
+
+    const token = a.getAuthToken(session);
+
+    const { uuid } = await a.requestStockAccess(userId, token);
+
+    const msg = [
+      `Auth code has been sent to your telegram account number ${userId}.`,
+      'Please forward that message here to complete <b>Stock Info</b> authorization',
+    ];
+
+    session.authStockAccessId = uuid;
+
+    await ctx.replyHTML(msg.join(' '));
+
+  } catch (e) {
+    await ctx.replyError('to send auth code', e);
+  }
+
+}
+
 
 const { CW_APP_NAME } = process.env;
 
@@ -137,8 +165,21 @@ export async function authCode(ctx, next) {
     const { authGuildInfoId } = session;
     const { authGearInfoId } = session;
     const { authCraftBookId } = session;
+    const { authStockAccessId } = session;
 
-    if (authGearInfoId && text.match(/view currently equipped gear/)) {
+    if (authStockAccessId && text.match(/read your stock/)) {
+      const token = a.getAuthToken(session);
+
+      debug('stockAccess code:', code, token, authStockAccessId);
+      await a.grantAuth(userId, authStockAccessId, code, token);
+      delete session.authStockAccessId;
+      session.isStockAccessAuthorized = true;
+      await ctx.replyHTML([
+        '✅ Congratulations, stock info authorization complete!\n',
+        'Try /stock command.',
+      ]);
+
+    } else if (authGearInfoId && text.match(/view currently equipped gear/)) {
 
       const token = a.getAuthToken(session);
 

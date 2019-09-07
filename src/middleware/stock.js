@@ -40,6 +40,11 @@ export default async function (ctx) {
     debug(`GET /stock/${userId}`, Object.keys(stock).length, 'items');
 
   } catch (e) {
+    const who = matchUserId ? 'The user' : 'You';
+    if (!e.message && e.requiredOperation) {
+      await ctx.replyWithHTML(`<b>${who}</b> have to do /authStock first`);
+      return;
+    }
     ctx.replyError('/stock', e);
   }
 

@@ -105,7 +105,7 @@ export function mobOfferView({
     reply.push('', helperView(helper));
   }
 
-  const { level } = lo.maxBy(mobs, 'level') || {};
+  const level = mobs.length && Math.floor(lo.sumBy(mobs, 'level') / mobs.length);
 
   const go = level ? `⚔ <= ${level + HELPER_LEVEL_RANGE}` : '⚔';
 

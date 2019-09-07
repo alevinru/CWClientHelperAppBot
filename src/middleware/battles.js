@@ -342,20 +342,24 @@ async function showBattle(ctx, date) {
 
   const filters = { date };
 
-  const battle = (await Battle.findOne(filters)).toObject();
+  const battleMongo = await Battle.findOne(filters);
 
-  if (ADMIN_ID !== ctx.from.id) {
-    battle.results.forEach(result => {
-      delete result.atk; // eslint-disable-line
-    });
-  }
+  const battle = battleMongo && battleMongo.toObject();
 
   const reply = [];
 
   if (!battle) {
     reply.push(`<code>Not found</code> ${b.dateFormat(date)} battle`);
   } else {
+
+    if (ADMIN_ID !== ctx.from.id) {
+      battle.results.forEach(result => {
+        delete result.atk; // eslint-disable-line
+      });
+    }
+
     reply.push(...battleView(battle));
+
   }
 
   const prevDate = b.prevDate(date);

@@ -127,11 +127,22 @@ export function mobOfferView({
   function helperView({ userName, firstName, lastName }) {
     const name = lo.filter([firstName, lastName]).join(' ') || 'Name unknown';
     return [
-      `<a href="https://t.me/${userName}">${name}</a>`,
+      `<a href="https://t.me/${userName}">${escapeName(name)}</a>`,
       notExpired ? 'is helping' : 'was helping',
     ].join(' ');
   }
 
+}
+
+const HTML_REPLACERS = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+};
+
+function escapeName(name) {
+  return name
+    .replace(/[&<>]/g, x => HTML_REPLACERS[x]);
 }
 
 export async function chatMobHunting(chatId) {

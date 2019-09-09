@@ -18,7 +18,7 @@ export async function checkTraderAuth(ctx, next) {
 
   const trader = getCachedTrader(userId);
 
-  if (!trader) {
+  if (!trader || !trader.priority) {
     debug('unauthorized access', userId);
     return;
   }

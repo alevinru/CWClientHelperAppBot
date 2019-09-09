@@ -96,7 +96,7 @@ export async function onHelpingClick(ctx) {
 
   const { message_id: messageId } = message;
 
-  const hunt = await MobHunt.findOne({ 'replies.messageId': messageId });
+  const hunt = await MobHunt.findOne({ replies: { $elemMatch: { messageId, chatId: chat.id } } });
 
   if (!hunt) {
     const oldWay = `${message.text}\n\n✅ @${from.username} is helping`;

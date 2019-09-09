@@ -6,6 +6,7 @@ import * as mongo from '../models';
 
 import BattleDigests from '../notify/battleDigests';
 import { start, onNewMember, onLeftMember } from './start';
+import * as battles from '../middleware/battles';
 import * as chat from '../middleware/chat';
 
 const { debug, error } = log('digests');
@@ -16,6 +17,9 @@ botHears('chat[ _]get[ _]([a-z]+)', chat.viewSetting);
 
 bot.on('new_chat_members', onNewMember);
 bot.on('left_chat_member', onLeftMember);
+
+botHears('ba[ _]([\\d]{6})[ _]([\\d]{2})', battles.showBattleByCode);
+botHears('ba', battles.showLastBattle);
 
 run().catch(error);
 

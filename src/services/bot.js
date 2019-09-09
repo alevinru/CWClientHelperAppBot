@@ -24,8 +24,34 @@ if (SOCKS_HOST) {
 export const BOT_ID = parseInt(BOT_TOKEN.match(/^[^:]*/)[0], 0);
 export const { username: BOT_USER_NAME } = options;
 
-const { debug } = log('bot');
+const { debug, error } = log('bot');
 
-export default new Telegraf(BOT_TOKEN, options);
+const bot = new Telegraf(BOT_TOKEN, options);
+
+export default bot;
 
 debug('Starting bot id:', BOT_ID, SOCKS_HOST);
+
+export function exceptionHandler(ctx, next) {
+
+  // debug('userId', 'start');
+
+  return next()
+  // .then(() => debug('exceptionHandler', 'end'))
+    .catch(({ name, message }) => {
+      error('exceptionHandler', name, message);
+      return ctx.replyWithHTML(`Error: ${message}`, { disable_notification: true });
+    });
+
+}
+
+
+function hearsRe(command) {
+
+  return new RegExp(`^/${command}($|@${BOT_USER_NAME}$)`, 'i');
+
+}
+
+export function botHears(command, mw) {
+  bot.hears(hearsRe(command), mw);
+}

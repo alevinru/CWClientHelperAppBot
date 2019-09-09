@@ -2,7 +2,7 @@ import { cw } from './services';
 import log from './services/log';
 import { getTraders } from './services/trading';
 import session from './services/session';
-import bot, { BOT_ID, BOT_USER_NAME } from './services/bot';
+import bot, { BOT_ID, BOT_USER_NAME, exceptionHandler } from './services/bot';
 import * as mongo from './models';
 
 import Notificator from './services/notificator';
@@ -34,7 +34,7 @@ async function run() {
 
   await notificator.init();
 
-  const battleDigests = new BattleDigests();
+  const battleDigests = new BattleDigests({ bot, botId: BOT_ID });
 
   await battleDigests.init();
 
@@ -47,21 +47,9 @@ async function run() {
 Exception handlers
 */
 
-function exceptionHandler(ctx, next) {
-
-  // debug('userId', 'start');
-
-  return next()
-  // .then(() => debug('exceptionHandler', 'end'))
-    .catch(({ name, message }) => {
-      error('exceptionHandler', name, message);
-      return ctx.replyWithHTML(`Error: ${message}`, { disable_notification: true });
-    });
-
-}
 
 bot.catch(({ name, message }) => {
-  debug(name, message);
+  error(name, message);
 });
 
 

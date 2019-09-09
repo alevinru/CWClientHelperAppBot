@@ -1,6 +1,6 @@
 import Telegraf from 'telegraf';
 
-import bot, { BOT_USER_NAME } from './services/bot';
+import bot, { botHears } from './services/bot';
 import { fromCWFilter } from './config/filters';
 
 import * as auth from './middleware/auth';
@@ -166,16 +166,6 @@ botHears('set[_ ]([^ _]+)[_ ](.+)', ss.setValue);
 
 bot.on('message', require('./middleware/message').default);
 
-
-function hearsRe(command) {
-
-  return new RegExp(`^/${command}($|@${BOT_USER_NAME}$)`, 'i');
-
-}
-
-function botHears(command, mw) {
-  bot.hears(hearsRe(command), mw);
-}
 
 function botMessage(mw) {
   bot.on('message', mw);

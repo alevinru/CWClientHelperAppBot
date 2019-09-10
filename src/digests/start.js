@@ -11,9 +11,11 @@ export async function start(ctx) {
   debug(userId);
 
   const reply = [
-    'Welcome to ChatWars digests bot!',
-    'Add this bot to any chat to start receiving battle mini-reports.',
-    'Use /ba to show recent battle.',
+    'Welcome to <b>ChatWars</b> digests bot!',
+    '',
+    'Add this bot to any chat to start receiving battle micro-reports',
+    '',
+    'Try /ba to show recent battle',
   ].join('\n');
 
   await ctx.replyWithHTML(reply);

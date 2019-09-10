@@ -21,20 +21,41 @@ export async function start(ctx) {
 }
 
 export async function onNewMember(ctx) {
-  await setSettings(ctx, 'new_chat_member');
+  await setSettingsFromMessage(ctx, 'new_chat_member', true);
 }
 
 export async function onLeftMember(ctx) {
-  await setSettings(ctx, 'left_chat_member');
+  await setSettingsFromMessage(ctx, 'left_chat_member', false);
 }
 
-async function setSettings(ctx, type) {
+export async function onChatCreated(ctx) {
+  await setSettingsFromUpdate(ctx, 'group_chat_created', true);
+}
+
+export async function onChatMigratedTo(ctx) {
+  await setSettingsFromUpdate(ctx, 'migrate_to_chat_id', false);
+}
+
+export async function onChatMigratedFrom(ctx) {
+  await setSettingsFromUpdate(ctx, 'migrate_from_chat_id', true);
+}
+
+async function setSettingsFromMessage(ctx, type, value) {
 
   const { message: { [type]: member }, chat: { id: chatId } } = ctx;
 
   if (BOT_ID === member.id) {
-    await Chat.saveValue(chatId, 'notifyBattle', type === 'new_chat_member');
-    debug('setSettings', chatId, type);
+    await Chat.saveValue(chatId, 'notifyBattle', value);
+    debug('setSettingsFromMessage', chatId, type, value);
   }
+
+}
+
+async function setSettingsFromUpdate(ctx, type, value) {
+
+  const { chat: { id: chatId } } = ctx.update.message;
+
+  await Chat.saveValue(chatId, 'notifyBattle', value);
+  debug('setSettingsFromUpdate', chatId, type, value);
 
 }

@@ -64,7 +64,7 @@ export default class Notificator {
   async hookUsers() {
     try {
 
-      const users = await User.find({ [`settings.${NOTIFY_SALES}`]: true });
+      const users = await User.find({ [`botSettings.${BOT_ID}.${NOTIFY_SALES}`]: true });
       const ids = await mapSeriesAsync(users, async ({ id: tgId }) => {
         const session = await getSession(BOT_ID, tgId);
         const cwId = lo.get(session, 'auth.id');

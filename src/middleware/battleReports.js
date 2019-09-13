@@ -2,7 +2,6 @@ import { addHours, differenceInHours } from 'date-fns';
 import filter from 'lodash/filter';
 import map from 'lodash/map';
 import mapValues from 'lodash/mapValues';
-import find from 'lodash/find';
 import groupBy from 'lodash/groupBy';
 import orderBy from 'lodash/orderBy';
 import fpGet from 'lodash/fp/get';
@@ -20,12 +19,6 @@ import BattleReport, { MobBattleReport } from '../models/BattleReport';
 
 const { debug, error } = log('mw:battles');
 
-const { BATTLE_TEXT = 'Your result on the battlefield' } = process.env;
-const BATTLE_TEXT_RE = new RegExp(BATTLE_TEXT);
-const CASTLES = map(JSON.parse(process.env.CASTLES));
-const BATTLE_STATS_RE = new RegExp(`(${CASTLES.join('|')})(.*) ⚔:(.+) 🛡:(.+) Lvl: (\\d+)`);
-
-const MOB_BATTLE_REPORT = /👾Encounter/i;
 
 const ADMIN_ID = parseInt(process.env.ADMIN_ID, 0);
 
@@ -40,54 +33,18 @@ export function reportFilter(ctx) {
     return false;
   }
 
-  const isReport = BATTLE_TEXT_RE.test(text);
+  const battle = b.battleFromText(text, forwardDate);
 
-  if (!isReport) {
+  if (!battle) {
     return false;
   }
 
-  const results = filter(text.split('\n'), result => result && !BATTLE_TEXT_RE.test(result));
-  const [, castle, name] = text.match(BATTLE_STATS_RE) || [];
-
-  const reportDate = new Date(forwardDate * 1000);
-
-  debug('reportFilter', isReport, forwardDate);
-
-  const isMob = MOB_BATTLE_REPORT.test(ctx.message.text);
-
-  const battle = {
-
-    name: name.replace(/🎗/, ''),
-    castle,
-    userId,
-    results,
-    reportDate,
-    isMob,
-
-    tag: tagName(name),
-    date: isMob ? reportDate : b.battleDate(reportDate),
-    stats: battleStats(text),
-    effects: battleEffects(results),
-
-    gold: getValue('Gold'),
-    exp: getValue('Exp'),
-    hp: getValue('Hp'),
-    hit: getValue('Hit'),
-    miss: getValue('Miss'),
-    lastHit: getValue('Last hit'),
-
-  };
+  battle.userId = userId;
 
   Object.assign(state, { battle });
+  // debug(battle);
 
-  debug(battle);
-
-  return isReport;
-
-  function getValue(label) {
-    const [, res] = text.match(`${label}: ([-]?\\d+)`) || [];
-    return res ? parseInt(res, 0) : 0;
-  }
+  return true;
 
 }
 
@@ -95,7 +52,7 @@ export async function onReportForward(ctx) {
 
   const { state: { battle }, chat, from } = ctx;
 
-  debug('onReportForward:', battle);
+  // debug('onReportForward:', battle);
 
   const { date, name } = battle;
   const key = { date, name };
@@ -228,7 +185,7 @@ async function userReportByDate(filters, dateB, dateE) {
   const rows = reports.map(report => {
 
     const { stats: { atk, def }, exp, gold } = report;
-    const icons = map(report.effects, effectIcon).join('');
+    const icons = map(report.effects, b.effectIcon).join('');
 
     return filter([
       `<b>${b.dateFormat(report.date)}</b> ${reports.length > 1 ? icons : ''}`,
@@ -246,7 +203,7 @@ async function userReportByDate(filters, dateB, dateE) {
   ];
 
   if (reports.length === 1) {
-    const effectsInfo = map(reports[0].effects, effectInfo);
+    const effectsInfo = map(reports[0].effects, b.effectInfo);
     if (effectsInfo.length) {
       res.push('', effectsInfo.join('\n'));
     }
@@ -329,7 +286,9 @@ export async function guildReport(ctx) {
   const dateLabel = [b.dateFormat(date)];
 
   if (days > 1) {
-    dateLabel.splice(0, 0, [`for <b>${days}</b> battles`, `from ${b.dateFormat($gte)} to`].join('\n'));
+    dateLabel.splice(0, 0, [
+      `for <b>${days}</b> battles`, `from ${b.dateFormat($gte)} to`,
+    ].join('\n'));
   }
 
   const reply = [
@@ -380,90 +339,9 @@ function guildUserDayReport({ userReports, name }) {
     filter([
       `<code>${level}</code>`,
       `<b>${name.replace(/(\[.+])/, '')}</b>`,
-      map(effects, effectIcon).join(''),
+      map(effects, b.effectIcon).join(''),
     ]).join(' '),
     `⚔️${atk} 🛡${def} 🔥${exp} 💰${gold}`,
   ].join('\n');
-
-}
-
-
-function tagName(name) {
-  const [, tag = null] = name.match(/\[(.+)\]/) || [];
-  return tag;
-}
-
-function battleStats(text) {
-
-  const [, , , atkInfo = '', defInfo = '', level] = text.match(BATTLE_STATS_RE) || [];
-
-  debug('battleStats:', text.match(BATTLE_STATS_RE));
-
-  const [, atk, healAtk = '0'] = atkInfo.match(/(\d+)\(([-+]\d+)\)/) || ['', atkInfo];
-  const [, def, healDef = '0'] = defInfo.match(/(\d+)\(([-+]\d+)\)/) || ['', defInfo];
-
-  return {
-    atk: parseInt(atk, 0),
-    healAtk: parseInt(healAtk, 0),
-    def: parseInt(def, 0),
-    healDef: parseInt(healDef, 0),
-    level: parseInt(level, 0),
-  };
-
-}
-
-const BATTLE_EFFECTS = {
-  battleCries: { test: 'Your battle cries were successful', icon: '🗣', label: 'Successful battle cries' },
-  staminaRestored: { test: '🔋Stamina restored', icon: '🔋', label: 'Stamina restored' },
-  luckyDefender: { test: '⚡Lucky Defender!', icon: '✌️', label: 'Lucky Defender' },
-  criticalStrike: { test: '⚡Critical strike', icon: '⚡', label: 'Critical strike' },
-  inspiredBy: { test: /⚡Battle Cry\. You were inspired by (.+)/, icon: '🤟', label: 'Inspired by' },
-  taunts: { test: 'Your taunts were successful', icon: '🕺', label: 'Successful taunts' },
-  medal: { test: /🏅(.+)/, icon: '🏅', label: '' },
-  ga: { test: '🔱Guardian angel', icon: '🔱', label: 'Guardian angel' },
-};
-
-function effectIcon(val, e) {
-  return fpGet('icon')(BATTLE_EFFECTS[e]);
-}
-
-function effectInfo(val, e) {
-
-  const { icon, label } = BATTLE_EFFECTS[e] || {};
-
-  return filter([
-    icon || '✅️',
-    label,
-    `${val && val !== true ? val : ''}`,
-  ]).join(' ');
-
-}
-
-function battleEffects(results) {
-
-  const res = {};
-
-  map(BATTLE_EFFECTS, ({ test }, key) => {
-
-    const simple = find(results, result => {
-      // debug(result, cond);
-      return test === result;
-    });
-
-    if (simple) {
-      res[key] = true;
-      return;
-    }
-
-    const valued = find(results, result => result.match(test));
-
-    if (valued) {
-      const [, value] = valued.match(test);
-      res[key] = value || '';
-    }
-
-  });
-
-  return res;
 
 }

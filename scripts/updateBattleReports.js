@@ -4,25 +4,40 @@ const cursor = table.find({});
 let ops = [];
 let page = 0;
 
+const NAME_RE = /(.+) ⚔:(.+) 🛡:(.+) Lvl: (\d+)/;
+
 while (cursor.hasNext()) {
 
-  const { _id, results, gold } = cursor.next();
+  const { _id, name, tag, results } = cursor.next();
 
-  if (gold !== 0) {
+  if (!tag) {
     continue;
   }
 
-  const result = results.join('\n');
-  const [, updatedGold] = result.match(/Gold: ([-]?\d+)/) || [];
+  if (!results || !results.length) {
+    print('No results', _id);
+    continue;
+  }
 
-  if (!updatedGold) {
+  const matched = results[0].match(NAME_RE);
+
+  if (!matched) {
+    print('No match', _id);
+    continue;
+  }
+
+  const [, resultName] = results[0].match(NAME_RE);
+
+  const updatedName = resultName.replace(/^[^[]+/, '').replace(/🎗/, '');
+
+  if (updatedName === name) {
     continue;
   }
 
   ops.push({
     updateOne: {
       filter: { _id },
-      update: { $set: { gold: updatedGold } },
+      update: { $set: { name: updatedName } },
     },
   });
 

@@ -237,7 +237,7 @@ export async function guildReport(ctx) {
   const [, daysMatch] = ctx.match;
 
   const days = parseInt(daysMatch, 0) || 1;
-  const tag = ownTag || matchTag;
+  const tag = matchTag || ownTag;
 
   if (!tag) {
     error('rbg', ownTag, ctx.match);

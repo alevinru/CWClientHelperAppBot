@@ -63,6 +63,7 @@ export async function maintenanceShops(ctx) {
     const openShop = {
       lastOpened,
       maintenanceEnabled: true,
+      mana: { $gt: 60 },
     };
 
     if (ownerCastle) {

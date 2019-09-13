@@ -6,7 +6,7 @@ const MAX_REGEX_LENGTH = 50;
 export function searchRe(text) {
 
   if (text.length > MAX_REGEX_LENGTH) {
-    throw new Error(`<b>${text.length}</b> symbols is too long for a filter`);
+    throw new Error(`${text.length} symbols is too much for a filter`);
   }
 
   const isRe = text.match(/\/(.+)\//);

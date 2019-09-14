@@ -98,10 +98,10 @@ export function battleFromText(text, forwardDate) {
   const isMob = MOB_BATTLE_REPORT.test(text);
 
   let name = nameFull.replace(/🎗/, '');
-  const tag = tagName(nameFull);
+  const tag = tagName(name);
 
   if (tag) {
-    name = nameFull.replace(/^[^[]+/, '');
+    name = name.replace(/^[^[]+/, '');
   }
 
   debug('battleFromText', forwardDate, isMob ? 'mob' : 'battle', tag && `[${tag}]`, name);

@@ -1,7 +1,6 @@
 import * as trading from '../services/trading';
 import log from '../services/log';
-import { userOrderList } from './order';
-import { hookOffers } from '../services/ordering';
+import { hookOffers, getOrdersByUserId } from '../services/ordering';
 // import { getAuthorizedUsers } from '../services/users';
 // import { dropOfferHooks, getOfferHooks } from "../consumers/offersConsumer";
 
@@ -38,16 +37,16 @@ export async function tradingStatus(ctx) {
 
     const reply = [
       isPaused ? '⏸' : '✅',
-      ` <b>${userName}</b> has ${funds || 'no '}💰 to trade by the orders:`,
+      ` <b>${userName}</b> has ${funds || 'no '}💰`,
       '\n\n',
     ];
 
-    const orders = await userOrderList(userId);
+    const orders = await getOrdersByUserId(userId);
 
     if (orders.length) {
-      reply.push(...orders);
+      reply.push(`and has <b>${orders.length}</b> /orders`);
     } else {
-      reply.push(orders);
+      reply.push('and has no /orders');
     }
 
     reply.push(`\n\nIssue /trading_${isPaused ? 'on' : 'off'}`);

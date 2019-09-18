@@ -273,9 +273,10 @@ export async function ordersTop(ctx) {
 export async function userOrders(ctx) {
 
   try {
-    ctx.replyHTML(await userOrderList(ctx.from.id));
+    const reply = await userOrderList(ctx.from.id);
+    await ctx.replyHTML(reply || 'You have no orders');
   } catch (e) {
-    ctx.replyError('to list orders', e);
+    await ctx.replyError('to list orders', e);
   }
 
 }

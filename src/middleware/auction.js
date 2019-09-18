@@ -1,8 +1,6 @@
 import * as a from '../services/auction';
-
-import log from '../services/log';
-
 import Auction from '../models/Auction';
+import log from '../services/log';
 
 const { debug } = log('mw:au');
 

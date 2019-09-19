@@ -41,7 +41,7 @@ const schema = new Schema({
 });
 
 schema.index({ command: 1 }, { unique: true });
-schema.index({ messageId: 1 });
+schema.index({ 'replies.messageId': 1, 'replies.chatId': 1 });
 schema.index({ date: 1 });
 schema.method('isExpired', isExpired);
 

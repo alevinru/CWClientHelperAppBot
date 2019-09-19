@@ -88,11 +88,13 @@ export async function onHelpingClick(ctx) {
   debug('onHelpingClick', update);
 
   if (message.text.match('is helping')) {
-    await ctx.answerCbQuery('Already got help');
+    ctx.answerCbQuery('Already got help')
+      .catch(error);
     return;
   }
 
-  await ctx.answerCbQuery('Thanks for your helping!');
+  ctx.answerCbQuery('Thanks for your helping!')
+    .catch(error);
 
   const { message_id: messageId } = message;
 

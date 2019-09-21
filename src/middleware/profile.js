@@ -334,7 +334,6 @@ function gearItemHtml(gear) {
   const broken = gear.condition === 'broken' ? '🛠' : '';
 
   const stats = [
-    broken,
     quality && `(${qualityLetter[quality]})`,
     atk && `⚔${atk}`,
     def && `🛡${def}`,
@@ -342,11 +341,9 @@ function gearItemHtml(gear) {
     stam && `+${stam}🔋`,
   ];
 
-  const status = broken || icon;
-
   return filter([
-    status,
-    broken ? name.replace('⚡', '') : name,
+    icon,
+    broken ? `${broken}${/\+/.test(name) ? '' : ' '}${name.replace('⚡', '')}` : name,
     ...stats,
   ]).join(' ');
 

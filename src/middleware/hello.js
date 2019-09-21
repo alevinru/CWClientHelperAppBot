@@ -92,8 +92,8 @@ export async function listUsers(ctx) {
 
 
 function formatUser(cmd) {
-  return ({ id: userId, profile: { userName } }) => {
-    return `/${cmd}_${userId} <b>${userName}</b>`;
+  return ({ id: userId, profile: { userName, class: cls, lvl } }) => {
+    return `${cls} <code>${lvl}</code> /${cmd}_${userId} <b>${userName}</b>`;
   };
 }
 

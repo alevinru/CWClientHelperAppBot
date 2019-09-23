@@ -1,5 +1,4 @@
-import fpMap from 'lodash/fp/map';
-import filter from 'lodash/filter';
+import lo from 'lodash';
 
 import { getCachedTrader } from '../services/trading';
 import * as ordering from '../services/ordering';
@@ -77,7 +76,7 @@ export async function createOrder(ctx) {
 }
 
 
-export async function orders(ctx) {
+export async function ordersByItem(ctx) {
 
   const {
     match,
@@ -238,7 +237,7 @@ export function formatOrder(order, { withItem = false, withUser = true, list = f
     res.push(`for <b>${userName}</b>`);
   }
 
-  return filter(res).join(' ');
+  return lo.filter(res).join(' ');
 
 }
 
@@ -273,8 +272,9 @@ export async function ordersTop(ctx) {
 export async function userOrders(ctx) {
 
   try {
-    const reply = await userOrderList(ctx.from.id);
-    await ctx.replyHTML(reply || 'You have no orders');
+    const orders = await ordering.getOrdersByUserId(ctx.from.id);
+    const reply = orderListView(orders) || 'You have no orders';
+    await ctx.replyHTML(reply);
   } catch (e) {
     await ctx.replyError('to list orders', e);
   }
@@ -282,8 +282,21 @@ export async function userOrders(ctx) {
 }
 
 
-export async function userOrderList(userId) {
-  const res = await ordering.getOrdersByUserId(userId)
-    .then(fpMap(order => formatOrder(order, { withItem: true, withUser: false })));
-  return Array.isArray(res) ? res.join('\n') : 'You have no orders';
+export function orderListView(orders) {
+
+  const byStatus = lo.groupBy(orders, ({ isActive }) => (isActive ? 'active' : 'inactive'));
+
+  const sorted = lo.orderBy(lo.map(byStatus, formatActive), 'status');
+
+  return lo.map(sorted, 'text').join('\n\n');
+
+}
+
+function formatActive(orders, status) {
+  const text = [
+    `<b>${lo.upperFirst(status)}:</b>`,
+    lo.orderBy(orders, 'itemCode')
+      .map(order => formatOrder(order, { withItem: true, withUser: false })).join('\n'),
+  ].join('\n');
+  return { status, text };
 }

@@ -57,7 +57,7 @@ function hearsOrders(match, mw) {
 
 hearsOrders('orders_top', ord.ordersTop);
 hearsOrders('order[ _]([a-z0-9]+)[ _](\\d+)[ _](\\d+)[ ]?(\\d*)', ord.createOrder);
-hearsOrders('orders[ _]([a-z0-9]+)', ord.orders);
+hearsOrders('orders[ _]([a-z0-9]+)', ord.ordersByItem);
 hearsOrders('orders', ord.userOrders);
 
 hearsOrders('order[ _]([a-z0-9]+)', ord.orderById);

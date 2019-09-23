@@ -18,7 +18,8 @@ import * as mobs from './middleware/mobs';
 
 import start from './middleware/start';
 import stock from './middleware/stock';
-import profile, { guildInfo, craftBook, gearInfo } from './middleware/profile';
+import profile, { guildInfo, craftBook } from './middleware/profile';
+import gearInfo from './middleware/gear';
 
 import * as shops from './middleware/shops';
 import * as au from './middleware/auction';

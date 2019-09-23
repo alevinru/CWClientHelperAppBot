@@ -19,7 +19,7 @@ import * as mobs from './middleware/mobs';
 import start from './middleware/start';
 import stock from './middleware/stock';
 import profile, { guildInfo, craftBook } from './middleware/profile';
-import gearInfo from './middleware/gear';
+import gearInfo, * as gear from './middleware/gear';
 
 import * as shops from './middleware/shops';
 import * as au from './middleware/auction';
@@ -78,6 +78,7 @@ bot.hears(/^\/hello[ _](\d+)$/, users.hello);
 bot.command('hello', users.hello);
 botHears('users', users.listUsers);
 botHears('gg', users.listUsers);
+botHears('gg[ _]([a-z]+)', gear.guildGear);
 
 bot.hears(/^\/(trust|untrust)$/, users.trust);
 

@@ -2,10 +2,12 @@ import { cw } from './cw';
 import { hsetAsync, hgetAsync } from './redis';
 import { getSession } from './session';
 import { BOT_ID } from './bot';
-import { USERS_HASH } from './users';
+// import { USERS_HASH } from './users';
 import log from './log';
 
 const { error } = log('auth');
+
+export const USERS_HASH = 'users';
 
 export async function getToken(userId) {
   return getSession(BOT_ID, userId)

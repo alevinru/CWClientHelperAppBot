@@ -47,7 +47,7 @@ export async function guildGear(ctx) {
 
   const users = lo.filter(await getAuthorizedUsers(session), 'profile');
 
-  const promises = lo.orderBy(users, ({ profile: { lvl, userName } }) => [lvl, userName], ['desc'])
+  const promises = lo.orderBy(users, [({ profile: { lvl } }) => lvl], ['desc'])
     .map(user => {
       return a.gearInfo(user.id)
         .then(({ gearInfo: gear }) => ({ user, gear }))
@@ -63,7 +63,7 @@ export async function guildGear(ctx) {
 
     const { profile: { lvl, class: cls, userName } } = user;
 
-    debug('usersGearList', userName, JSON.stringify(gear));
+    // debug('usersGearList', userName, JSON.stringify(gear));
 
     const item = gear[gearType];
 

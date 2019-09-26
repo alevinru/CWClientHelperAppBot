@@ -14,34 +14,38 @@ const { debug } = log('mw:gear');
 const GEAR_TYPES = ['head', 'body', 'hands', 'feet', 'coat', 'weapon', 'offhand', 'ring', 'amulet'];
 
 const GEAR_ICONS = [
-  { head: '⛑' },
-  { body: '🎽' },
+  { head: '🧢' },
+  { body: '👕' },
   { hands: '🧤' },
   { feet: '👞' },
   { coat: '🧥' },
   { weapon: '⚔️' },
   { offhand: '🗡️' },
-  { ring: '🎒', showIcon: true },
-  { amulet: '✨', showIcon: true },
+  { ring: '💍', showIcon: true },
+  { amulet: '🧿', showIcon: true },
 ];
 
 export async function guildGear(ctx) {
 
   const { session, match } = ctx;
 
-  const [, gearType] = match;
+  const [, gearTypeSearch] = match;
 
-  debug('guildGear', gearType);
+  debug('guildGear', gearTypeSearch);
 
-  const icon = find(GEAR_ICONS, gearType);
+  const gearType = find(GEAR_TYPES, type => lo.startsWith(type, gearTypeSearch));
+
+  const icon = gearType && find(GEAR_ICONS, gearType);
 
   if (!icon) {
-    const replyError = [
-      `⚠ Invalid gear type <b>${gearType}</b>, choose one of:`,
-      '',
-      ...GEAR_TYPES.map(type => `▪︎ /gg_${type}`),
+    let replyHelp = [
+      `⚠ Invalid gear type <b>${gearTypeSearch}</b>, choose one of:`,
     ];
-    await ctx.replyWithHTML(replyError.join('\n'));
+    if (/help/i.test(gearTypeSearch)) {
+      replyHelp = ['📚 To list your team\'s gear please specify:'];
+    }
+    replyHelp.push('', ...GEAR_TYPES.map(type => `${gearIcon(type, true)}︎ /gg_${type}`));
+    await ctx.replyWithHTML(replyHelp.join('\n'));
     return;
   }
 
@@ -57,7 +61,9 @@ export async function guildGear(ctx) {
   const matched = lo.filter(await Promise.all(promises))
     .map(usersGearList);
 
-  await ctx.replyWithHTML(matched.join('\n\n'));
+  const reply = matched.length ? matched.join('\n\n') : '⚠ Your team gear is empty, do /authGear';
+
+  await ctx.replyWithHTML(reply);
 
   function usersGearList({ user, gear }) {
 
@@ -144,9 +150,9 @@ function formatGear({ gearInfo: info }) {
 
 }
 
-function gearIcon(gear) {
+function gearIcon(gear, all = false) {
   const item = find(GEAR_ICONS, gear);
-  return (item && item.showIcon) ? item[gear] : '';
+  return (item && (item.showIcon || all)) ? item[gear] : '';
 }
 
 function gearItem(gear, type) {

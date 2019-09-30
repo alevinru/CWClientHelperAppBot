@@ -15,6 +15,7 @@ const schema = new Schema({
     name: String,
     modifiers: [String],
     level: Number,
+    cnt: Number,
   }],
 
   replies: [{

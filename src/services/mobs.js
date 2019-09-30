@@ -35,13 +35,15 @@ export function mobsFromText(text) {
 
   const mobs = mobsArray.map((mobText, idx) => {
 
-    const [, name, lvl] = mobText.match(/([a-z ]*) lvl\.(\d+)/i) || [];
+    const [, cntText, name, lvl] = mobText.match(/(\d* x )?([a-z ]*) lvl\.(\d+)/i) || [];
 
     if (!name) {
       return false;
     }
 
-    const mob = { name, level: parseInt(lvl, 0) };
+    const cnt = cntText ? cntText.match(/\d+/)[0] : '1';
+
+    const mob = { name, level: parseInt(lvl, 0), cnt: parseInt(cnt, 0) };
     const nextLine = mobsArray[idx + 1];
 
     if (nextLine) {

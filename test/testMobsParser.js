@@ -4,6 +4,23 @@ import { readFile } from '../src/services/fs';
 
 describe('Met some mob parser', function () {
 
+  it('should parse EN multi text', async function () {
+
+    const text = await readFile('static/mobsMulti_en.txt');
+    assert(text, 'No sample text found');
+
+    const mobs = mobsFromText(text.toString());
+
+    expect(mobs.mobs).to.eql([
+      {
+        level: 63,
+        cnt: 2,
+        name: 'Forest Boar',
+      },
+    ]);
+
+  });
+
   it('should parse EN text', async function () {
 
     const text = await readFile('static/mobsMet_en.txt');
@@ -13,16 +30,19 @@ describe('Met some mob parser', function () {
 
     expect(mobs.mobs).to.eql([
       {
+        cnt: 1,
         level: 68,
         modifiers: ['armored'],
         name: 'Forbidden Knight',
       },
       {
+        cnt: 1,
         level: 68,
         modifiers: ['enraged', 'armored'],
         name: 'Forbidden Knight',
       },
       {
+        cnt: 1,
         level: 61,
         name: 'Forbidden Knight',
       },
@@ -39,14 +59,17 @@ describe('Met some mob parser', function () {
 
     expect(mobs.mobs).to.eql([
       {
+        cnt: 1,
         level: 62,
         name: 'Forbidden Sentinel',
       },
       {
+        cnt: 1,
         level: 62,
         name: 'Forbidden Sentinel',
       },
       {
+        cnt: 1,
         level: 62,
         name: 'Forbidden Sentinel',
         modifiers: ['armored'],

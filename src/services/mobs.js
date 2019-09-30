@@ -65,10 +65,13 @@ export function mobsFromText(text) {
 }
 
 function mobView(mob) {
-  const { level = 0, modifiers, name } = mob;
+  const {
+    level = 0, modifiers, name, cnt = 1,
+  } = mob;
   const icons = lo.filter(lo.map(modifiers, modifier => modifiersMap.get(modifier)));
   return lo.filter([
     `<code>${level}</code>`,
+    cnt > 1 ? `<b>${cnt}</b> x` : '',
     name,
     icons.length && icons.join(''),
   ]).join(' ');

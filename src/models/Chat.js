@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 
-const { BOT_TOKEN } = process.env;
+const { BOT_TOKEN = '' } = process.env;
 export const BOT_ID = parseInt(BOT_TOKEN.match(/^[^:]*/)[0], 0);
 
 const schema = new Schema({

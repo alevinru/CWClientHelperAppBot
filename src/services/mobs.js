@@ -64,6 +64,19 @@ export function mobsFromText(text) {
 
 }
 
+const NUMBERS_EMO = new Map([
+  [2, '2️⃣'],
+  [3, '3️⃣'],
+]);
+
+function numberView(num) {
+  if (num <= 1) {
+    return '';
+  }
+  const emoji = NUMBERS_EMO.get(num);
+  return `x ${emoji || num}`;
+}
+
 function mobView(mob) {
   const {
     level = 0, modifiers, name, cnt = 1,
@@ -71,8 +84,8 @@ function mobView(mob) {
   const icons = lo.filter(lo.map(modifiers, modifier => modifiersMap.get(modifier)));
   return lo.filter([
     `<code>${level}</code>`,
-    cnt > 1 ? `<b>${cnt}</b> x` : '',
     name,
+    numberView(cnt),
     icons.length && icons.join(''),
   ]).join(' ');
 }

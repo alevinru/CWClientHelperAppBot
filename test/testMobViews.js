@@ -17,7 +17,7 @@ describe('Met some mob parser', function () {
 
     expect(lines[0]).to.equal('🐗 fight in <b>03:00</b>');
     expect(lines[1]).to.equal('');
-    expect(lines[2]).to.equal('<code>63</code> <b>2</b> x Forest Boar');
+    expect(lines[2]).to.equal('<code>63</code> Forest Boar x 2️⃣');
 
   });
 

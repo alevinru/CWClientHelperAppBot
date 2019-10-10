@@ -225,8 +225,7 @@ function castleByLetter(letter) {
 
 function shopAsMaintenanceListItem(shop) {
 
-  const { ownerCastle, ownerName } = shop;
-  const { mana, maintenanceCost } = shop;
+  const { ownerCastle, mana, maintenanceCost } = shop;
 
   const link = `/wsr_${shop.link}`;
 
@@ -235,14 +234,18 @@ function shopAsMaintenanceListItem(shop) {
     `💧${mana}`,
     link,
     `${ownerCastle}`,
-    `<a href="http://t.me/share/url?url=${link}">${ownerName}</a>`,
+    shopOwnerAsLink(shop, '/wsr_'),
   ].join(' ');
 
 }
 
+function shopOwnerAsLink({ link, ownerName }, prefix = '/ws_') {
+  return `<a href="http://t.me/share/url?url=${prefix}${link}">${ownerName}</a>`;
+}
+
 function shopAsListItem(shop) {
 
-  const { ownerCastle, ownerName, qualityCraftLevel } = shop;
+  const { ownerCastle, qualityCraftLevel } = shop;
   const { mana, price } = shop;
 
   const link = `/ws_${shop.link}`;
@@ -255,7 +258,7 @@ function shopAsListItem(shop) {
     qc,
     link,
     ownerCastle,
-    `<a href="http://t.me/share/url?url=${link}_stand">${ownerName}</a>`,
+    shopOwnerAsLink(shop),
   ]).join(' ');
 
 }
@@ -274,7 +277,7 @@ function shopInfoText(shop, lastDigest) {
   const qc = qualityCraftLevel && `${qualityCraftLevel}⃣`;
 
   const reply = [
-    `${shop.kind} «${shop.name}» of ${shop.ownerCastle} <b>${shop.ownerName}</b>`,
+    `${shop.kind} «${shop.name}» of ${shop.ownerCastle} ${shopOwnerAsLink(shop)}`,
     `💧 <b>${shop.mana}</b> was ${status} ago`,
   ];
 

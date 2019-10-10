@@ -242,24 +242,27 @@ function shopAsMaintenanceListItem(shop) {
 
 function shopAsListItem(shop) {
 
-  const { ownerCastle, ownerName } = shop;
+  const { ownerCastle, ownerName, qualityCraftLevel } = shop;
   const { mana, price } = shop;
 
   const link = `/ws_${shop.link}`;
 
-  return [
+  const qc = qualityCraftLevel && `${qualityCraftLevel}⃣`;
+
+  return filter([
     `💰${price}`,
     `💧${mana}`,
+    qc,
     link,
     ownerCastle,
     `<a href="http://t.me/share/url?url=${link}_stand">${ownerName}</a>`,
-  ].join(' ');
+  ]).join(' ');
 
 }
 
 function shopInfoText(shop, lastDigest) {
 
-  const { lastOpened } = shop;
+  const { lastOpened, qualityCraftLevel } = shop;
 
   const openAgo = lastOpened ? distanceInWordsToNow(lastOpened) : '';
   const closedAgo = lastOpened ? distanceInWordsToNow(addMinutes(lastOpened, 5)) : 'sometime';
@@ -267,6 +270,8 @@ function shopInfoText(shop, lastDigest) {
   const isOpen = lastDigest <= lastOpened;
 
   const status = isOpen ? `open about <b>${openAgo}</b>` : `closed <b>${closedAgo}</b>`;
+
+  const qc = qualityCraftLevel && `${qualityCraftLevel}⃣`;
 
   const reply = [
     `${shop.kind} «${shop.name}» of ${shop.ownerCastle} <b>${shop.ownerName}</b>`,
@@ -276,7 +281,8 @@ function shopInfoText(shop, lastDigest) {
   const { specialization, maintenanceEnabled, offers } = shop;
 
   if (specialization) {
-    reply.push(specializationInfo(specialization).join(' '));
+    const info = specializationInfo(specialization).join('\n');
+    reply.push(filter([info, /guru/.test(info) && qc]).join(' '));
   }
 
   if (maintenanceEnabled) {

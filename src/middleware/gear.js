@@ -168,12 +168,23 @@ const qualityLetter = {
   Masterpiece: 'A',
 };
 
+function conditionIcon({ condition }) {
+  switch (condition) {
+    case 'broken':
+      return '🛠';
+    case 'reinforced':
+      return '✨';
+    default:
+      return '';
+  }
+}
+
 function gearItemHtml(gear) {
 
   const { name, icon, stam } = gear;
   const { atk, def, quality } = gear;
 
-  const broken = gear.condition === 'broken' ? '🛠' : '';
+  const condition = conditionIcon(gear);
 
   const stats = [
     quality && `(${qualityLetter[quality]})`,
@@ -185,7 +196,7 @@ function gearItemHtml(gear) {
 
   return filter([
     icon,
-    broken ? `${broken}${/\+/.test(name) ? '' : ' '}${name.replace('⚡', '')}` : name,
+    condition ? `${condition}${/\+/.test(name) ? '' : ' '}${name.replace('⚡', '')}` : name,
     ...stats,
   ]).join(' ');
 

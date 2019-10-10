@@ -16,7 +16,7 @@ export default async function (msg, ack) {
 
   duel.ts = ts.toISOString();
 
-  const duelText = `[${winner.tag || '-'}]"${winner.name}" won [${winner.tag || '-'}]"${loser.name}"`;
+  const duelText = `[${winner.tag || '-'}]"${winner.name}" won [${loser.tag || '-'}]"${loser.name}"`;
 
   debug('Consumed', `#${deliveryTag}`, ts, duelText);
 

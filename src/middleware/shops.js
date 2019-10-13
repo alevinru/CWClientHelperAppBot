@@ -10,11 +10,13 @@ import flatten from 'lodash/flatten';
 
 import { distanceInWordsToNow, addMinutes } from 'date-fns';
 
+import lo from 'lodash';
 import { searchRe } from '../services/util';
 import log from '../services/log';
 import { itemNameByCode, itemCodeByName } from '../services/cw';
 
 import Shop from '../models/Shop';
+import * as shopping from '../services/shopping';
 
 const { debug, error } = log('mw:shops');
 
@@ -35,13 +37,28 @@ export async function shopInfo(ctx) {
       return;
     }
 
-    const lastDigest = await lastDigestOpened();
+    const lastDigest = await shopping.lastDigestOpened();
 
     await ctx.replyWithHTML(shopInfoText(shop, lastDigest));
 
   } catch (e) {
     ctx.replyError(command, e);
   }
+
+}
+
+
+export async function guruShops(ctx) {
+
+  const gurus = await shopping.gurus();
+
+  const reply = [
+    '<b>Top quality</b> /guru',
+    '',
+    map(orderBy(gurus, 'specialization'), specializationGuruList).join('\n\n'),
+  ];
+
+  await ctx.replyWithHTML(reply.join('\n'));
 
 }
 
@@ -56,7 +73,7 @@ export async function maintenanceShops(ctx) {
 
   try {
 
-    const lastOpened = await lastDigestOpened();
+    const lastOpened = await shopping.lastDigestOpened();
 
     const ownerCastle = castleByLetter(castle);
 
@@ -101,12 +118,35 @@ export async function maintenanceShops(ctx) {
 }
 
 
+function specializationGuruList({ specialization, level, shops }) {
+
+  return [
+    `<b>${lo.upperFirst(specialization)}</b> level ${level}⃣`,
+    '',
+    ...shops.map(guruAsListItem),
+  ].join('\n');
+
+}
+
+function guruAsListItem(shop) {
+
+  const { ownerCastle, isOpen } = shop;
+
+  return [
+    isOpen ? '✅' : '⏸',
+    `/ws_${shop.link}`,
+    ownerCastle,
+    shopOwnerAsLink(shop),
+  ].join(' ');
+
+}
+
 export async function shopsByItem(ctx) {
 
   const { match } = ctx;
   const [, search] = match || [];
 
-  const lastOpened = await lastDigestOpened();
+  const lastOpened = await shopping.lastDigestOpened();
 
   const itemName = itemNameByCode(search);
 
@@ -327,9 +367,4 @@ function offersInfo(offers) {
 
   });
 
-}
-
-async function lastDigestOpened() {
-  const last = await Shop.findOne().sort({ lastOpened: -1 });
-  return last ? last.lastOpened : null;
 }

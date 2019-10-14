@@ -64,17 +64,11 @@ export function mobsFromText(text) {
 
 }
 
-const NUMBERS_EMO = new Map([
-  [2, '2️⃣'],
-  [3, '3️⃣'],
-]);
-
 function numberView(num) {
   if (num <= 1) {
     return '';
   }
-  const emoji = NUMBERS_EMO.get(num);
-  return `x ${emoji || num}`;
+  return `x ${num}⃣`;
 }
 
 function mobView(mob) {

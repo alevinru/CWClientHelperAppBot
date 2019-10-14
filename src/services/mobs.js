@@ -11,6 +11,8 @@ const MOBS_HEADERS = [
   'Ты заметил враждебных существ. Будь осторожен:',
 ];
 
+const MAX_HELPERS = 5;
+
 const MOBS_RE = RegExp(`(${MOBS_HEADERS.join('|')})\\n`);
 const MOBS_MODIFIERS = /[ ][ ]╰ (.+)/;
 
@@ -96,19 +98,21 @@ function mobsIcons(mobs) {
   return lo.filter(Object.keys(types).map(type => MOB_TYPE_ICONS.get(type)));
 }
 
-export function mobOfferView({
-  mobs, command, date, helper,
-}) {
+export function mobOfferView(mobHunt) {
+
+  const { mobs, command, date } = mobHunt;
+  const { helper, isAmbush, helpers = [] } = mobHunt;
 
   const secondsLeft = secondsToFight(date);
   const notExpired = secondsLeft > 0;
 
   const reply = [
-    [
+    lo.filter([
+      isAmbush && 'Ambush',
       mobsIcons(mobs).join(' ') || '👾',
       notExpired ? 'fight in' : 'fight is',
       `<b>${timeLeftView(secondsLeft)}</b>`,
-    ].join(' '),
+    ]).join(' '),
     '',
     ...lo.map(mobs, mobView),
   ];
@@ -117,6 +121,10 @@ export function mobOfferView({
 
   if (hasHelper) {
     reply.push('', helperView(helper));
+  }
+
+  if (helpers && helpers.length) {
+    reply.push('', ...lo.map(helpers, helperView));
   }
 
   const level = mobs.length && Math.floor(lo.sumBy(mobs, 'level') / mobs.length);
@@ -130,7 +138,7 @@ export function mobOfferView({
     buttons.push(Markup.urlButton(go, `http://t.me/share/url?url=${command}`));
   }
 
-  if (!hasHelper) {
+  if (!hasHelper && helpers.length < MAX_HELPERS) {
     buttons.push(Markup.callbackButton(`I ${notExpired ? 'am' : 'was'} helping!`, 'mob_helping'));
   }
 

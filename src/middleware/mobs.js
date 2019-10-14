@@ -1,4 +1,4 @@
-// import lo from 'lodash';
+import lo from 'lodash';
 import { fromCWFilter } from '../config/filters';
 import * as m from '../services/mobs';
 import MobHunt, { secondsToFight } from '../models/MobHunt';
@@ -35,7 +35,7 @@ export function metMobFilter(ctx) {
 export async function onMobForward(ctx) {
 
   const { id: chatId } = ctx.chat;
-  const { mobs: { mobs, command } } = ctx.state;
+  const { mobs: { mobs, command, isAmbush } } = ctx.state;
   const { forward_date: forwardDate, message_id: messageId } = ctx.message;
 
   if (!await m.chatMobHunting(chatId)) {
@@ -53,6 +53,7 @@ export async function onMobForward(ctx) {
         date,
         messageId,
         mobs,
+        isAmbush,
       },
       $setOnInsert: {
         reporter: userData(ctx.from),
@@ -66,7 +67,9 @@ export async function onMobForward(ctx) {
     return;
   }
 
-  const reply = m.mobOfferView({ mobs, command, date });
+  const reply = m.mobOfferView({
+    mobs, command, date, isAmbush,
+  });
 
   const replyMsg = await ctx.reply(reply.text, { ...SILENT, ...reply.keyboard });
 
@@ -87,7 +90,9 @@ export async function onHelpingClick(ctx) {
 
   debug('onHelpingClick', update);
 
-  if (message.text.match('is helping')) {
+  const isAmbush = message.text.match('Ambush');
+
+  if (!isAmbush && message.text.match('is helping')) {
     ctx.answerCbQuery('Already got help')
       .catch(error);
     return;
@@ -106,9 +111,22 @@ export async function onHelpingClick(ctx) {
     return;
   }
 
-  hunt.helper = userData(from);
+  const { helpers, command } = hunt;
 
-  await hunt.save();
+  if (isAmbush) {
+
+    if (lo.find(helpers, { userId: from.id })) {
+      return;
+    }
+
+    await MobHunt.updateOne({ command }, {
+      $push: { helpers: userData(from) },
+    });
+
+  } else {
+    hunt.helper = userData(from);
+    await hunt.save();
+  }
 
   await updateHuntMessage(chat.id, messageId, hunt._id, ctx.telegram);
 

@@ -39,6 +39,14 @@ const schema = new Schema({
     lastName: String,
   },
 
+  helpers: [{
+    _id: false,
+    userName: String,
+    userId: Number,
+    firstName: String,
+    lastName: String,
+  }],
+
 }, {
   collection: 'MobHunt',
 });

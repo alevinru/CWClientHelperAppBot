@@ -17,7 +17,7 @@ describe('Met some mob parser', function () {
 
     expect(lines[0]).to.equal('🐗 fight in <b>03:00</b>');
     expect(lines[1]).to.equal('');
-    expect(lines[2]).to.equal('<code>63</code> Forest Boar x 2️⃣');
+    expect(lines[2]).to.equal('<code>63</code> Forest Boar x 2⃣');
 
   });
 
@@ -35,6 +35,23 @@ describe('Met some mob parser', function () {
     expect(lines[0]).to.equal('👾 fight in <b>03:00</b>');
     expect(lines[1]).to.equal('');
     expect(lines[2]).to.equal('<code>68</code> Forbidden Knight 🛡');
+
+  });
+
+  it('should parse RU ambush text', async function () {
+
+    const text = await readFile('static/ambush_ru.txt');
+    assert(text, 'No sample text found');
+
+    const mobs = mobsFromText(text.toString());
+
+    const view = mobOfferView({ ...mobs, date: new Date() });
+
+    const lines = view.text.split('\n');
+
+    expect(lines[0]).to.equal('Ambush 👾 fight in <b>03:00</b>');
+    expect(lines[1]).to.equal('');
+    expect(lines[2]).to.equal('<code>70</code> Forbidden Collector 💰');
 
   });
 

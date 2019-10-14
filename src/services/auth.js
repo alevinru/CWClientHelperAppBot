@@ -131,6 +131,6 @@ export async function refreshProfile(userId, session) {
 
 }
 
-function safeUserId(userId) {
+export function safeUserId(userId) {
   return parseInt(userId, 0);
 }

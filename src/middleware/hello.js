@@ -2,7 +2,9 @@ import get from 'lodash/get';
 import orderBy from 'lodash/orderBy';
 
 import { refreshProfile } from '../services/auth';
-import { saveUser, getAuthorizedUsers, saveTrust } from '../services/users';
+import {
+  saveUser, getAuthorizedUsers, saveTrust, freshProfiles,
+} from '../services/users';
 import { BOT_ID } from '../services/bot';
 import { getSession } from '../services/session';
 
@@ -62,6 +64,37 @@ export async function hello(ctx) {
       `Your user id is *${userId}* and ChatWars name *${profile.userName}*`,
     ]);
 
+  }
+
+}
+
+export async function guildHp(ctx) {
+
+  const users = await getAuthorizedUsers(ctx.session);
+
+  debug('guildHp:users', users.length);
+
+  const profiles = await freshProfiles(users);
+
+  debug('guildHp:profiles', profiles.length);
+
+  const reply = orderBy(profiles, ['exp', 'userName'], ['desc', 'asc'])
+    .map(formatUserHp);
+
+  if (!reply.length) {
+    return;
+  }
+
+  await ctx.replyWithHTML(reply.join('\n'));
+
+  function formatUserHp(profile) {
+    const {
+      userName,
+      class: cls,
+      lvl,
+      hp,
+    } = profile;
+    return `${cls} <code>${lvl}</code> ${userName} ❤<b>${hp}</b>`;
   }
 
 }

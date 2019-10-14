@@ -1,11 +1,12 @@
 import filter from 'lodash/filter';
 import mapValues from 'lodash/mapValues';
 import diffMinutes from 'date-fns/difference_in_minutes';
-import { eachSeriesAsync } from 'sistemium-telegram/services/async';
+import { eachSeriesAsync, mapSeriesAsync } from 'sistemium-telegram/services/async';
 import User from '../models/User';
-import { refreshProfile } from './auth';
+import { getToken, refreshProfile, safeUserId } from './auth';
 
 import log from './log';
+import { cw } from './cw';
 
 const { debug, error } = log('users');
 
@@ -48,6 +49,19 @@ export async function getAuthorizedUsers({ profile }) {
 
 }
 
+
+export async function freshProfiles(users) {
+  const res = await mapSeriesAsync(users, async user => {
+    const userId = user.id;
+    const token = await getToken(user.id);
+    if (!token) {
+      return null;
+    }
+    const { profile } = await cw.requestProfile(safeUserId(userId), token);
+    return profile;
+  });
+  return filter(res);
+}
 
 export async function saveUser(from, profile) {
 

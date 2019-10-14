@@ -19,6 +19,10 @@ export async function getAuthorizedUsers({ profile }) {
 
   const { guild_tag: tag } = profile;
 
+  if (!tag) {
+    return [];
+  }
+
   const users = await User.find({ 'profile.guild_tag': tag })
     .sort({ 'profile.userName': 1, id: 1 });
 

@@ -10,6 +10,8 @@ const schema = new Schema({
   messageId: Number,
   command: String,
 
+  isAmbush: Boolean,
+
   mobs: [{
     _id: false,
     name: String,

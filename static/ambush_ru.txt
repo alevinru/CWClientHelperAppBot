@@ -1,0 +1,14 @@
+Ты заметил враждебных существ. Будь осторожен:
+Forbidden Collector lvl.70
+  ╰ wealthy
+Forbidden Collector lvl.70
+Forbidden Alchemist lvl.70
+Forbidden Knight lvl.70
+2 x Forbidden Knight lvl.73
+It's an ambush! Loot is locked till the end of the fight:
+Bauxite (1)
+Pelt (1)
+Powder (1)
+Bone (1)
+
+/fight_Am1nOrZna2AM4QS0m98W

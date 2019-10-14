@@ -58,9 +58,11 @@ export function mobsFromText(text) {
 
   });
 
+  const isAmbush = /ambush/.test(text);
+
   const [command] = text.match(/\/fight_[a-z0-9]+/i);
 
-  return { mobs: lo.filter(mobs), command };
+  return { mobs: lo.filter(mobs), command, isAmbush };
 
 }
 

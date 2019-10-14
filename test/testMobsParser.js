@@ -1,6 +1,7 @@
 import { expect, assert } from 'chai';
 import { mobsFromText } from '../src/services/mobs';
 import { readFile } from '../src/services/fs';
+import lo from 'lodash';
 
 describe('Met some mob parser', function () {
 
@@ -20,6 +21,24 @@ describe('Met some mob parser', function () {
     ]);
 
   });
+
+  it('should parse RU ambush text', async function () {
+
+    const text = await readFile('static/ambush_ru.txt');
+    assert(text, 'No sample text found');
+
+    const mobs = mobsFromText(text.toString());
+
+    assert(mobs.isAmbush, 'ambush expected');
+
+    expect(lo.last(mobs.mobs)).to.eql({
+      level: 73,
+      cnt: 2,
+      name: 'Forbidden Knight',
+    });
+
+  });
+
 
   it('should parse EN text', async function () {
 

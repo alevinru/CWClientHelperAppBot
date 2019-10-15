@@ -1,7 +1,7 @@
 import { Schema, model } from 'mongoose';
 import secondsDiff from 'date-fns/difference_in_seconds';
 
-const MOB_HUNT_LIFETIME = 180;
+const MOB_HUNT_LIFETIME = parseInt(process.env.MOB_HUNT_LIFETIME, 0) || 180;
 
 const schema = new Schema({
 

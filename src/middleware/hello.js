@@ -1,5 +1,6 @@
 import get from 'lodash/get';
 import orderBy from 'lodash/orderBy';
+import filter from 'lodash/filter';
 
 import { refreshProfile } from '../services/auth';
 import {
@@ -9,6 +10,7 @@ import { BOT_ID } from '../services/bot';
 import { getSession } from '../services/session';
 
 import log from '../services/log';
+import { propIcon } from '../services/profile';
 import User from '../models/User';
 
 const { debug } = log('mw:hello');
@@ -70,15 +72,27 @@ export async function hello(ctx) {
 
 export async function guildHp(ctx) {
 
+  const [, prop] = ctx.match || [];
+
+  if (!prop) {
+    return;
+  }
+
+  const icon = propIcon(prop);
+
+  if (!icon) {
+    return;
+  }
+
   const users = await getAuthorizedUsers(ctx.session);
 
   debug('guildHp:users', users.length);
 
-  const profiles = await freshProfiles(users);
+  const profiles = filter(await freshProfiles(users), prop);
 
   debug('guildHp:profiles', profiles.length);
 
-  const reply = orderBy(profiles, ['exp', 'userName'], ['desc', 'asc'])
+  const reply = orderBy(profiles, [prop, 'userName'], ['desc', 'asc'])
     .map(formatUserHp);
 
   if (!reply.length) {
@@ -92,9 +106,9 @@ export async function guildHp(ctx) {
       userName,
       class: cls,
       lvl,
-      hp,
+      [prop]: value,
     } = profile;
-    return `${cls} <code>${lvl}</code> ${userName} ❤<b>${hp}</b>`;
+    return `${cls} <code>${lvl}</code> ${userName} ${icon}<b>${value || 0}</b>`;
   }
 
 }

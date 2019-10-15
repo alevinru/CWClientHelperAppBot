@@ -1,6 +1,6 @@
 import { cw } from './cw';
 import { hsetAsync, hgetAsync } from './redis';
-import { getSession } from './session';
+import { getSession, saveSession } from './session';
 import { BOT_ID } from './bot';
 // import { USERS_HASH } from './users';
 import log from './log';
@@ -12,6 +12,15 @@ export const USERS_HASH = 'users';
 export async function getToken(userId) {
   return getSession(BOT_ID, userId)
     .then(getAuthToken);
+}
+
+export async function rmAuth(userId) {
+  const session = await getSession(BOT_ID, userId);
+  if (!session || !session.auth) {
+    return;
+  }
+  delete session.auth;
+  saveSession(BOT_ID, userId, session);
 }
 
 export function getAuthToken(session) {

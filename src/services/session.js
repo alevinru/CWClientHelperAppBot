@@ -1,5 +1,5 @@
 import RedisSession from 'telegraf-session-redis';
-import { getAsync, clientConfig } from './redis';
+import { getAsync, clientConfig, setAsync } from './redis';
 import log from './log';
 
 const { debug, error } = log('session');
@@ -33,4 +33,8 @@ export function sessionKey(botId, userId) {
 export function getSession(botId, userId) {
   return getAsync(sessionKey(botId, userId))
     .then(json => JSON.parse(json));
+}
+
+export function saveSession(botId, userId, session) {
+  return setAsync(sessionKey(botId, userId), JSON.stringify(session));
 }

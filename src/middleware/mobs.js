@@ -4,6 +4,7 @@ import * as m from '../services/mobs';
 import MobHunt, { secondsToFight } from '../models/MobHunt';
 
 import log from '../services/log';
+import Chat, * as c from '../models/Chat';
 
 const { debug, error } = log('mobs');
 
@@ -46,6 +47,10 @@ export async function onMobForward(ctx) {
 
   debug('onMobForward:', forwardDate, messageId);
 
+  const reporter = userData(ctx.from);
+  const helpers = isAmbush ? [{ ...reporter }] : [];
+  const $setOnInsert = { reporter, helpers };
+
   await MobHunt.updateOne(
     { command },
     {
@@ -55,9 +60,7 @@ export async function onMobForward(ctx) {
         mobs,
         isAmbush,
       },
-      $setOnInsert: {
-        reporter: userData(ctx.from),
-      },
+      $setOnInsert,
     },
     { upsert: true },
   );
@@ -68,10 +71,12 @@ export async function onMobForward(ctx) {
   }
 
   const reply = m.mobOfferView({
-    mobs, command, date, isAmbush,
+    mobs, command, date, isAmbush, helpers,
   });
 
   const replyMsg = await ctx.reply(reply.text, { ...SILENT, ...reply.keyboard });
+
+  const { message_id: replyMessageId } = replyMsg;
 
   await MobHunt.updateOne({ command }, {
     $push: { replies: { messageId: replyMsg.message_id, chatId } },
@@ -79,7 +84,29 @@ export async function onMobForward(ctx) {
 
   const hunt = await MobHunt.findOne({ command });
 
-  scheduleUpdate(chatId, replyMsg.message_id, hunt, ctx.telegram);
+  if (ctx.from.id !== chatId && await Chat.findValue(chatId, c.CHAT_SETTING_PIN_MOBS)) {
+    await ctx.pinChatMessage(replyMessageId, { disable_notification: false })
+      .catch(() => onPinError.catch(error));
+  }
+
+  scheduleUpdate(chatId, replyMessageId, hunt, ctx.telegram);
+
+  async function onPinError(e) {
+
+    error('onPinError', e);
+
+    await Chat.saveValue(chatId, c.CHAT_SETTING_PIN_MOBS, false);
+    debug('pinChatMessage', 'pinChatMessage off for chatId:', chatId);
+
+    const noRights = [
+      '🤷‍ ️I have no permission to pin in ths chat,',
+      `so i turned off the <b>${c.CHAT_SETTING_PIN_MOBS}</b> setting.`,
+      `If you give me the permission issue /chat_set_${c.CHAT_SETTING_PIN_MOBS}_on`,
+    ].join(' ');
+
+    return ctx.replyWithHTML(noRights);
+
+  }
 
 }
 
@@ -88,7 +115,7 @@ export async function onHelpingClick(ctx) {
   const { update, chat } = ctx;
   const { message, from } = update.callback_query;
 
-  debug('onHelpingClick', update);
+  // debug('onHelpingClick', update);
 
   const isAmbush = message.text.match('Ambush');
 

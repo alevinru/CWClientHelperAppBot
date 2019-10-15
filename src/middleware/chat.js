@@ -1,10 +1,14 @@
 import lo from 'lodash';
 import log from '../services/log';
-import Chat from '../models/Chat';
+import Chat, * as c from '../models/Chat';
 
 const { debug } = log('chat');
 
-const SETTING_NAMES = ['notifyBattle', 'mobHunting'];
+const SETTING_NAMES = [
+  c.CHAT_SETTING_NOTIFY_BATTLE,
+  c.CHAT_SETTING_MOB_HUNTING,
+  c.CHAT_SETTING_PIN_MOBS,
+];
 
 export async function setting(ctx) {
 

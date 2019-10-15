@@ -22,6 +22,7 @@ const MOB_TYPE_ICONS = new Map([
   ['bear', '🐻'],
   ['wolf', '🐺'],
   ['boar', '🐗'],
+  ['champion', '⚜'],
 ]);
 
 export function mobsFromText(text) {
@@ -82,6 +83,7 @@ function mobView(mob) {
   const icons = lo.filter(lo.map(modifiers, modifier => modifiersMap.get(modifier)));
   return lo.filter([
     `<code>${level}</code>`,
+    MOB_TYPE_ICONS.get(mobType(mob)),
     name,
     numberView(cnt),
     icons.length && icons.join(''),
@@ -89,7 +91,7 @@ function mobView(mob) {
 }
 
 function mobType({ name }) {
-  const [, type] = name.match(/.* (bear|wolf|boar)/i) || [];
+  const [, type] = name.match(/.* (bear|wolf|boar|champion)/i) || [];
   return lo.lowerCase(type);
 }
 

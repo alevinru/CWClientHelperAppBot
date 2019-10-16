@@ -29,6 +29,39 @@ export async function setting(ctx) {
 }
 
 
+export async function viewSettings(ctx) {
+
+  const { chat } = ctx;
+
+  if (await ifNotPermitted(ctx)) {
+    return;
+  }
+
+  debug('viewSettings', chat);
+
+  const settings = await Chat.findSettings(chat.id);
+
+  const title = `for the <b>${chat.title}</b> chat`;
+
+  if (!settings.length) {
+    await ctx.replyWithHTML(`I have no settings ${title}`);
+    return;
+  }
+
+  const values = lo.map(settings, ({ name, value }) => {
+    return `<code>${name}</code>: <b>${value ? 'on' : 'off'}</b>`;
+  });
+
+  const reply = [
+    `My settings ${title}`,
+    '',
+    ...values,
+  ];
+
+  await ctx.replyWithHTML(reply.join('\n'));
+
+}
+
 export async function viewSetting(ctx) {
 
   const { chat, match: [, name] } = ctx;

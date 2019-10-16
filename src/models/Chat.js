@@ -1,4 +1,5 @@
 import { Schema, model } from 'mongoose';
+import lo from 'lodash';
 
 const { BOT_TOKEN = '' } = process.env;
 export const BOT_ID = parseInt(BOT_TOKEN.match(/^[^:]*/)[0], 0);
@@ -16,6 +17,7 @@ schema.index({ id: 1 });
 
 schema.statics.saveValue = saveValue;
 schema.statics.findValue = findValue;
+schema.statics.findSettings = findSettings;
 
 export default model('Chat', schema);
 
@@ -34,4 +36,15 @@ async function findValue(chatId, name) {
     return undefined;
   }
   return chat.setting[name];
+}
+
+async function findSettings(chatId) {
+  const chat = await this.findOne({ id: chatId, botId: BOT_ID });
+  if (!chat) {
+    return [];
+  }
+  return lo.map(chat.setting, (value, name) => {
+    // should check
+    return { name, value };
+  });
 }

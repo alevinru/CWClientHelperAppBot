@@ -14,6 +14,7 @@ const { debug, error } = log('digests');
 
 botHears('chat[ _]set[ _]([a-z]+)[ _](on|off)', chat.setting);
 botHears('chat[ _]get[ _]([a-z]+)', chat.viewSetting);
+botHears('chat[ _]settings', chat.viewSettings);
 
 bot.on('new_chat_members', mw.onNewMember);
 bot.on('left_chat_member', mw.onLeftMember);

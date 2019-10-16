@@ -89,6 +89,7 @@ Chats
 
 botHears('chat[ _]set[ _]([a-z]+)[ _](on|off)', chat.setting);
 botHears('chat[ _]get[ _]([a-z]+)', chat.viewSetting);
+botHears('chat[ _]settings', chat.viewSettings);
 
 /*
 ChatWars
@@ -133,6 +134,7 @@ botHears('du[ ](.+)', arena);
 
 bot.command('dug', ownArena);
 bot.command('du', ownArena);
+// botHears('du[ _](\\d{6,6})', ownArena);
 
 /*
 Battles

@@ -85,8 +85,9 @@ export async function onMobForward(ctx) {
   const hunt = await MobHunt.findOne({ command });
 
   if (ctx.from.id !== chatId && await Chat.findValue(chatId, c.CHAT_SETTING_PIN_MOBS)) {
-    await ctx.pinChatMessage(replyMessageId, { disable_notification: false })
-      .catch(() => onPinError.catch(error));
+    await ctx.pinChatMessage(replyMessageId)
+      .catch(onPinError)
+      .catch(error);
   }
 
   scheduleUpdate(chatId, replyMessageId, hunt, ctx.telegram);

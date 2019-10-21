@@ -152,7 +152,7 @@ export async function shopsByItem(ctx) {
 
   debug('shopsByItem', `"${search}"`, itemName);
 
-  const $regex = itemName ? new RegExp(itemName) : searchRe(search);
+  const $regex = itemName ? new RegExp(`^${itemName}$`) : searchRe(search);
 
   const shops = await Shop.find({
     lastOpened,

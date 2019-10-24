@@ -74,6 +74,8 @@ bot.command('authGuild', auth.authGuildInfo);
 bot.command('authCraftBook', auth.authCraftBook);
 bot.command('authGear', auth.authGearInfo);
 bot.command('authStock', auth.authStock);
+bot.command('authBuy', auth.authBuy);
+
 bot.hears(/^\/hello[ _](\d+)$/, users.hello);
 bot.command('hello', users.hello);
 botHears('users', users.listUsers);
@@ -154,8 +156,8 @@ botHears('rb[ _](\\d{1,4})', battleReports.userReportForPeriod);
 botHears('rb[ _]([\\da-h]{24})', battleReports.userReport);
 botHears('bm[ _]([\\da-h]{24})[ _](.+)', battles.setMaster);
 
-botHears('rbg', battleReports.guildReport);
 botHears('rbg[ _]([^ ]+)', battleReports.guildReport);
+botHears('rbg', battleReports.guildReport);
 botHears('rbgw[ _](\\d+)', battleReports.guildReport);
 
 /*

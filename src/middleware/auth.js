@@ -132,6 +132,33 @@ export async function authStock(ctx) {
 
 }
 
+export async function authBuy(ctx) {
+
+  const { from: { id: userId }, session } = ctx;
+
+  debug('authBuy:', userId);
+
+  try {
+
+    const token = a.getAuthToken(session);
+
+    const { uuid } = await a.requestTradeTerminal(userId, token);
+
+    const msg = [
+      `Auth code has been sent to your telegram account number ${userId}.`,
+      'Please forward that message here to complete <b>Trade Terminal</b> authorization',
+    ];
+
+    session.authBuyId = uuid;
+
+    await ctx.replyHTML(msg.join(' '));
+
+  } catch (e) {
+    await ctx.replyError('to send auth code', e);
+  }
+
+}
+
 
 const { CW_APP_NAME } = process.env;
 
@@ -165,9 +192,21 @@ export async function authCode(ctx, next) {
     const { authGuildInfoId } = session;
     const { authGearInfoId } = session;
     const { authCraftBookId } = session;
-    const { authStockAccessId } = session;
+    const { authStockAccessId, authBuyId } = session;
 
-    if (authStockAccessId && text.match(/read your stock/)) {
+    if (authBuyId && text.match(/issue a wtb\/wts\/rm/)) {
+      const token = a.getAuthToken(session);
+
+      debug('authBuy code:', code, token, authBuyId);
+      await a.grantAuth(userId, authBuyId, code, token);
+      delete session.authBuyId;
+      session.isBuyAuthorized = true;
+      await ctx.replyHTML([
+        '✅ Congratulations, wtb authorization complete!\n',
+        'Try /wtb_01_1_1 command.',
+      ]);
+
+    } else if (authStockAccessId && text.match(/read your stock/)) {
       const token = a.getAuthToken(session);
 
       debug('stockAccess code:', code, token, authStockAccessId);

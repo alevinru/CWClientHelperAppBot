@@ -60,6 +60,10 @@ export function requestStockAccess(userId, token) {
   return cw.authAdditionalOperation(safeUserId(userId), 'GetStock', token);
 }
 
+export function requestTradeTerminal(userId, token) {
+  return cw.authAdditionalOperation(safeUserId(userId), 'TradeTerminal', token);
+}
+
 export function grantGuildInfoAuth(userId, requestId, code, token) {
   return cw.grantAdditionalOperation(safeUserId(userId), requestId, code, token);
 }

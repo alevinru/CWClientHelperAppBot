@@ -51,6 +51,12 @@ export default async function (ctx) {
     await ctx.replyHTML(`${tried} and got ${got}`);
 
   } catch (e) {
+    const who = matchUserId ? 'The user' : 'You';
+    if (e === 'Forbidden') {
+      await ctx.replyWithHTML(`<b>${who}</b> have to do /authBuy first`);
+      return;
+    }
+    debug(e);
     ctx.replyError(wtb, e);
   }
 

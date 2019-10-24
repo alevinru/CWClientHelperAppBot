@@ -1,7 +1,7 @@
 import lo from 'lodash';
 import { fromCWFilter } from '../config/filters';
 import * as m from '../services/mobs';
-import MobHunt, { secondsToFight } from '../models/MobHunt';
+import MobHunt, { secondsToFight, hasChampion } from '../models/MobHunt';
 
 import log from '../services/log';
 import Chat, * as c from '../models/Chat';
@@ -65,7 +65,7 @@ export async function onMobForward(ctx) {
     { upsert: true },
   );
 
-  if (secondsToFight(date) < 1) {
+  if (secondsToFight(date, hasChampion(mobs)) < 1) {
     await ctx.reply('🤷 ‍Mobs are expired', { ...SILENT, reply_to_message_id: messageId });
     return;
   }

@@ -2,7 +2,7 @@ import lo from 'lodash';
 import Markup from 'telegraf/markup';
 import Chat from '../models/Chat';
 // import log from './log';
-import { modifiersMap, secondsToFight } from '../models/MobHunt';
+import { modifiersMap, secondsToFight, hasChampion } from '../models/MobHunt';
 
 // const { debug } = log('mobs');
 
@@ -105,7 +105,7 @@ export function mobOfferView(mobHunt) {
   const { mobs, command, date } = mobHunt;
   const { helper, isAmbush, helpers = [] } = mobHunt;
 
-  const secondsLeft = secondsToFight(date);
+  const secondsLeft = secondsToFight(date, hasChampion(mobs));
   const notExpired = secondsLeft > 0;
 
   const reply = [

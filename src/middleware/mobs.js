@@ -1,7 +1,7 @@
 import lo from 'lodash';
 import { fromCWFilter } from '../config/filters';
 import * as m from '../services/mobs';
-import MobHunt, { secondsToFight, hasChampion } from '../models/MobHunt';
+import MobHunt, { secondsToFight } from '../models/MobHunt';
 
 import log from '../services/log';
 import Chat, * as c from '../models/Chat';
@@ -36,7 +36,11 @@ export function metMobFilter(ctx) {
 export async function onMobForward(ctx) {
 
   const { id: chatId } = ctx.chat;
-  const { mobs: { mobs, command, isAmbush } } = ctx.state;
+  const {
+    mobs: {
+      mobs, command, isAmbush, isCheaters,
+    },
+  } = ctx.state;
   const { forward_date: forwardDate, message_id: messageId } = ctx.message;
 
   if (!await m.chatMobHunting(chatId)) {
@@ -59,13 +63,14 @@ export async function onMobForward(ctx) {
         messageId,
         mobs,
         isAmbush,
+        isCheaters,
       },
       $setOnInsert,
     },
     { upsert: true },
   );
 
-  if (secondsToFight(date, hasChampion(mobs)) < 1) {
+  if (secondsToFight(date, isAmbush) < 1) {
     await ctx.reply('🤷 ‍Mobs are expired', { ...SILENT, reply_to_message_id: messageId });
     return;
   }
@@ -118,9 +123,9 @@ export async function onHelpingClick(ctx) {
 
   // debug('onHelpingClick', update);
 
-  const isAmbush = message.text.match('Ambush');
+  const isMultiHelping = message.text.match(/Ambush|Cheaters/);
 
-  if (!isAmbush && message.text.match('is helping')) {
+  if (!isMultiHelping && message.text.match('is helping')) {
     ctx.answerCbQuery('Already got help')
       .catch(error);
     return;
@@ -141,7 +146,7 @@ export async function onHelpingClick(ctx) {
 
   const { helpers, command } = hunt;
 
-  if (isAmbush) {
+  if (isMultiHelping) {
 
     if (lo.find(helpers, { userId: from.id })) {
       return;

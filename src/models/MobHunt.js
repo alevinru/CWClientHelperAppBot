@@ -1,6 +1,5 @@
 import { Schema, model } from 'mongoose';
 import secondsDiff from 'date-fns/difference_in_seconds';
-import find from 'lodash/find';
 
 const MOB_HUNT_LIFETIME = parseInt(process.env.MOB_HUNT_LIFETIME, 0) || 180;
 const MOB_HUNT_CHAMPION_LIFETIME = MOB_HUNT_LIFETIME + 120;
@@ -13,6 +12,7 @@ const schema = new Schema({
   command: String,
 
   isAmbush: Boolean,
+  isCheaters: Boolean,
 
   mobs: [{
     _id: false,
@@ -74,15 +74,10 @@ export const modifiersMap = new Map([
 ]);
 
 function isExpired() {
-  const isChampion = hasChampion(this.mobs);
-  return secondsToFight(this.date, isChampion) < 1;
+  return secondsToFight(this.date, this.isAmbush) < 1;
 }
 
 export function secondsToFight(date, isChampion = false) {
   const lifetime = isChampion ? MOB_HUNT_CHAMPION_LIFETIME : MOB_HUNT_LIFETIME;
   return lifetime - secondsDiff(new Date(), date);
-}
-
-export function hasChampion(mobs) {
-  return !!find(mobs, { name: 'Forbidden Champion' });
 }

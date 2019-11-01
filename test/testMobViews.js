@@ -55,4 +55,18 @@ describe('Met some mob parser', function () {
 
   });
 
+  it('should parse RU cheaters text', async function () {
+    const text = await readFile('static/cheatersClub_ru.txt');
+    assert(text, 'No sample text found');
+
+    const mobs = mobsFromText(text.toString());
+
+    const view = mobOfferView({ ...mobs, date: new Date() });
+
+    const lines = view.text.split('\n');
+
+    expect(lines[0]).to.equal('🎃 Cheaters fight in <b>03:00</b>');
+
+  });
+
 });

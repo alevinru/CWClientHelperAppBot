@@ -2,7 +2,7 @@ import lo from 'lodash';
 import Markup from 'telegraf/markup';
 import Chat from '../models/Chat';
 // import log from './log';
-import { modifiersMap, secondsToFight, hasChampion } from '../models/MobHunt';
+import { modifiersMap, secondsToFight } from '../models/MobHunt';
 
 // const { debug } = log('mobs');
 
@@ -11,9 +11,15 @@ const MOBS_HEADERS = [
   'Ты заметил враждебных существ. Будь осторожен:',
 ];
 
+const CHEATERS_CLUB_HEADER = [
+  'Ты нашел место проведения подпольных боёв без правил',
+];
+
 const MAX_HELPERS = 5;
 
 const MOBS_RE = RegExp(`(${MOBS_HEADERS.join('|')})\\n`);
+const CHEATERS_RE = RegExp(`(${CHEATERS_CLUB_HEADER.join('|')})`);
+
 const MOBS_MODIFIERS = /[ ][ ]╰ (.+)/;
 
 const HELPER_LEVEL_RANGE = 10;
@@ -27,7 +33,9 @@ const MOB_TYPE_ICONS = new Map([
 
 export function mobsFromText(text) {
 
-  const [, mobHeader] = text.match(MOBS_RE) || [];
+  const isCheaters = text.match(CHEATERS_RE);
+
+  const [, mobHeader] = text.match(MOBS_RE) || isCheaters || [];
 
   if (!mobHeader) {
     // debug('mobsFromText: no mobs');
@@ -65,7 +73,12 @@ export function mobsFromText(text) {
 
   const [command] = text.match(/\/fight_[a-z0-9]+/i);
 
-  return { mobs: lo.filter(mobs), command, isAmbush };
+  return {
+    mobs: lo.filter(mobs),
+    command,
+    isAmbush,
+    isCheaters: !!isCheaters,
+  };
 
 }
 
@@ -104,14 +117,18 @@ export function mobOfferView(mobHunt) {
 
   const { mobs, command, date } = mobHunt;
   const { helper, isAmbush, helpers = [] } = mobHunt;
+  const { isCheaters } = mobHunt;
 
-  const secondsLeft = secondsToFight(date, hasChampion(mobs));
+  const secondsLeft = secondsToFight(date, isAmbush);
   const notExpired = secondsLeft > 0;
+
+  const headIcons = mobsIcons(mobs).join(' ') || (isCheaters ? '🎃' : '👾');
 
   const reply = [
     lo.filter([
       isAmbush && 'Ambush',
-      mobsIcons(mobs).join(' ') || '👾',
+      headIcons,
+      isCheaters && 'Cheaters',
       notExpired ? 'fight in' : 'fight is',
       `<b>${timeLeftView(secondsLeft)}</b>`,
     ]).join(' '),
@@ -140,7 +157,7 @@ export function mobOfferView(mobHunt) {
     buttons.push(Markup.urlButton(go, `http://t.me/share/url?url=${command}`));
   }
 
-  if (!hasHelper && helpers.length < MAX_HELPERS) {
+  if (!hasHelper && helpers.length < maxHelpers(mobHunt)) {
     buttons.push(Markup.callbackButton(`I ${notExpired ? 'am' : 'was'} helping!`, 'mob_helping'));
   }
 
@@ -156,6 +173,16 @@ export function mobOfferView(mobHunt) {
     ].join(' ');
   }
 
+}
+
+function maxHelpers({ isCheaters, isAmbush }) {
+  if (isAmbush) {
+    return MAX_HELPERS;
+  }
+  if (isCheaters) {
+    return 3;
+  }
+  return 1;
 }
 
 const HTML_REPLACERS = {

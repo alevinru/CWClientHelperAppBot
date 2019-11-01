@@ -99,4 +99,20 @@ describe('Met some mob parser', function () {
 
   });
 
+  it('should parse RU cheaters', async function () {
+
+    const text = await readFile('static/cheatersClub_ru.txt');
+    assert(text, 'No sample text found');
+
+    const mobs = mobsFromText(text.toString());
+
+    expect(mobs).to.eql({
+      command: '/fight_HkUaxPKdrZ1M0JLGspN9',
+      isAmbush: false,
+      isCheaters: true,
+      mobs: [],
+    });
+
+  });
+
 });

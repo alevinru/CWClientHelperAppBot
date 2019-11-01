@@ -317,6 +317,7 @@ async function guildDuels(tag, shift, shiftTo) {
 const hours = Math.floor(DUEL_RESET_HOUR);
 const minutes = (DUEL_RESET_HOUR - hours) * 60;
 
+debug('DUEL_RESET_HOUR', hours, minutes);
 
 function duelTimeFilter(shift, shiftTo = shift) {
 

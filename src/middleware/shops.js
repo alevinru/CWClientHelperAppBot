@@ -195,8 +195,11 @@ export async function shopsByItem(ctx) {
 
   const { item } = matchingItems[0];
   const itemCode = itemCodeByName(item);
+  const shoppedItems = shopsItem(shops, item);
 
-  const itemShops = orderBy(shopsItem(shops, item), ['price', 'mana'], ['asc', 'desc']);
+  const sorter = [['hasMana', 'price', 'mana'], ['desc', 'asc', 'desc']];
+
+  const itemShops = orderBy(shoppedItems, ...sorter);
 
   const reply = [
     `Best offers for <b>${item}</b> at <b>${distanceInWordsToNow(lastOpened)}</b> ago:`,
@@ -220,7 +223,13 @@ function shopsItem(shops, itemName) {
       return itemName === item;
     });
 
-    return offer && { ...shop.toObject(), price: offer.price };
+    const hasMana = offer && offer.mana <= shop.mana + 30;
+
+    return offer && {
+      ...shop.toObject(),
+      price: offer.price,
+      hasMana: hasMana ? 0 : (shop.mana - offer.mana),
+    };
 
   });
 

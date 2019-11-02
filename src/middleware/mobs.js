@@ -55,18 +55,17 @@ export async function onMobForward(ctx) {
   const helpers = isAmbush ? [{ ...reporter }] : [];
   const $setOnInsert = { reporter, helpers };
 
+  const $set = {
+    date,
+    messageId,
+    mobs,
+    isAmbush,
+    isCheaters,
+  };
+
   await MobHunt.updateOne(
     { command },
-    {
-      $set: {
-        date,
-        messageId,
-        mobs,
-        isAmbush,
-        isCheaters,
-      },
-      $setOnInsert,
-    },
+    { $set, $setOnInsert },
     { upsert: true },
   );
 
@@ -75,12 +74,8 @@ export async function onMobForward(ctx) {
     return;
   }
 
-  const reply = m.mobOfferView({
-    mobs, command, date, isAmbush, helpers,
-  });
-
+  const reply = m.mobOfferView({ ...$set, command });
   const replyMsg = await ctx.reply(reply.text, { ...SILENT, ...reply.keyboard });
-
   const { message_id: replyMessageId } = replyMsg;
 
   await MobHunt.updateOne({ command }, {

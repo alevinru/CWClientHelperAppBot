@@ -13,6 +13,7 @@ const MOBS_HEADERS = [
 
 const CHEATERS_CLUB_HEADER = [
   'Ты нашел место проведения подпольных боёв без правил',
+  'You discovered a hidden underground brawl club',
 ];
 
 const MAX_HELPERS = 5;

@@ -82,6 +82,30 @@ export async function guildGear(ctx) {
 
 }
 
+const EVENT_HEAD = /Hat of Pretender/;
+
+function applyEventInfo(gear, profile) {
+
+  const { head } = gear.gearInfo;
+
+  if (!EVENT_HEAD.test(head.name)) {
+    return gear;
+  }
+
+  return {
+    ...gear,
+    gearInfo: {
+      ...gear.gearInfo,
+      head: {
+        ...head,
+        icon: '🎃',
+        streak: profile.event_streak,
+      },
+    },
+  };
+
+}
+
 export default async function (ctx) {
 
   const { session, from: { id: fromUserId }, message } = ctx;
@@ -102,9 +126,11 @@ export default async function (ctx) {
 
     await checkViewAuth(ctx, ownTag, profile.guild_tag, userId, fromUserId);
 
+    const eventUpdatedInfo = applyEventInfo(info, profile);
+
     await ctx.replyWithHTML([
       formatProfileTitle(profile),
-      formatGear(info),
+      formatGear(eventUpdatedInfo),
     ].join('\n\n'));
 
     debug(`GET /gear/${userId}`, info);
@@ -183,6 +209,7 @@ function gearItemHtml(gear) {
 
   const { name, icon, stam } = gear;
   const { atk, def, quality } = gear;
+  const { streak } = gear;
 
   const condition = conditionIcon(gear);
 
@@ -190,6 +217,7 @@ function gearItemHtml(gear) {
     quality && `(${qualityLetter[quality]})`,
     atk && `⚔${atk}`,
     def && `🛡${def}`,
+    streak && `🔪${streak}`,
     gear.mana && `💧${gear.mana}`,
     stam && `+${stam}🔋`,
   ];

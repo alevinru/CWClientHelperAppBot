@@ -126,9 +126,6 @@ export async function onHelpingClick(ctx) {
     return;
   }
 
-  ctx.answerCbQuery('Thanks for your helping!')
-    .catch(error);
-
   const { message_id: messageId } = message;
 
   const hunt = await MobHunt.findOne({ replies: { $elemMatch: { messageId, chatId: chat.id } } });
@@ -155,6 +152,9 @@ export async function onHelpingClick(ctx) {
     hunt.helper = userData(from);
     await hunt.save();
   }
+
+  ctx.answerCbQuery('Thanks for your helping!')
+    .catch(error);
 
   await updateHuntMessage(chat.id, messageId, hunt._id, ctx.telegram);
 

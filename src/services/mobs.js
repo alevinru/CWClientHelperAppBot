@@ -133,9 +133,11 @@ export function mobOfferView(mobHunt) {
       notExpired ? 'fight in' : 'fight is',
       `<b>${timeLeftView(secondsLeft)}</b>`,
     ]).join(' '),
-    '',
-    ...lo.map(mobs, mobView),
   ];
+
+  if (mobs.length) {
+    reply.push('', ...lo.map(mobs, mobView));
+  }
 
   const hasHelper = helper && helper.userId;
 

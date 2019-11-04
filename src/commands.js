@@ -81,7 +81,7 @@ bot.command('hello', users.hello);
 botHears('users', users.listUsers);
 botHears('gg', users.listUsers);
 botHears('gg[ _]([a-z]+)', gear.guildGear);
-botHears('g_(hp|gold|stamina|pouches|exp|mana)', users.guildHp);
+botHears('g_(hp|gold|stamina|pouches|exp|mana|event_[a-z]+)', users.guildHp);
 
 bot.hears(/^\/(trust|untrust)$/, users.trust);
 

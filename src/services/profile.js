@@ -10,6 +10,8 @@ const PROP_ICONS_MAP = new Map([
   ['pouches', '👝'],
   ['exp', '🔥'],
   ['stamina', '🔋'],
+  ['event_pretended', '🤭'],
+  ['event_streak', '🔪'],
 ]);
 
 export async function getProfile(userId) {

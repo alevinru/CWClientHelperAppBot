@@ -52,7 +52,7 @@ export default async function (ctx) {
 
   } catch (e) {
     const who = matchUserId ? 'The user' : 'You';
-    if (e === 'Forbidden') {
+    if (!e.message && e.requiredOperation) {
       await ctx.replyWithHTML(`<b>${who}</b> have to do /authBuy first`);
       return;
     }

@@ -70,8 +70,11 @@ export async function onMobForward(ctx) {
     { upsert: true },
   );
 
-  if (secondsToFight(date, isAmbush) < 1) {
-    await ctx.reply('🤷 ‍Mobs are expired', { ...SILENT, reply_to_message_id: messageId });
+  const toFight = secondsToFight(date, isAmbush);
+
+  if (toFight < 1) {
+    const expiredAgo = `🤦 ‍Mobs are expired <b>${-toFight}</b> seconds ago`;
+    await ctx.replyWithHTML(expiredAgo, { ...SILENT, reply_to_message_id: messageId });
     return;
   }
 

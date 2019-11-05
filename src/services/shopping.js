@@ -4,10 +4,12 @@ import log from './log';
 
 const { debug } = log('shopping');
 
-export async function gurus() {
+export async function gurus(level) {
+
+  const qualityCraftLevel = level || { $gt: 0 };
 
   const qualityShops = await Shop.aggregate([
-    { $match: { qualityCraftLevel: { $gt: 0 } } },
+    { $match: { qualityCraftLevel } },
     { $sort: { qualityCraftLevel: 1 } },
   ]);
 
@@ -23,8 +25,8 @@ export async function gurus() {
 
   const topQualityLevels = lo.mapValues(lo.keyBy(withGuru, 'guruOf'), 'qualityCraftLevel');
 
-  const topGurus = lo.filter(withGuru, ({ qualityCraftLevel, guruOf }) => {
-    return qualityCraftLevel === topQualityLevels[guruOf];
+  const topGurus = lo.filter(withGuru, ({ qualityCraftLevel: qc, guruOf }) => {
+    return qc === topQualityLevels[guruOf];
   });
 
   const byGuruOf = lo.groupBy(topGurus, 'guruOf');

@@ -50,10 +50,14 @@ export async function shopInfo(ctx) {
 
 export async function guruShops(ctx) {
 
-  const gurus = await shopping.gurus();
+  const [, levelParm] = ctx.match;
+
+  const gurus = await shopping.gurus(parseInt(levelParm, 0));
+
+  const title = levelParm ? `${levelParm}⃣ level` : 'Top';
 
   const reply = [
-    '<b>Top quality</b> /guru',
+    `<b>${title} quality</b> /guru${levelParm ? `_${levelParm}` : ''}`,
     '',
     map(orderBy(gurus, 'specialization'), specializationGuruList).join('\n\n'),
   ];

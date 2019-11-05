@@ -100,6 +100,7 @@ ChatWars
 botHears('stock[ _]?(\\d*)', stock);
 botHears('profile[ _]?(\\d*)', profile);
 botHears('gear[ _]?(\\d*)', gearInfo);
+botHears('hat', gear.hat);
 
 botHears('gi[ _](.+)', guildInfo);
 bot.command('gi', guildInfo);

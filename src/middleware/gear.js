@@ -106,6 +106,50 @@ function applyEventInfo(gear, profile) {
 
 }
 
+export async function hat(ctx) {
+
+  const { session, from: { id: fromUserId } } = ctx;
+
+  if (!session.profile) {
+    await ctx.replyWithHTML('You need /auth to show your hat');
+    return;
+  }
+
+  const profile = await a.refreshProfile(fromUserId, session);
+  const { event_streak: streak, event_pretended: pretended } = profile;
+
+  if (!streak && !pretended) {
+    await ctx.replyWithHTML('Buy yourself an event hat');
+  }
+
+  const title = formatProfileTitle(profile).replace(/ gear:/, '');
+
+  const reply = [
+    `🎃 <code>${profile.lvl}</code> ${title}`,
+    '',
+    `🔪${streak} 🤭${pretended}`,
+  ];
+
+  try {
+    const gear = await a.gearInfo(fromUserId, session);
+    const { head = {} } = gear.gearInfo;
+
+    const equipped = EVENT_HEAD.test(head.name);
+
+    if (!equipped) {
+      reply.push('', '⚠ hat is not equipped');
+    }
+
+  } catch (e) {
+    if (e.requiredOperation) {
+      reply.push('', '⚠ need /authGear to show if the hat\'s on');
+    }
+  }
+
+  await ctx.replyWithHTML(reply.join('\n'));
+
+}
+
 export default async function (ctx) {
 
   const { session, from: { id: fromUserId }, message } = ctx;

@@ -116,4 +116,21 @@ describe('Met some mob parser', function () {
 
   });
 
+  it('should parse EN cheaters', async function () {
+
+    const text = await readFile('static/cheatersClub_EN.txt');
+    assert(text, 'No sample text found');
+
+    const mobs = mobsFromText(text.toString());
+
+    expect(mobs).to.eql({
+      command: '/fight_KQ3LE5S7bedRUIziU37U',
+      isAmbush: false,
+      isCheaters: true,
+      level: 39,
+      mobs: [],
+    });
+
+  });
+
 });

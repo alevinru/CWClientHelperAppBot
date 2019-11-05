@@ -45,7 +45,7 @@ export function mobsFromText(text) {
 
   const mobsArray = text.replace(mobHeader, '').split('\n');
 
-  const mobs = mobsArray.map((mobText, idx) => {
+  const mobs = isCheaters ? [] : mobsArray.map((mobText, idx) => {
 
     const [, cntText, name, lvl] = mobText.match(/(\d* x )?([a-z ]*) lvl\.(\d+)/i) || [];
 
@@ -143,6 +143,10 @@ export function mobOfferView(mobHunt) {
     reply.push('', ...lo.map(mobs, mobView));
   } else if (level) {
     reply.push('', mobView({ level, name: 'level Cheaters' }));
+  }
+
+  if (reporter) {
+    // reply.push('', reporterView(reporter));
   }
 
   const hasHelper = helper && helper.userId;

@@ -110,6 +110,7 @@ describe('Met some mob parser', function () {
       command: '/fight_HkUaxPKdrZ1M0JLGspN9',
       isAmbush: false,
       isCheaters: true,
+      level: 57,
       mobs: [],
     });
 

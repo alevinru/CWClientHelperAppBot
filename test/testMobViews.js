@@ -17,7 +17,7 @@ describe('Met some mob parser', function () {
 
     expect(lines[0]).to.equal('🐗 fight in <b>03:00</b>');
     expect(lines[1]).to.equal('');
-    expect(lines[2]).to.equal('<code>63</code> Forest Boar x 2⃣');
+    expect(lines[2]).to.equal('<code>63</code> 🐗 Forest Boar x 2⃣');
 
   });
 
@@ -49,7 +49,7 @@ describe('Met some mob parser', function () {
 
     const lines = view.text.split('\n');
 
-    expect(lines[0]).to.equal('Ambush 👾 fight in <b>03:00</b>');
+    expect(lines[0]).to.equal('Ambush 👾 fight in <b>05:00</b>');
     expect(lines[1]).to.equal('');
     expect(lines[2]).to.equal('<code>70</code> Forbidden Collector 💰');
 
@@ -62,6 +62,7 @@ describe('Met some mob parser', function () {
     const mobs = mobsFromText(text.toString());
 
     const view = mobOfferView({ ...mobs, date: new Date() });
+    console.log(JSON.stringify(view, null, 2));
 
     const lines = view.text.split('\n');
 

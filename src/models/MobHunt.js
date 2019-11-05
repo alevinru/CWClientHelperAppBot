@@ -13,6 +13,7 @@ const schema = new Schema({
 
   isAmbush: Boolean,
   isCheaters: Boolean,
+  level: Number,
 
   mobs: [{
     _id: false,
@@ -32,6 +33,7 @@ const schema = new Schema({
     userId: Number,
     firstName: String,
     lastName: String,
+    profile: Object,
   },
 
   helper: {
@@ -39,6 +41,7 @@ const schema = new Schema({
     userId: Number,
     firstName: String,
     lastName: String,
+    profile: Object,
   },
 
   helpers: [{
@@ -47,6 +50,7 @@ const schema = new Schema({
     userId: Number,
     firstName: String,
     lastName: String,
+    profile: Object,
   }],
 
 }, {

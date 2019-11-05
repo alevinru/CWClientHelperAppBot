@@ -38,7 +38,7 @@ export async function onMobForward(ctx) {
   const { id: chatId } = ctx.chat;
   const {
     mobs: {
-      mobs, command, isAmbush, isCheaters,
+      mobs, command, isAmbush, isCheaters, level,
     },
   } = ctx.state;
   const { forward_date: forwardDate, message_id: messageId } = ctx.message;
@@ -61,6 +61,7 @@ export async function onMobForward(ctx) {
     mobs,
     isAmbush,
     isCheaters,
+    level,
   };
 
   await MobHunt.updateOne(

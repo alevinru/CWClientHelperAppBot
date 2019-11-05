@@ -74,10 +74,14 @@ export function mobsFromText(text) {
 
   const [command] = text.match(/\/fight_[a-z0-9]+/i);
 
+  const [, levelString] = text.match(/lvl\.(\d+) /) || [];
+  const level = (isCheaters && parseInt(levelString, 0)) || null;
+
   return {
     mobs: lo.filter(mobs),
     command,
     isAmbush,
+    level,
     isCheaters: !!isCheaters,
   };
 
@@ -118,7 +122,7 @@ export function mobOfferView(mobHunt) {
 
   const { mobs, command, date } = mobHunt;
   const { helper, isAmbush, helpers = [] } = mobHunt;
-  const { isCheaters } = mobHunt;
+  const { isCheaters, level, reporter } = mobHunt;
 
   const secondsLeft = secondsToFight(date, isAmbush);
   const notExpired = secondsLeft > 0;
@@ -137,6 +141,8 @@ export function mobOfferView(mobHunt) {
 
   if (mobs.length) {
     reply.push('', ...lo.map(mobs, mobView));
+  } else if (level) {
+    reply.push('', mobView({ level, name: 'level Cheaters' }));
   }
 
   const hasHelper = helper && helper.userId;
@@ -149,9 +155,9 @@ export function mobOfferView(mobHunt) {
     reply.push('', ...lo.map(helpers, helperView));
   }
 
-  const level = mobs.length && Math.floor(lo.sumBy(mobs, 'level') / mobs.length);
+  const maxLevel = mobs.length ? Math.floor(lo.sumBy(mobs, 'level') / mobs.length) : level;
 
-  const go = level ? `⚔ <= ${level + HELPER_LEVEL_RANGE}` : '⚔';
+  const go = maxLevel ? `⚔ <= ${maxLevel + HELPER_LEVEL_RANGE}` : '⚔';
 
   const buttons = [];
 

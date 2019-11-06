@@ -9,7 +9,7 @@ import * as a from '../services/auth';
 import log from '../services/log';
 import { getAuthorizedUsers } from '../services/users';
 
-const { debug } = log('mw:gear');
+const { debug, error } = log('mw:gear');
 
 const GEAR_TYPES = ['head', 'body', 'hands', 'feet', 'coat', 'weapon', 'offhand', 'ring', 'amulet'];
 
@@ -123,27 +123,51 @@ export async function hat(ctx) {
   }
 
   const title = formatProfileTitle(profile).replace(/ gear:/, '');
+  let stats = `🔪${streak} 🤭${pretended}`;
 
-  const reply = [
-    `🎃 <code>${profile.lvl}</code> ${title}`,
-    '',
-    `🔪${streak} 🤭${pretended}`,
-  ];
+  const errors = [];
 
   try {
+    const { stock } = await a.stockInfo(fromUserId, session);
+    const { 'Bottle of Greed': p09, '🎃Pumpkin': pump, 'Hat of Pretender': hats } = stock;
+
+    stats = `${stats} 🎃${pump || 0} 🍾${p09 || 0} 🎩${hats || 0}`;
+  } catch (e) {
+    if (e.requiredOperation) {
+      errors.push('⚠ need /authStock to show pumpkins');
+    } else {
+      error('hat:stock', e);
+    }
+  }
+
+  try {
+
     const gear = await a.gearInfo(fromUserId, session);
     const { head = {} } = gear.gearInfo;
 
     const equipped = EVENT_HEAD.test(head.name);
 
     if (!equipped) {
-      reply.push('', '⚠ hat is not equipped');
+      errors.push('⚠ hat is not equipped');
     }
 
   } catch (e) {
     if (e.requiredOperation) {
-      reply.push('', '⚠ need /authGear to show if the hat\'s on');
+      errors.push('⚠ need /authGear to show if the hat\'s on');
+    } else {
+      error('hat:gear', e);
     }
+  }
+
+
+  const reply = [
+    `<code>${profile.lvl}</code> ${title}`,
+    '',
+    stats,
+  ];
+
+  if (errors.length) {
+    reply.push('', ...errors);
   }
 
   await ctx.replyWithHTML(reply.join('\n'));

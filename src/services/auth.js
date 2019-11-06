@@ -82,7 +82,7 @@ export function grantAuth(userId, requestId, code, token) {
 
 export async function guildInfo(userId, session) {
 
-  const token = session ? getAuthToken(session) : await getToken(userId);
+  const token = await tokenByUserIdOrSession(userId, session);
 
   return cw.guildInfo(userId, token);
 
@@ -90,7 +90,7 @@ export async function guildInfo(userId, session) {
 
 export async function craftBook(userId, session) {
 
-  const token = session ? getAuthToken(session) : await getToken(userId);
+  const token = await tokenByUserIdOrSession(userId, session);
 
   return cw.craftBook(userId, token);
 
@@ -98,10 +98,25 @@ export async function craftBook(userId, session) {
 
 export async function gearInfo(userId, session) {
 
-  const token = session ? getAuthToken(session) : await getToken(userId);
+  const token = await tokenByUserIdOrSession(userId, session);
 
   return cw.gearInfo(userId, token);
 
+}
+
+export async function stockInfo(userId, session) {
+
+  const token = await tokenByUserIdOrSession(userId, session);
+
+  return cw.requestStock(safeUserId(userId), token);
+
+}
+
+async function tokenByUserIdOrSession(userId, session) {
+  if (session) {
+    return getAuthToken(session);
+  }
+  return getToken(userId);
 }
 
 export async function refreshProfile(userId, session) {

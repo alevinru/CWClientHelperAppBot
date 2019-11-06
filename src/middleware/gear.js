@@ -116,14 +116,14 @@ export async function hat(ctx) {
   }
 
   const profile = await a.refreshProfile(fromUserId, session);
-  const { event_streak: streak, event_pretended: pretended } = profile;
+  const { event_streak: streak, event_pretended: pretended, hp } = profile;
 
   if (!streak && !pretended) {
     await ctx.replyWithHTML('Buy yourself an event hat');
   }
 
   const title = formatProfileTitle(profile).replace(/ gear:/, '');
-  let stats = `🔪${streak} 🤭${pretended}`;
+  let stats = `🔪${streak} 🤭${pretended} ❤${hp}`;
 
   const errors = [];
 
@@ -131,7 +131,7 @@ export async function hat(ctx) {
     const { stock } = await a.stockInfo(fromUserId, session);
     const { 'Bottle of Greed': p09, '🎃Pumpkin': pump, 'Hat of Pretender': hats } = stock;
 
-    stats = `${stats} 🎃${pump || 0} 🍾${p09 || 0} 🎩${hats || 0}`;
+    stats = `${stats}\n🎃${pump || 0} 🍾${p09 || 0} 🎩${hats || 0}`;
   } catch (e) {
     if (e.requiredOperation) {
       errors.push('⚠ need /authStock to show pumpkins');

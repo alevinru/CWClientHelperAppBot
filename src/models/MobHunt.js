@@ -4,6 +4,17 @@ import secondsDiff from 'date-fns/difference_in_seconds';
 const MOB_HUNT_LIFETIME = parseInt(process.env.MOB_HUNT_LIFETIME, 0) || 180;
 const MOB_HUNT_CHAMPION_LIFETIME = MOB_HUNT_LIFETIME + 120;
 
+const playerSchema = {
+  _id: false,
+  userName: String,
+  userId: Number,
+  firstName: String,
+  lastName: String,
+  hp: Number,
+  streak: Number,
+  level: Number,
+};
+
 const schema = new Schema({
 
   text: String,
@@ -28,30 +39,11 @@ const schema = new Schema({
     chatId: Number,
   }],
 
-  reporter: {
-    userName: String,
-    userId: Number,
-    firstName: String,
-    lastName: String,
-    profile: Object,
-  },
+  reporter: playerSchema,
 
-  helper: {
-    userName: String,
-    userId: Number,
-    firstName: String,
-    lastName: String,
-    profile: Object,
-  },
+  helper: playerSchema,
 
-  helpers: [{
-    _id: false,
-    userName: String,
-    userId: Number,
-    firstName: String,
-    lastName: String,
-    profile: Object,
-  }],
+  helpers: [playerSchema],
 
 }, {
   collection: 'MobHunt',

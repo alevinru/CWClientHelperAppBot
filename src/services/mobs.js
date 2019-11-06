@@ -178,12 +178,17 @@ export function mobOfferView(mobHunt) {
 
   return { text: reply.join('\n'), keyboard };
 
-  function helperView({ userName, firstName, lastName }) {
+  function helperView(player) {
+    const { userName, firstName, lastName } = player;
+    const { hp, streak } = player;
     const name = lo.filter([firstName, lastName]).join(' ') || 'Name unknown';
-    return [
+    return lo.filter([
+      player.level && `<code>${player.level}</code>`,
+      isCheaters && streak >= 0 && `🔪${streak}`,
       `<a href="https://t.me/${userName}">${escapeName(name)}</a>`,
-      notExpired ? 'is helping' : 'was helping',
-    ].join(' ');
+      !hp && (notExpired ? 'is helping' : 'was helping'),
+      hp && `❤${hp}`,
+    ]).join(' ');
   }
 
 }

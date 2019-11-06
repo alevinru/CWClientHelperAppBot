@@ -1,6 +1,7 @@
 import lo from 'lodash';
 import { fromCWFilter } from '../config/filters';
 import * as m from '../services/mobs';
+import * as a from '../services/auth';
 import MobHunt, { secondsToFight } from '../models/MobHunt';
 
 import log from '../services/log';
@@ -117,7 +118,7 @@ export async function onMobForward(ctx) {
 
 export async function onHelpingClick(ctx) {
 
-  const { update, chat } = ctx;
+  const { update, chat, session } = ctx;
   const { message, from } = update.callback_query;
 
   // debug('onHelpingClick', update);
@@ -135,22 +136,30 @@ export async function onHelpingClick(ctx) {
   const hunt = await MobHunt.findOne({ replies: { $elemMatch: { messageId, chatId: chat.id } } });
 
   if (!hunt) {
-    const oldWay = `${message.text}\n\n✅ @${from.username} is helping`;
-    await ctx.editMessageText(oldWay, SILENT);
     return;
   }
 
-  const { helpers, command } = hunt;
+  const { helpers, command } = hunt.toObject();
+  const { id: userId } = from;
 
   if (isMultiHelping) {
 
-    if (lo.find(helpers, { userId: from.id })) {
-      return;
-    }
+    const existingHelper = lo.find(helpers, { userId }) || {};
 
     await MobHunt.updateOne({ command }, {
-      $push: { helpers: userData(from) },
+      $pull: {
+        helpers: { userId },
+      },
     });
+
+    await MobHunt.updateOne({ command }, {
+      $push: { helpers: { ...existingHelper, ...userData(from) } },
+    });
+
+    if (session.profile && secondsToFight(hunt.date, hunt.isAmbush) > 0) {
+      updateHelperStats(hunt, userId, session)
+        .catch(error);
+    }
 
   } else {
     hunt.helper = userData(from);
@@ -162,6 +171,20 @@ export async function onHelpingClick(ctx) {
 
   await updateHuntMessage(chat.id, messageId, hunt._id, ctx.telegram);
 
+}
+
+async function updateHelperStats(mobHunt, userId, session) {
+  const profile = await a.refreshProfile(userId, session);
+  const { hp, event_streak: streak, lvl } = profile;
+  debug('updateHelperStats', mobHunt.command, userId, hp, streak);
+  const keys = { command: mobHunt.command, 'helpers.userId': userId };
+  const $set = {
+    'helpers.$.hp': hp,
+    'helpers.$.streak': streak,
+    'helpers.$.level': lvl,
+  };
+  const updateHp = await MobHunt.updateOne(keys, { $set });
+  debug('updateHelperStats', updateHp);
 }
 
 async function updateHuntMessage(chatId, messageId, huntId, telegram) {

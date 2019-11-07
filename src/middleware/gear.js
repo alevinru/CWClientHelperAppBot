@@ -88,7 +88,7 @@ function applyEventInfo(gear, profile) {
 
   const { head } = gear.gearInfo;
 
-  if (!EVENT_HEAD.test(head.name)) {
+  if (!head || !EVENT_HEAD.test(head.name)) {
     return gear;
   }
 

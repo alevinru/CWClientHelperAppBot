@@ -70,6 +70,7 @@ Users
 
 bot.command('start', start);
 bot.command('auth', auth.auth);
+bot.command('authProfile', auth.authGetProfile);
 bot.command('authGuild', auth.authGuildInfo);
 bot.command('authCraftBook', auth.authCraftBook);
 bot.command('authGear', auth.authGearInfo);

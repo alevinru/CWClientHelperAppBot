@@ -44,6 +44,10 @@ export function requestAuth(userId) {
   return cw.sendAuth(safeUserId(userId));
 }
 
+export function requestGetUserProfileAuth(userId, token) {
+  return cw.authAdditionalOperation(safeUserId(userId), 'GetUserProfile', token);
+}
+
 export function requestGuildInfoAuth(userId, token) {
   return cw.authAdditionalOperation(safeUserId(userId), 'GuildInfo', token);
 }

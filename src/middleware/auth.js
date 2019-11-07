@@ -24,6 +24,34 @@ export async function auth(ctx) {
 
 }
 
+export async function authGetProfile(ctx) {
+
+  const { from: { id: userId }, session } = ctx;
+
+  debug('authGetProfile:', userId);
+
+  try {
+
+    const token = a.getAuthToken(session);
+
+    const { uuid } = await a.requestGetUserProfileAuth(userId, token);
+
+    const msg = [
+      `Auth code has been sent to your telegram account number ${userId}.`,
+      'Please forward this message back to complete <b>Get User Profile</b> authorization',
+    ];
+
+    session.authGetUserProfileId = uuid;
+
+    await ctx.replyHTML(msg.join(' '));
+
+  } catch (e) {
+    await ctx.replyError('to send auth code', e);
+  }
+
+}
+
+
 export async function authGuildInfo(ctx) {
 
   const { from: { id: userId }, session } = ctx;
@@ -190,7 +218,7 @@ export async function authCode(ctx, next) {
   try {
 
     const { authGuildInfoId } = session;
-    const { authGearInfoId } = session;
+    const { authGearInfoId, authGetUserProfileId } = session;
     const { authCraftBookId } = session;
     const { authStockAccessId, authBuyId } = session;
 
@@ -204,6 +232,18 @@ export async function authCode(ctx, next) {
       await ctx.replyHTML([
         '✅ Congratulations, wtb authorization complete!\n',
         'Try /wtb_01_1_1 command.',
+      ]);
+
+    } else if (authGetUserProfileId && text.match(/read your profile/)) {
+      const token = a.getAuthToken(session);
+
+      debug('authGetUserProfileId code:', code, token, authGetUserProfileId);
+      await a.grantAuth(userId, authGetUserProfileId, code, token);
+      delete session.authGetUserProfileId;
+      session.isGetUserProfileAuthorized = true;
+      await ctx.replyHTML([
+        '✅ Congratulations, profile info authorization complete!\n',
+        'Try /profile command.',
       ]);
 
     } else if (authStockAccessId && text.match(/read your stock/)) {

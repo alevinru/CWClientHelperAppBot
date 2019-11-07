@@ -12,15 +12,15 @@ const { debug } = log('cw');
 
 export const CW_BOT_ID = parseInt(process.env.CW_BOT_ID, 0);
 
-const bindIO = !process.env.DISABLE_OFFERS;
+const disableOffers = !!process.env.DISABLE_OFFERS;
 
 const fanouts = {};
 
-if (bindIO) {
+if (!disableOffers) {
   fanouts[CW.QUEUE_OFFERS] = consumeOffers;
 }
 
-export const cw = CW_BOT_ID && new CWExchange({ bindIO, fanouts, noAck: true });
+export const cw = CW_BOT_ID && new CWExchange({ bindIO: true, fanouts, noAck: true });
 
 const itemsByName = CW.allItemsByName();
 

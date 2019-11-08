@@ -86,6 +86,9 @@ botHears('g_(hp|gold|stamina|pouches|exp|mana|event_[a-z]+)', users.guildHp);
 
 bot.hears(/^\/(trust|untrust)$/, users.trust);
 
+botHears('castles', users.castles);
+botHears('classes', users.classes);
+
 /*
 Chats
  */

@@ -1,6 +1,7 @@
 import get from 'lodash/get';
 import orderBy from 'lodash/orderBy';
 import filter from 'lodash/filter';
+import sumBy from 'lodash/sumBy';
 
 import { refreshProfile } from '../services/auth';
 import {
@@ -14,6 +15,13 @@ import { propIcon } from '../services/profile';
 import User from '../models/User';
 
 const { debug } = log('mw:hello');
+
+const SERVERS = new Map([
+  ['408101137', 'EU'],
+  ['265204902', 'CW3'],
+]);
+
+const SERVER_NAME = SERVERS.get(process.env.CW_BOT_ID);
 
 export async function hello(ctx) {
 
@@ -69,6 +77,47 @@ export async function hello(ctx) {
   }
 
 }
+
+export async function castles(ctx) {
+
+  const reply = await profileStats('castle', 'castles');
+
+  await ctx.replyWithHTML(reply.join('\n'));
+
+}
+
+export async function classes(ctx) {
+
+  const reply = await profileStats('class', 'classes');
+
+  await ctx.replyWithHTML(reply.join('\n'));
+
+}
+
+
+async function profileStats(prop, cmd) {
+
+  const pipeline = [
+    { $match: { profile: { $ne: null } } },
+    { $group: { _id: `$profile.${prop}`, count: { $sum: 1 } } },
+    { $sort: { count: -1 } },
+  ];
+
+  const data = await User.aggregate(pipeline);
+
+  return [
+    `<b>${SERVER_NAME}</b> bot users by /${cmd}`,
+    '',
+    ...data.map(item => {
+      const { _id: castle, count } = item;
+      return `${castle} ${count}`;
+    }),
+    '',
+    `Total <b>${sumBy(data, 'count')}</b>`,
+  ];
+
+}
+
 
 export async function guildHp(ctx) {
 

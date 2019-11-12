@@ -25,8 +25,10 @@ export default class Notificator {
 
     await this.hookUsers();
 
+    this.debouncedHook = lo.debounce(() => this.hookUsers(), 1000);
+
     User.watch()
-      .on('change', () => this.hookUsers());
+      .on('change', this.debouncedHook);
 
     Deal.watch()
       .on('change', change => {
@@ -65,6 +67,7 @@ export default class Notificator {
     try {
 
       const users = await User.find({ [`botSettings.${BOT_ID}.${NOTIFY_SALES}`]: true });
+
       const ids = await mapSeriesAsync(users, async ({ id: tgId }) => {
         const session = await getSession(BOT_ID, tgId);
         const cwId = lo.get(session, 'auth.id');

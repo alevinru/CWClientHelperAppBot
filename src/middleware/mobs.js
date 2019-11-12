@@ -95,6 +95,11 @@ export async function onMobForward(ctx) {
       .catch(error);
   }
 
+  if (ctx.session.profile) {
+    updateHelperStats(hunt, ctx.from.id, ctx.session)
+      .catch(error);
+  }
+
   scheduleUpdate(chatId, replyMessageId, hunt, ctx.telegram);
 
   async function onPinError(e) {
@@ -112,6 +117,33 @@ export async function onMobForward(ctx) {
 
     return ctx.replyWithHTML(noRights);
 
+  }
+
+}
+
+export async function showMobFight(ctx) {
+
+  const { match, chat: { id: chatId } } = ctx;
+
+  const [command] = match || [];
+
+  const hunt = await MobHunt.findOne({ command });
+
+  if (!hunt) {
+    await ctx.replyWithHTML(`🤷 Not found mob fight with command ${command}`);
+    return;
+  }
+
+  const reply = m.mobOfferView(hunt);
+  const replyMsg = await ctx.reply(reply.text, { ...SILENT, ...reply.keyboard });
+  const { message_id: messageId } = replyMsg;
+
+  await MobHunt.updateOne({ command }, {
+    $push: { replies: { messageId, chatId } },
+  });
+
+  if (secondsToFight(hunt.date, hunt.isAmbush) > 0) {
+    scheduleUpdate(chatId, messageId, hunt, ctx.telegram);
   }
 
 }

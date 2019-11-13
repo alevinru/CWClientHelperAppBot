@@ -303,7 +303,7 @@ function shopAsListItem(shop) {
 
   const link = `/ws_${shop.link}`;
 
-  const qc = qualityCraftLevel && `${qualityCraftLevel}⃣`;
+  const qc = qualityCraftLevel && isGuru(shop) && `${qualityCraftLevel}⃣`;
 
   return filter([
     `💰${price}`,
@@ -338,7 +338,10 @@ function shopInfoText(shop, lastDigest) {
 
   if (specialization) {
     const info = specializationInfo(specialization).join('\n');
-    reply.push(filter([info, /guru/.test(info) && qc]).join(' '));
+    const guruSpecs = filter([info, /guru/.test(info) && qc]);
+    if (guruSpecs.length) {
+      reply.push(guruSpecs.join(' '));
+    }
   }
 
   if (maintenanceEnabled) {
@@ -353,6 +356,11 @@ function shopInfoText(shop, lastDigest) {
 
 }
 
+function isGuru(shop) {
+  return specializationInfo(shop.specialization)
+    .filter(text => text.match(/guru/))
+    .length > 0;
+}
 
 function specializationInfo(specialization) {
 

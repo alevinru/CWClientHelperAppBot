@@ -121,13 +121,15 @@ async function profileStats(prop, cmd) {
 
 export async function guildHp(ctx) {
 
-  const [, prop] = ctx.match || [];
+  const [, prop, limit, kilos] = ctx.match || [];
 
   if (!prop) {
+    await ctx.replyWithHTML(`Invalid profile property <code>${prop}</code>`);
     return;
   }
 
   const icon = propIcon(prop);
+  const minValue = parseInt(limit || '1', 0) * (kilos ? 1000 : 1);
 
   if (!icon) {
     return;
@@ -135,9 +137,12 @@ export async function guildHp(ctx) {
 
   const users = await getAuthorizedUsers(ctx.session);
 
-  debug('guildHp:users', users.length);
+  debug('guildHp:users', users.length, prop, minValue);
 
-  const profiles = filter(await freshProfiles(users), prop);
+  const profiles = filter(await freshProfiles(users), profile => {
+    const { [prop]: value } = profile;
+    return value >= minValue;
+  });
 
   debug('guildHp:profiles', profiles.length);
 
@@ -145,6 +150,7 @@ export async function guildHp(ctx) {
     .map(formatUserHp);
 
   if (!reply.length) {
+    await ctx.replyWithHTML(`No guild mates with <b>${prop}</b> >= <b>${minValue}</b>`);
     return;
   }
 

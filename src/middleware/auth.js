@@ -241,6 +241,7 @@ export async function authCode(ctx, next) {
       await a.grantAuth(userId, authGetUserProfileId, code, token);
       delete session.authGetUserProfileId;
       session.isGetUserProfileAuthorized = true;
+      await hello(ctx);
       await ctx.replyHTML([
         '✅ Congratulations, profile info authorization complete!\n',
         'Try /profile command.',

@@ -65,10 +65,10 @@ export async function onMobForward(ctx) {
     level,
   };
 
-  await MobHunt.updateOne(
+  const hunt = await MobHunt.findOneAndUpdate(
     { command },
     { $set, $setOnInsert },
-    { upsert: true },
+    { upsert: true, new: true, useFindAndModify: false },
   );
 
   const toFight = secondsToFight(date, isAmbush);
@@ -79,7 +79,7 @@ export async function onMobForward(ctx) {
     return;
   }
 
-  const reply = m.mobOfferView({ ...$set, command });
+  const reply = m.mobOfferView(hunt);
   const replyMsg = await ctx.reply(reply.text, { ...SILENT, ...reply.keyboard });
   const { message_id: replyMessageId } = replyMsg;
 
@@ -87,7 +87,7 @@ export async function onMobForward(ctx) {
     $push: { replies: { messageId: replyMsg.message_id, chatId } },
   });
 
-  const hunt = await MobHunt.findOne({ command });
+  // const hunt = await MobHunt.findOne({ command });
 
   if (ctx.from.id !== chatId && await Chat.findValue(chatId, c.CHAT_SETTING_PIN_MOBS)) {
     await ctx.pinChatMessage(replyMessageId)
@@ -263,7 +263,7 @@ function scheduleUpdate(chatId, messageId, hunt, telegram) {
 
   const timeout = setTimeout(() => {
     SCHEDULED.delete(key);
-    updateHuntMessage(chatId, messageId, hunt, telegram)
+    updateHuntMessage(chatId, messageId, hunt._id, telegram)
     // .then(() => debug('scheduleUpdate', key, isScheduled(chatId, messageId)))
       .catch(e => error('scheduleUpdate', e));
   }, MOB_HUNT_UPDATE);

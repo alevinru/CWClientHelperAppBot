@@ -53,7 +53,8 @@ export async function onMobForward(ctx) {
   debug('onMobForward:', forwardDate, messageId);
 
   const reporter = userData(ctx.from);
-  const helpers = isAmbush ? [{ ...reporter }] : [];
+  const reporterRole = isAmbush ? 'helpers' : 'reporter';
+  const helpers = reporterRole === 'helpers' ? [{ ...reporter }] : [];
   const $setOnInsert = { reporter, helpers };
 
   const $set = {
@@ -96,7 +97,7 @@ export async function onMobForward(ctx) {
   }
 
   if (ctx.session.profile) {
-    updateHelperStats(hunt, ctx.from.id, ctx.session)
+    updateHelperStats(hunt, ctx.from.id, ctx.session, reporterRole)
       .catch(error);
   }
 
@@ -188,14 +189,14 @@ export async function onHelpingClick(ctx) {
       $push: { helpers: { ...existingHelper, ...userData(from) } },
     });
 
-    if (session.profile && secondsToFight(hunt.date, hunt.isAmbush) > 0) {
-      updateHelperStats(hunt, userId, session)
-        .catch(error);
-    }
-
   } else {
     hunt.helper = userData(from);
     await hunt.save();
+  }
+
+  if (session.profile && secondsToFight(hunt.date, hunt.isAmbush) > 0) {
+    updateHelperStats(hunt, userId, session, isMultiHelping ? 'helpers' : 'helper')
+      .catch(error);
   }
 
   ctx.answerCbQuery('Thanks for your helping!')
@@ -205,18 +206,19 @@ export async function onHelpingClick(ctx) {
 
 }
 
-async function updateHelperStats(mobHunt, userId, session) {
+async function updateHelperStats(mobHunt, userId, session, role = 'helpers') {
   const profile = await a.refreshProfile(userId, session);
   const { hp, event_streak: streak, lvl } = profile;
   debug('updateHelperStats', mobHunt.command, userId, hp, streak);
-  const keys = { command: mobHunt.command, 'helpers.userId': userId };
+  const keys = { command: mobHunt.command, [`${role}.userId`]: userId };
+  const rolePrefix = `${role}${lo.last(role) === 's' ? '.$' : ''}`;
   const $set = {
-    'helpers.$.hp': hp,
-    'helpers.$.streak': streak,
-    'helpers.$.level': lvl,
+    [`${rolePrefix}.hp`]: hp,
+    [`${rolePrefix}.streak`]: streak,
+    [`${rolePrefix}.level`]: lvl,
   };
   const updateHp = await MobHunt.updateOne(keys, { $set });
-  debug('updateHelperStats', updateHp);
+  debug('updateHelperStats', updateHp.nModified);
 }
 
 async function updateHuntMessage(chatId, messageId, huntId, telegram) {

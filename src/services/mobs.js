@@ -128,6 +128,7 @@ export function mobOfferView(mobHunt) {
   const notExpired = secondsLeft > 0;
 
   const headIcons = mobsIcons(mobs).join(' ') || (isCheaters ? '🎃' : '👾');
+  const hasHelper = helper && helper.userId;
 
   const reply = [
     lo.filter([
@@ -145,26 +146,25 @@ export function mobOfferView(mobHunt) {
     reply.push('', mobView({ level, name: 'level Cheaters' }));
   }
 
-  if (reporter) {
-    // reply.push('', reporterView(reporter));
-  }
+  const helpersToAdd = [];
 
-  const hasHelper = helper && helper.userId;
+  if (reporter && !(helpers && helpers.length)) {
+    helpersToAdd.push(helperView(reporter, 'encountered'));
+  }
 
   if (hasHelper) {
-    reply.push('', helperView(helper));
+    helpersToAdd.push(helperView(helper));
+  } else if (helpers && helpers.length) {
+    helpersToAdd.push(...lo.map(helpers, helperView));
   }
 
-  if (helpers && helpers.length) {
-    reply.push('', ...lo.map(helpers, helperView));
-  }
+  reply.push('', ...helpersToAdd);
 
   const maxLevel = mobs.length ? Math.floor(lo.sumBy(mobs, 'level') / mobs.length) : level;
 
   const go = maxLevel ? `⚔ <= ${maxLevel + HELPER_LEVEL_RANGE}` : '⚔';
 
   const buttons = [];
-
 
   if (notExpired) {
     buttons.push(Markup.urlButton(go, `http://t.me/share/url?url=${command}`));
@@ -178,15 +178,21 @@ export function mobOfferView(mobHunt) {
 
   return { text: reply.join('\n'), keyboard };
 
-  function helperView(player) {
+  function helperView(player, role) {
+
     const { userName, firstName, lastName } = player;
-    const { hp, streak } = player;
+    const { hp } = player;
     const name = lo.filter([firstName, lastName]).join(' ') || 'Name unknown';
+
+    const roleIcon = role === 'encountered' ? '🆘' : '🤝';
+
     return lo.filter([
+      roleIcon,
       player.level && `<code>${player.level}</code>`,
-      isCheaters && streak >= 0 && `🔪${streak}`,
+      // isCheaters && streak >= 0 && `🔪${streak}`,
       `<a href="https://t.me/${userName}">${escapeName(name)}</a>`,
-      !hp && (notExpired ? 'is helping' : 'was helping'),
+      // !(hp || role) && (notExpired ? 'is helping' : 'was helping'),
+      // !notExpired && role,
       hp && `❤${hp}`,
     ]).join(' ');
   }

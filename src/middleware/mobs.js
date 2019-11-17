@@ -1,4 +1,5 @@
 import lo from 'lodash';
+import bot from '../services/bot';
 import { fromCWFilter } from '../config/filters';
 import * as m from '../services/mobs';
 import * as a from '../services/auth';
@@ -218,7 +219,13 @@ async function updateHelperStats(mobHunt, userId, session, role = 'helpers') {
     [`${rolePrefix}.level`]: lvl,
   };
   const updateHp = await MobHunt.updateOne(keys, { $set });
-  debug('updateHelperStats', updateHp.nModified);
+  const { replies } = mobHunt;
+  debug('updateHelperStats', updateHp.nModified, userId, hp, lvl, replies.length);
+  const updates = lo.map(replies, ({ messageId, chatId }) => {
+    return updateHuntMessage(chatId, messageId, mobHunt._id, bot.telegram)
+      .catch(error);
+  });
+  await Promise.all(updates);
 }
 
 async function updateHuntMessage(chatId, messageId, huntId, telegram) {
@@ -235,15 +242,14 @@ async function updateHuntMessage(chatId, messageId, huntId, telegram) {
 
   try {
     await telegram.editMessageText(chatId, messageId, null, text, extra);
+    if (notExpired) {
+      scheduleUpdate(chatId, messageId, hunt, telegram);
+    }
   } catch (e) {
     error('updateHuntMessage', e.message);
   }
 
   // debug(hunt);
-
-  if (notExpired) {
-    scheduleUpdate(chatId, messageId, hunt, telegram);
-  }
 
 }
 

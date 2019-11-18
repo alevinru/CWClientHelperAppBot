@@ -9,6 +9,7 @@ import * as util from '../services/util';
 import { formatStockItem } from './stock';
 import { isTrusted } from '../services/users';
 import log from '../services/log';
+import * as p from '../services/profile';
 
 const { debug, error } = log('mw:profile');
 
@@ -32,7 +33,7 @@ export default async function (ctx) {
 
     await checkViewAuth(ctx, ownTag, profile.guild_tag, userId, fromUserId);
 
-    await ctx.replyWithHTML(formatProfile(profile, matchUserId));
+    await ctx.replyWithHTML(p.formatProfile(profile, matchUserId));
 
     debug(`GET /profile/${userId}`, profile.userName);
 
@@ -65,34 +66,6 @@ export async function checkViewAuth(ctx, ownTag, userTag, userId, fromUserId) {
     await ctx.replyWithHTML(notAuthorized);
     throw new Error('Not authorized');
   }
-}
-
-function formatProfile(profile, userId) {
-
-  const { userName, guild_tag: tag } = profile;
-  const { class: cls, castle } = profile;
-
-  const { mana, gold, pouches } = profile;
-  const { stamina, exp, hp } = profile;
-  const { atk, def, lvl } = profile;
-
-  const nameTag = tag ? `[${tag}] ` : '';
-
-  const withUserId = userId ? `_${userId}` : '';
-
-  debug('formatProfile', userName);
-
-  const res = [
-    `<code>${lvl}</code> ${cls}${castle} <b>${nameTag || ''}${userName}</b>`,
-    '',
-    `⚔${atk} 🛡${def} ❤️${hp}${mana ? `💧${mana}` : ''}`,
-    `💰${gold || 0} 👝${pouches || 0} 🔥${exp} 🔋${stamina}`,
-    '',
-    `/gear${withUserId} /stock${withUserId}`,
-  ];
-
-  return res.join('\n');
-
 }
 
 export async function guildInfo(ctx) {

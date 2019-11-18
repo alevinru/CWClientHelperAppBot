@@ -11,7 +11,7 @@ import { BOT_ID } from '../services/bot';
 import { getSession } from '../services/session';
 
 import log from '../services/log';
-import { propIcon } from '../services/profile';
+import * as p from '../services/profile';
 import User from '../models/User';
 
 const { debug } = log('mw:hello');
@@ -128,7 +128,7 @@ export async function guildHp(ctx) {
     return;
   }
 
-  const icon = propIcon(prop);
+  const icon = p.propIcon(prop);
   const minValue = parseInt(limit || '1', 0) * (kilos ? 1000 : 1);
 
   if (!icon) {
@@ -163,7 +163,7 @@ export async function guildHp(ctx) {
       lvl,
       [prop]: value,
     } = profile;
-    return `${cls} <code>${lvl}</code> ${userName} ${icon}<b>${value || 0}</b>`;
+    return `${cls} <code>${lvl}</code> ${userName} ${icon}<b>${p.expView(value)}</b>`;
   }
 
 }

@@ -26,8 +26,18 @@ export async function getAuthorizedUsers({ profile }) {
     return [];
   }
 
-  const users = await User.find({ 'profile.guild_tag': tag })
+  return guildUsersWithRefresh(tag);
+
+}
+
+export async function guildUsers(tag) {
+  return User.find({ 'profile.guild_tag': tag })
     .sort({ 'profile.userName': 1, id: 1 });
+}
+
+export async function guildUsersWithRefresh(tag) {
+
+  const users = await guildUsers(tag);
 
   const now = new Date();
 
@@ -55,7 +65,7 @@ export async function getAuthorizedUsers({ profile }) {
 export async function freshProfiles(users) {
   const res = await mapSeriesAsync(users, async user => {
 
-    const userId = user.id;
+    const { id: userId, settings } = user;
 
     try {
 
@@ -67,7 +77,9 @@ export async function freshProfiles(users) {
 
       const { profile } = await cw.requestProfile(safeUserId(userId), token);
 
-      return profile;
+      return {
+        ...profile, tgId: user.id, tgUsername: user.username, settings,
+      };
 
     } catch (e) {
       error('freshProfiles', userId, `"${user.userName}"`, e.message || e);
@@ -136,6 +148,15 @@ export async function saveTrust(id, toUserId, value = true) {
 
 }
 
+export function userSetting(user, key) {
+  const setting = allSettings()[key];
+
+  if (!setting) {
+    throw new Error(`Unknown setting <code>${key}</code>`);
+  }
+
+  return settingValueWithDefault(setting, user.settings[key]);
+}
 
 export async function settingValue(userId, key) {
 
@@ -145,13 +166,7 @@ export async function settingValue(userId, key) {
     throw new Error(`Unknown user <code>${userId}</code>`);
   }
 
-  const setting = allSettings()[key];
-
-  if (!setting) {
-    throw new Error(`Unknown setting <code>${key}</code>`);
-  }
-
-  return settingValueWithDefault(setting, user.settings[key]);
+  return userSetting(user, key);
 
 }
 
@@ -167,9 +182,14 @@ export function applyDefaults(settings) {
 
 export const NOTIFY_ORDER_FAIL = 'notifyOrderFail';
 export const NOTIFY_SALES = 'notifySales';
+export const NOTIFY_FOR_MOBS = 'notifyForMobs';
 
 export function allSettings() {
   return {
+    [NOTIFY_FOR_MOBS]: {
+      type: Boolean,
+      defaults: false,
+    },
     [NOTIFY_ORDER_FAIL]: {
       type: Boolean,
       defaults: true,

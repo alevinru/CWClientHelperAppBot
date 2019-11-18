@@ -24,6 +24,7 @@ export default model('Chat', schema);
 export const CHAT_SETTING_PIN_MOBS = 'pinMobs';
 export const CHAT_SETTING_MOB_HUNTING = 'mobHunting';
 export const CHAT_SETTING_NOTIFY_BATTLE = 'notifyBattle';
+export const CHAT_SETTING_HELPERS_MIN_HP = 'helpersMinHp';
 
 function saveValue(chatId, name, value) {
   const key = { id: chatId, botId: BOT_ID };

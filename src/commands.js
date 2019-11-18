@@ -177,6 +177,8 @@ botMessage(Telegraf.optional(mobs.metMobFilter, mobs.onMobForward));
 bot.action(/mob_helping/, mobs.onHelpingClick);
 
 botHears('fight_[0-9a-z]+', mobs.showMobFight);
+botHears('helpers[ _](\\d\\d)', users.usersToPin);
+botHears('helpers', users.usersToPin);
 
 /*
 Other

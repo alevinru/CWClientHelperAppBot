@@ -6,6 +6,7 @@ import sumBy from 'lodash/sumBy';
 import { refreshProfile } from '../services/auth';
 import {
   saveUser, getAuthorizedUsers, saveTrust, freshProfiles,
+  guildUsers, userSetting, NOTIFY_FOR_MOBS,
 } from '../services/users';
 import { BOT_ID } from '../services/bot';
 import { getSession } from '../services/session';
@@ -13,6 +14,7 @@ import { getSession } from '../services/session';
 import log from '../services/log';
 import * as p from '../services/profile';
 import User from '../models/User';
+import Chat, { CHAT_SETTING_HELPERS_MIN_HP } from '../models/Chat';
 
 const { debug } = log('mw:hello');
 
@@ -118,6 +120,65 @@ async function profileStats(prop, cmd) {
 
 }
 
+export async function usersToPin(ctx) {
+
+  const { session: { profile }, match } = ctx;
+
+  if (!profile) {
+    await ctx.replyWithHTML('Not authorized');
+    return;
+  }
+
+  const { guild_tag: tag } = profile;
+
+  if (!tag) {
+    await ctx.replyWithHTML('You are not a guild member');
+    return;
+  }
+
+  const [, levelParam] = match;
+  const minLevel = parseInt(levelParam, 0);
+  const minHp = await Chat.findValue(ctx.chat.id, CHAT_SETTING_HELPERS_MIN_HP) || 900;
+
+  const data = await guildUsersWithHp(tag, minLevel, minHp);
+
+  const reply = filter(data.map(player => {
+    const { class: cls, lvl, hp } = player;
+    const pin = userSetting(player, NOTIFY_FOR_MOBS);
+    const username = `@${player.tgUsername}`;
+    return pin && [
+      cls,
+      `<code>${lvl}</code>`,
+      `❤${hp}`,
+      username,
+    ].join(' ');
+  }));
+
+  if (!reply.length) {
+    const noData = [
+      `No helpers with <b>${minHp}</b> hp`,
+      levelParam ? `and level less or equal than <b>${levelParam}</b>` : '',
+    ];
+    await ctx.replyWithHTML(noData.join(''));
+    return;
+  }
+
+  await ctx.replyWithHTML(reply.join('\n'));
+
+}
+
+async function guildUsersWithHp(tag, maxLevel, minHp = 900) {
+
+  const users = await guildUsers(tag);
+
+  const fresh = await freshProfiles(users);
+
+  return filter(fresh, profile => {
+    const { lvl, hp, stamina } = profile;
+    return (lvl <= maxLevel || !maxLevel) && hp >= minHp && stamina > 0;
+  });
+
+}
 
 export async function guildHp(ctx) {
 

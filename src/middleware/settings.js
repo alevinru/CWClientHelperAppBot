@@ -60,7 +60,7 @@ function checkSetting(key, val) {
 
   switch (setting.type) {
     case Boolean:
-      return /^(0|false)$/.test(val) ? false : !!val;
+      return /^(0|false|off)$/.test(val) ? false : !!val;
     case String:
       return val.toString();
     default:

@@ -163,7 +163,7 @@ export async function guildHp(ctx) {
       lvl,
       [prop]: value,
     } = profile;
-    return `${cls} <code>${lvl}</code> ${userName} ${icon}<b>${p.expView(value)}</b>`;
+    return `${cls} <code>${lvl}</code> ${userName} ${icon} ${p.expView(value)}`;
   }
 
 }

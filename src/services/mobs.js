@@ -178,24 +178,22 @@ export function mobOfferView(mobHunt) {
 
   return { text: reply.join('\n'), keyboard };
 
-  function helperView(player, role) {
+}
 
-    const { userName, firstName, lastName } = player;
-    const { hp } = player;
-    const name = lo.filter([firstName, lastName]).join(' ') || 'Name unknown';
+function helperView(player, role) {
 
-    const roleIcon = role === 'encountered' ? '🆘' : '🤝';
+  const { userName, firstName, lastName } = player;
+  const { hp, level } = player;
+  const name = lo.filter([firstName, lastName]).join(' ') || 'Name unknown';
 
-    return lo.filter([
-      roleIcon,
-      player.level && `<code>${player.level}</code>`,
-      // isCheaters && streak >= 0 && `🔪${streak}`,
-      `<a href="https://t.me/${userName}">${escapeName(name)}</a>`,
-      // !(hp || role) && (notExpired ? 'is helping' : 'was helping'),
-      // !notExpired && role,
-      hp && `❤${hp}`,
-    ]).join(' ');
-  }
+  const roleIcon = role === 'encountered' ? '🆘' : '🤝';
+
+  return lo.filter([
+    roleIcon,
+    level && `<code>${level}</code>`,
+    hp && `❤${hp}`,
+    `<a href="https://t.me/${userName}">${escapeName(name)}</a>`,
+  ]).join(' ');
 
 }
 

@@ -2,6 +2,8 @@ import get from 'lodash/get';
 import orderBy from 'lodash/orderBy';
 import filter from 'lodash/filter';
 import sumBy from 'lodash/sumBy';
+import chunk from 'lodash/chunk';
+import { eachSeriesAsync } from 'sistemium-telegram/services/async';
 
 import { refreshProfile } from '../services/auth';
 import {
@@ -136,7 +138,8 @@ export async function usersToPin(ctx) {
     return;
   }
 
-  const [, levelParam] = match;
+  const [, levelParam, silent] = match;
+  const replyOptions = { disable_notification: !!silent };
   const minLevel = parseInt(levelParam, 0);
   const minHp = await Chat.findValue(ctx.chat.id, CHAT_SETTING_HELPERS_MIN_HP) || 900;
 
@@ -150,20 +153,23 @@ export async function usersToPin(ctx) {
       cls,
       `<code>${lvl}</code>`,
       `❤${hp}`,
-      username,
+      silent ? `<code>${username}</code>` : username,
     ].join(' ');
   }));
 
   if (!reply.length) {
     const noData = [
       `No helpers with <b>${minHp}</b> hp`,
-      levelParam ? `and level less or equal than <b>${levelParam}</b>` : '',
+      levelParam ? ` and level less or equal than <b>${levelParam}</b>` : '',
     ];
     await ctx.replyWithHTML(noData.join(''));
     return;
   }
 
-  await ctx.replyWithHTML(reply.join('\n'));
+  await eachSeriesAsync(chunk(reply, 4), async replyChunk => {
+    await ctx.replyWithHTML(replyChunk.join('\n'), replyOptions);
+    await new Promise(resolve => setTimeout(resolve, 500));
+  });
 
 }
 

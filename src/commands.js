@@ -96,7 +96,7 @@ botHears('classes', users.classes);
 Chats
  */
 
-botHears('chat[ _]set[ _]([a-z]+)[ _](on|off)', chat.setting);
+botHears('chat[ _]set[ _]([a-z]+)[ _](on|off|\\d+)', chat.setting);
 botHears('chat[ _]get[ _]([a-z]+)', chat.viewSetting);
 botHears('chat[ _]settings', chat.viewSettings);
 
@@ -177,7 +177,7 @@ botMessage(Telegraf.optional(mobs.metMobFilter, mobs.onMobForward));
 bot.action(/mob_helping/, mobs.onHelpingClick);
 
 botHears('fight_[0-9a-z]+', mobs.showMobFight);
-botHears('helpers[ _](\\d\\d)', users.usersToPin);
+botHears('helpers[ _](\\d\\d)([ _]silent)?', users.usersToPin);
 botHears('helpers', users.usersToPin);
 
 /*

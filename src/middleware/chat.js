@@ -8,6 +8,7 @@ const SETTING_NAMES = [
   c.CHAT_SETTING_NOTIFY_BATTLE,
   c.CHAT_SETTING_MOB_HUNTING,
   c.CHAT_SETTING_PIN_MOBS,
+  c.CHAT_SETTING_HELPERS_MIN_HP,
 ];
 
 export async function setting(ctx) {
@@ -22,9 +23,20 @@ export async function setting(ctx) {
     return;
   }
 
-  const value = /^(on|true|1)$/.test(onOff);
+  const value = settingTypedValue(onOff, name);
   await Chat.saveValue(chat.id, name, value);
   await ctx.replyWithHTML(settingView(chat.id, name, 'from now on is', value));
+
+}
+
+
+function settingTypedValue(stringValue, name) {
+
+  if (name === c.CHAT_SETTING_HELPERS_MIN_HP) {
+    return parseInt(stringValue, 0);
+  }
+
+  return /^(on|true|1)$/.test(stringValue);
 
 }
 

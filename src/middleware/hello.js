@@ -3,6 +3,7 @@ import orderBy from 'lodash/orderBy';
 import filter from 'lodash/filter';
 import sumBy from 'lodash/sumBy';
 import chunk from 'lodash/chunk';
+
 import { eachSeriesAsync } from 'sistemium-telegram/services/async';
 
 import { refreshProfile } from '../services/auth';
@@ -124,7 +125,7 @@ async function profileStats(prop, cmd) {
 
 export async function usersToPin(ctx) {
 
-  const { session: { profile }, match } = ctx;
+  const { session: { profile }, match, chat } = ctx;
 
   if (!profile) {
     await ctx.replyWithHTML('Not authorized');
@@ -138,19 +139,21 @@ export async function usersToPin(ctx) {
     return;
   }
 
-  const [, levelParam, silent] = match;
-  const replyOptions = { disable_notification: !!silent };
-  const minLevel = parseInt(levelParam, 0);
+  const [, levelParam, silentParam] = match;
+  const silent = !!silentParam || levelParam === 'silent';
+  const minLevel = /^\d+$/.test(levelParam) ? parseInt(levelParam, 0) : 0;
+
+  debug('usersToPin', chat.id, tag, minLevel, silent);
+
   const minHp = await Chat.findValue(ctx.chat.id, CHAT_SETTING_HELPERS_MIN_HP) || 900;
 
   const data = await guildUsersWithHp(tag, minLevel, minHp);
 
   const reply = filter(data.map(player => {
-    const { class: cls, lvl, hp } = player;
+    const { lvl, hp } = player;
     const pin = userSetting(player, NOTIFY_FOR_MOBS);
     const username = `@${player.tgUsername}`;
     return pin && [
-      cls,
       `<code>${lvl}</code>`,
       `❤${hp}`,
       silent ? `<code>${username}</code>` : username,
@@ -160,14 +163,14 @@ export async function usersToPin(ctx) {
   if (!reply.length) {
     const noData = [
       `No helpers with <b>${minHp}</b> hp`,
-      levelParam ? ` and level less or equal than <b>${levelParam}</b>` : '',
+      minLevel ? ` and level less or equal than <b>${minLevel}</b>` : '',
     ];
     await ctx.replyWithHTML(noData.join(''));
     return;
   }
 
   await eachSeriesAsync(chunk(reply, 4), async replyChunk => {
-    await ctx.replyWithHTML(replyChunk.join('\n'), replyOptions);
+    await ctx.replyWithHTML(replyChunk.join('\n'), { disable_notification: silent });
     await new Promise(resolve => setTimeout(resolve, 500));
   });
 

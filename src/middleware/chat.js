@@ -62,7 +62,8 @@ export async function viewSettings(ctx) {
   }
 
   const values = lo.map(settings, ({ name, value }) => {
-    return `<code>${name}</code>: <b>${value ? 'on' : 'off'}</b>`;
+    const typed = lo.isBoolean(value) && (value ? 'on' : 'off') || value;
+    return `<code>${name}</code>: <b>${typed}</b>`;
   });
 
   const reply = [

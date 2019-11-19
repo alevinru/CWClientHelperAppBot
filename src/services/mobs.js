@@ -160,9 +160,9 @@ export function mobOfferView(mobHunt) {
 
   reply.push('', ...helpersToAdd);
 
-  const maxLevel = mobs.length ? Math.floor(lo.sumBy(mobs, 'level') / mobs.length) : level;
+  const maxLevel = maxLevelHelpers(mobHunt);
 
-  const go = maxLevel ? `⚔ <= ${maxLevel + HELPER_LEVEL_RANGE}` : '⚔';
+  const go = maxLevel ? `⚔ <= ${maxLevel}` : '⚔';
 
   const buttons = [];
 
@@ -178,6 +178,11 @@ export function mobOfferView(mobHunt) {
 
   return { text: reply.join('\n'), keyboard };
 
+}
+
+export function maxLevelHelpers({ mobs, level }) {
+  const l = mobs.length ? Math.floor(lo.sumBy(mobs, 'level') / mobs.length) : level;
+  return l ? l + HELPER_LEVEL_RANGE : 0;
 }
 
 function helperView(player, role) {

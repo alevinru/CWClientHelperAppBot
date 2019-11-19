@@ -125,7 +125,7 @@ async function profileStats(prop, cmd) {
 
 export async function usersToPin(ctx) {
 
-  const { session: { profile }, match, chat } = ctx;
+  const { session: { profile }, match } = ctx;
 
   if (!profile) {
     await ctx.replyWithHTML('Not authorized');
@@ -141,13 +141,22 @@ export async function usersToPin(ctx) {
 
   const [, levelParam, silentParam] = match;
   const silent = !!silentParam || levelParam === 'silent';
-  const minLevel = /^\d+$/.test(levelParam) ? parseInt(levelParam, 0) : 0;
+  const maxLevel = /^\d+$/.test(levelParam) ? parseInt(levelParam, 0) : 0;
 
-  debug('usersToPin', chat.id, tag, minLevel, silent);
+  await callHelpers(ctx, tag, maxLevel, silent);
+
+}
+
+
+export async function callHelpers(ctx, tag, maxLevel, silent) {
+
+  const { chat } = ctx;
+
+  debug('callHelpers', chat.id, tag, maxLevel, silent);
 
   const minHp = await Chat.findValue(ctx.chat.id, CHAT_SETTING_HELPERS_MIN_HP) || 900;
 
-  const data = await guildUsersWithHp(tag, minLevel, minHp);
+  const data = await guildUsersWithHp(tag, maxLevel, minHp);
 
   const reply = filter(data.map(player => {
     const { lvl, hp } = player;
@@ -163,7 +172,7 @@ export async function usersToPin(ctx) {
   if (!reply.length) {
     const noData = [
       `No helpers with <b>${minHp}</b> hp`,
-      minLevel ? ` and level less or equal than <b>${minLevel}</b>` : '',
+      maxLevel ? ` and level less or equal than <b>${maxLevel}</b>` : '',
     ];
     await ctx.replyWithHTML(noData.join(''));
     return;

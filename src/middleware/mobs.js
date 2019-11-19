@@ -4,6 +4,7 @@ import { fromCWFilter } from '../config/filters';
 import * as m from '../services/mobs';
 import * as a from '../services/auth';
 import MobHunt, { secondsToFight } from '../models/MobHunt';
+import { callHelpers } from './hello';
 
 import log from '../services/log';
 import Chat, * as c from '../models/Chat';
@@ -89,17 +90,26 @@ export async function onMobForward(ctx) {
     $push: { replies: { messageId: replyMsg.message_id, chatId } },
   });
 
-  // const hunt = await MobHunt.findOne({ command });
-
   if (ctx.from.id !== chatId && await Chat.findValue(chatId, c.CHAT_SETTING_PIN_MOBS)) {
     await ctx.pinChatMessage(replyMessageId)
       .catch(onPinError)
       .catch(error);
   }
 
-  if (ctx.session.profile) {
+  const { profile } = ctx.session;
+
+  if (profile) {
+
     updateHelperStats(hunt, ctx.from.id, ctx.session, reporterRole)
       .catch(error);
+
+    const { guild_tag: tag } = profile;
+    const shouldCallHelpers = await Chat.findValue(chatId, c.CHAT_SETTING_CALL_HELPERS);
+
+    if (tag && shouldCallHelpers) {
+      await callHelpers(ctx, tag, m.maxLevelHelpers(hunt), false);
+    }
+
   }
 
   scheduleUpdate(chatId, replyMessageId, hunt, ctx.telegram);

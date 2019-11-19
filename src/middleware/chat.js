@@ -9,6 +9,7 @@ const SETTING_NAMES = [
   c.CHAT_SETTING_MOB_HUNTING,
   c.CHAT_SETTING_PIN_MOBS,
   c.CHAT_SETTING_HELPERS_MIN_HP,
+  c.CHAT_SETTING_CALL_HELPERS,
 ];
 
 export async function setting(ctx) {

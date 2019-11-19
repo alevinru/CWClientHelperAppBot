@@ -17,7 +17,7 @@ import { getSession } from '../services/session';
 import log from '../services/log';
 import * as p from '../services/profile';
 import User from '../models/User';
-import Chat, { CHAT_SETTING_HELPERS_MIN_HP } from '../models/Chat';
+import Chat, { CHAT_SETTING_CALL_HELPERS, CHAT_SETTING_HELPERS_MIN_HP } from '../models/Chat';
 
 const { debug } = log('mw:hello');
 
@@ -123,6 +123,43 @@ async function profileStats(prop, cmd) {
 
 }
 
+export async function showHelpers(ctx, tag) {
+
+  const players = await guildUsers(tag);
+
+  const helpers = filter(players, player => userSetting(player, NOTIFY_FOR_MOBS));
+
+  const reply = filter(helpers.map(player => {
+    const { lvl, class: cls, userName } = player.profile;
+    const username = `@${player.username}`;
+    return [
+      `<code>${lvl}</code>`,
+      cls,
+      `<code>${username}</code>`,
+      `<b>${userName}</b>`,
+    ].join(' ');
+  }));
+
+  if (!reply.length) {
+    const noData = [
+      `There are no helpers for the <b>${tag}</b> guild`,
+    ];
+    await ctx.replyWithHTML(noData.join(''));
+    return;
+  }
+
+  reply.splice(0, 0, `<b>${tag}</b> helpers`, '');
+
+  const minHp = await Chat.findValue(ctx.chat.id, CHAT_SETTING_HELPERS_MIN_HP) || 900;
+  const callSet = await Chat.findValue(ctx.chat.id, CHAT_SETTING_CALL_HELPERS);
+
+  reply.push('', `Min hp setting is <b>${minHp}</b>`);
+  reply.push(`Auto call helpers is <b>${callSet ? 'enabled' : 'disabled'}</b>`);
+
+  await ctx.replyWithHTML(reply.join('\n'), { disable_notification: true });
+
+}
+
 export async function usersToPin(ctx) {
 
   const { session: { profile }, match } = ctx;
@@ -140,6 +177,12 @@ export async function usersToPin(ctx) {
   }
 
   const [, levelParam, silentParam] = match;
+
+  if (levelParam === 'show') {
+    await showHelpers(ctx, tag);
+    return;
+  }
+
   const silent = !!silentParam || levelParam === 'silent';
   const maxLevel = /^\d+$/.test(levelParam) ? parseInt(levelParam, 0) : 0;
 
@@ -178,7 +221,7 @@ export async function callHelpers(ctx, tag, maxLevel, silent) {
     return;
   }
 
-  await eachSeriesAsync(chunk(reply, 4), async replyChunk => {
+  await eachSeriesAsync(chunk(reply, 3), async replyChunk => {
     await ctx.replyWithHTML(replyChunk.join('\n'), { disable_notification: silent });
     await new Promise(resolve => setTimeout(resolve, 500));
   });

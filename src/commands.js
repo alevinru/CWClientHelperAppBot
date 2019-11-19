@@ -178,7 +178,7 @@ bot.action(/mob_helping/, mobs.onHelpingClick);
 
 botHears('fight_[0-9a-z]+', mobs.showMobFight);
 botHears('helpers[ _](\\d\\d)([ _]silent)?', users.usersToPin);
-botHears('helpers[ _]?(silent)?', users.usersToPin);
+botHears('helpers[ _]?(silent|show)?', users.usersToPin);
 
 /*
 Other

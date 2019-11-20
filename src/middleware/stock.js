@@ -1,20 +1,21 @@
 import lo from 'lodash';
 
 import { cw, getAuthToken } from '../services';
-import { getToken } from '../services/auth';
+import { getToken, cachedProfile } from '../services/auth';
 import log from '../services/log';
 import { itemCodeByName } from '../services/cw';
+
 import * as s from '../services/stocking';
 
 const { debug } = log('mw:stock');
 
-export default async function (ctx) {
+export async function stockInfo(ctx) {
 
   const { session, from: { id: sessionUserId } } = ctx;
   const [, matchUserId] = ctx.match;
   const userId = matchUserId || sessionUserId;
 
-  debug(userId);
+  debug('stockInfo', userId);
 
   try {
     const token = matchUserId ? await getToken(matchUserId) : getAuthToken(session);
@@ -48,4 +49,51 @@ export default async function (ctx) {
     ctx.replyError('/stock', e);
   }
 
+}
+
+export async function potionsInfo(ctx) {
+
+  const { from, session } = ctx;
+
+  const token = getAuthToken(session);
+
+  if (!token) {
+    await ctx.replyWithHTML('You need /auth to view potions');
+    return;
+  }
+
+  const profile = await cachedProfile(from.id);
+
+  try {
+
+    const { stock } = await cw.requestStock(parseInt(from.id, 0), token);
+    const info = s.potionPackInfo(stock);
+
+    const reply = [
+      `<code>${profile.lvl}</code> <b>${profile.userName}</b> VPB packs`,
+      '',
+    ];
+
+    if (info.length) {
+      reply.push(...info.map(potionPackListItem));
+    } else {
+      reply.push('No potions at all!');
+    }
+
+    await ctx.replyWithHTML(reply.join('\n'));
+
+  } catch (e) {
+    if (e.requiredOperation) {
+      await ctx.replyWithHTML('You have to /authStock to view potions');
+      return;
+    }
+    ctx.replyError('/potions', e);
+  }
+
+}
+
+
+function potionPackListItem(pack) {
+  const { potionType, qty, icon } = pack;
+  return `${icon} <b>${qty}</b> ${potionType}`;
 }

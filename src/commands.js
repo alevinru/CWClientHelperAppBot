@@ -17,7 +17,7 @@ import * as chat from './middleware/chat';
 import * as mobs from './middleware/mobs';
 
 import start from './middleware/start';
-import stock from './middleware/stock';
+import * as stock from './middleware/stock';
 import profile, { guildInfo, craftBook } from './middleware/profile';
 import gearInfo, * as gear from './middleware/gear';
 
@@ -104,7 +104,8 @@ botHears('chat[ _]settings', chat.viewSettings);
 ChatWars
  */
 
-botHears('stock[ _]?(\\d*)', stock);
+botHears('stock[ _]?(\\d*)', stock.stockInfo);
+botHears('potions', stock.potionsInfo);
 botHears('profile[ _]?(\\d*)', profile);
 botHears('gear[ _]?(\\d*)', gearInfo);
 botHears('hat', gear.hat);

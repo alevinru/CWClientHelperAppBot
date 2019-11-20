@@ -9,6 +9,17 @@ export function formatStockItem(name, qty) {
 
 const POTION_RE = /(vial|potion|bottle) of ([a-z]+)/i;
 
+const POTIONS_ICONS_MAP = new Map([
+  ['Health', '❤'],
+  ['Mana', '💧'],
+  ['Greed', '🤑'],
+  ['Rage', '😡'],
+  ['Morph', '🌀'],
+  ['Nature', '🌿'],
+  ['Peace', '🧘'],
+  ['Twilight', '🌓'],
+]);
+
 export function potionPackInfo(stock) {
 
   const byType = lo.groupBy(stockArray(stock), ({ name }) => {
@@ -18,12 +29,15 @@ export function potionPackInfo(stock) {
 
   delete byType.undefined;
 
-  return lo.map(byType, (items, potionType) => {
+  const data = lo.map(byType, (items, potionType) => {
     return {
       potionType,
-      qty: lo.min(items.map(({ qty }) => qty)),
+      qty: items.length === 3 ? lo.min(items.map(({ qty }) => qty)) : 0,
+      icon: POTIONS_ICONS_MAP.get(potionType),
     };
   });
+
+  return lo.orderBy(data, 'potionType');
 
 }
 

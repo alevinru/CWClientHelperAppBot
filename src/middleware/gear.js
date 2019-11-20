@@ -134,7 +134,6 @@ export async function hat(ctx) {
   try {
     const { stock } = await a.stockInfo(fromUserId, session);
     const { '🎃Pumpkin': pump } = stock;
-    debug(JSON.stringify(stock));
 
     // stats = `${stats}\n🎃${pump || 0} 🍾${p09 || 0} 🎩${hats || 0}`;
     stats = `❤${hp} 🎃${pump || 0}`;

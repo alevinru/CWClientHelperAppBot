@@ -123,13 +123,15 @@ async function tokenByUserIdOrSession(userId, session) {
   return getToken(userId);
 }
 
-export async function refreshProfile(userId, session) {
-
-  let profile;
-
-  profile = await hgetAsync(USERS_HASH, userId)
+export async function cachedProfile(userId) {
+  return hgetAsync(USERS_HASH, userId)
     .then(u => (u ? JSON.parse(u) : {}))
     .then(res => res.profile);
+}
+
+export async function refreshProfile(userId, session) {
+
+  let profile = await cachedProfile(userId);
 
   try {
 

@@ -6,6 +6,7 @@ import filter from 'lodash/filter';
 import lo from 'lodash';
 import { checkViewAuth, getOwnTag } from './profile';
 import * as a from '../services/auth';
+import * as s from '../services/stocking';
 import log from '../services/log';
 import { getAuthorizedUsers } from '../services/users';
 
@@ -119,6 +120,7 @@ export async function hat(ctx) {
   const {
     // event_streak: streak, event_pretended: pretended,
     hp,
+    stamina,
   } = profile;
 
   // if (!streak && !pretended) {
@@ -134,12 +136,18 @@ export async function hat(ctx) {
   try {
     const { stock } = await a.stockInfo(fromUserId, session);
     const { '🎃Pumpkin': pump } = stock;
+    const potions = s.potionPackInfo(stock);
 
     // stats = `${stats}\n🎃${pump || 0} 🍾${p09 || 0} 🎩${hats || 0}`;
-    stats = `❤${hp} 🎃${pump || 0}`;
+    stats = [
+      `❤${hp} 🔋${stamina} 🎃${pump || 0}`,
+      lo.filter(potions, hatPotions).map(({ icon, qty }) => `${icon} ${qty}`)
+        .join(' '),
+    ].join('\n');
+
   } catch (e) {
     if (e.requiredOperation) {
-      errors.push('⚠ need /authStock to show pumpkins');
+      errors.push('⚠ need /authStock to show pumpkins and potions');
     } else {
       error('hat:stock', e);
     }
@@ -176,6 +184,10 @@ export async function hat(ctx) {
 
   await ctx.replyWithHTML(reply.join('\n'));
 
+}
+
+function hatPotions({ potionType }) {
+  return potionType.match(/rage|peace|morph/i);
 }
 
 export default async function (ctx) {

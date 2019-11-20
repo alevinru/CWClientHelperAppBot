@@ -1,10 +1,10 @@
-import filter from 'lodash/filter';
-import map from 'lodash/map';
+import lo from 'lodash';
 
 import { cw, getAuthToken } from '../services';
 import { getToken } from '../services/auth';
 import log from '../services/log';
 import { itemCodeByName } from '../services/cw';
+import * as s from '../services/stocking';
 
 const { debug } = log('mw:stock');
 
@@ -24,15 +24,15 @@ export default async function (ctx) {
     const freeStock = stockLimit - stockSize;
     const alert = freeStock < 0 ? '⚠' : '';
 
-    const filtered = filter(map(stock, (qty, name) => {
-      const code = itemCodeByName(name);
-      return /^[0-3]\d$/.test(code) && { name, qty };
-    }));
+    const filtered = lo.filter(s.stockArray(stock), item => {
+      return /^[0-3]\d$/.test(itemCodeByName(item.name));
+    });
 
     const res = [
       `Stock available: ${alert}<b>${freeStock}</b> of <b>${stockLimit}</b>`,
       '',
-      ...map(filtered, ({ qty, name }) => formatStockItem(name, qty)).sort(),
+      ...lo.map(filtered, ({ qty, name }) => s.formatStockItem(name, qty))
+        .sort(),
     ];
 
     await ctx.replyWithHTML(res.join('\n'));
@@ -48,10 +48,4 @@ export default async function (ctx) {
     ctx.replyError('/stock', e);
   }
 
-}
-
-export function formatStockItem(name, qty) {
-  const code = itemCodeByName(name);
-  const codeLabel = code ? `<code>${code || '??'}</code>` : '';
-  return filter(['▪', codeLabel, `${name}: ${qty}`]).join(' ');
 }

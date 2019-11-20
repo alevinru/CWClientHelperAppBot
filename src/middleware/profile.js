@@ -5,8 +5,8 @@ import replace from 'lodash/replace';
 import orderBy from 'lodash/orderBy';
 import * as a from '../services/auth';
 import * as util from '../services/util';
+import * as s from '../services/stocking';
 
-import { formatStockItem } from './stock';
 import { isTrusted } from '../services/users';
 import log from '../services/log';
 import * as p from '../services/profile';
@@ -112,7 +112,7 @@ export async function guildInfo(ctx) {
       const itemsFilter = stockFilter(filterItems);
       const matchingItems = (qty, itemName) => {
         const itemMatches = itemsFilter(qty, itemName);
-        return itemMatches && formatStockItem(itemName, qty);
+        return itemMatches && s.formatStockItem(itemName, qty);
       };
       const items = filter(map(stock, matchingItems));
 

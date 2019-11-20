@@ -133,10 +133,11 @@ export async function hat(ctx) {
 
   try {
     const { stock } = await a.stockInfo(fromUserId, session);
-    const { 'Bottle of Greed': p09, '🎃Pumpkin': pump } = stock;
+    const { '🎃Pumpkin': pump } = stock;
+    debug(JSON.stringify(stock));
 
     // stats = `${stats}\n🎃${pump || 0} 🍾${p09 || 0} 🎩${hats || 0}`;
-    stats = `❤${hp} 🎃${pump || 0} 🍾${p09 || 0}`;
+    stats = `❤${hp} 🎃${pump || 0}`;
   } catch (e) {
     if (e.requiredOperation) {
       errors.push('⚠ need /authStock to show pumpkins');

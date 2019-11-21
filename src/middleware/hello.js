@@ -4,6 +4,7 @@ import filter from 'lodash/filter';
 import sumBy from 'lodash/sumBy';
 import chunk from 'lodash/chunk';
 
+
 import { eachSeriesAsync } from 'sistemium-telegram/services/async';
 
 import { refreshProfile } from '../services/auth';
@@ -17,7 +18,11 @@ import { getSession } from '../services/session';
 import log from '../services/log';
 import * as p from '../services/profile';
 import User from '../models/User';
-import Chat, { CHAT_SETTING_CALL_HELPERS, CHAT_SETTING_HELPERS_MIN_HP } from '../models/Chat';
+import Chat, {
+  CHAT_SETTING_CALL_HELPERS,
+  CHAT_SETTING_HELPERS_LOW_THRESHOLD,
+  CHAT_SETTING_HELPERS_MIN_HP,
+} from '../models/Chat';
 
 const { debug } = log('mw:hello');
 
@@ -198,8 +203,10 @@ export async function callHelpers(ctx, tag, maxLevel, silent) {
   debug('callHelpers', chat.id, tag, maxLevel, silent);
 
   const minHp = await Chat.findValue(ctx.chat.id, CHAT_SETTING_HELPERS_MIN_HP) || 900;
+  const lowThreshold = await Chat.findValue(ctx.chat.id, CHAT_SETTING_HELPERS_LOW_THRESHOLD);
+  const minLevel = maxLevel && lowThreshold && (maxLevel - lowThreshold);
 
-  const data = await guildUsersWithHp(tag, maxLevel, minHp);
+  const data = await guildUsersWithHp(tag, maxLevel, minLevel, minHp);
 
   const reply = filter(data.map(player => {
     const { lvl, hp } = player;
@@ -215,20 +222,30 @@ export async function callHelpers(ctx, tag, maxLevel, silent) {
   if (!reply.length) {
     const noData = [
       `No helpers with <b>${minHp}</b> hp`,
-      maxLevel ? ` and level less or equal than <b>${maxLevel}</b>` : '',
+      (maxLevel || minLevel) && 'and level',
+      filter([
+        maxLevel && `below <b>${maxLevel + 1}</b>`,
+        minLevel && `above <b>${minLevel - 1}</b>`,
+      ]).join(' and '),
     ];
-    await ctx.replyWithHTML(noData.join(''));
+    await ctx.replyWithHTML(filter(noData).join(' '));
     return;
   }
 
+  const extra = {};
+
+  if (silent) {
+    extra.disable_notification = true;
+  }
+
   await eachSeriesAsync(chunk(reply, 3), async replyChunk => {
-    await ctx.replyWithHTML(replyChunk.join('\n'), { disable_notification: silent });
+    await ctx.replyWithHTML(replyChunk.join('\n'), extra);
     await new Promise(resolve => setTimeout(resolve, 500));
   });
 
 }
 
-async function guildUsersWithHp(tag, maxLevel, minHp = 900) {
+async function guildUsersWithHp(tag, maxLevel, minLevel, minHp = 900) {
 
   const users = await guildUsers(tag);
 
@@ -236,7 +253,10 @@ async function guildUsersWithHp(tag, maxLevel, minHp = 900) {
 
   return filter(fresh, profile => {
     const { lvl, hp, stamina } = profile;
-    return (lvl <= maxLevel || !maxLevel) && hp >= minHp && stamina > 0;
+    return (lvl <= maxLevel || !maxLevel)
+      && (lvl >= minLevel || !minLevel)
+      && hp >= minHp
+      && stamina > 0;
   });
 
 }

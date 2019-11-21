@@ -10,6 +10,7 @@ const SETTING_NAMES = [
   c.CHAT_SETTING_PIN_MOBS,
   c.CHAT_SETTING_HELPERS_MIN_HP,
   c.CHAT_SETTING_CALL_HELPERS,
+  c.CHAT_SETTING_HELPERS_LOW_THRESHOLD,
 ];
 
 export async function setting(ctx) {
@@ -33,11 +34,13 @@ export async function setting(ctx) {
 
 function settingTypedValue(stringValue, name) {
 
-  if (name === c.CHAT_SETTING_HELPERS_MIN_HP) {
-    return parseInt(stringValue, 0);
+  switch (name) {
+    case c.CHAT_SETTING_HELPERS_MIN_HP:
+    case c.CHAT_SETTING_HELPERS_LOW_THRESHOLD:
+      return parseInt(stringValue, 0);
+    default:
+      return /^(on|true|1)$/.test(stringValue);
   }
-
-  return /^(on|true|1)$/.test(stringValue);
 
 }
 

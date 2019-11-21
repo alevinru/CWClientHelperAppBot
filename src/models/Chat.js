@@ -26,6 +26,7 @@ export const CHAT_SETTING_MOB_HUNTING = 'mobHunting';
 export const CHAT_SETTING_NOTIFY_BATTLE = 'notifyBattle';
 export const CHAT_SETTING_HELPERS_MIN_HP = 'helpersMinHp';
 export const CHAT_SETTING_CALL_HELPERS = 'callHelpers';
+export const CHAT_SETTING_HELPERS_LOW_THRESHOLD = 'helpersLowThreshold';
 
 function saveValue(chatId, name, value) {
   const key = { id: chatId, botId: BOT_ID };

@@ -12,6 +12,7 @@
     "watchLint": "nodemon --exec 'npm run lint'",
     "test": "mocha --require esm",
     "babel-node": "babel-node",
+    "digests": "nodemon --exec 'npm run lint && babel-node' -- src/digests/bot.js",
     "start": "nodemon --exec 'npm run lint && babel-node' -- src/index.js",
     "pkg": "cp package.json dist",
     "build": "npm run lint && babel src -d dist && npm run pkg",

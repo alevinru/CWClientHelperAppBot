@@ -181,7 +181,9 @@ export function mobOfferView(mobHunt) {
 }
 
 export function maxLevelHelpers({ mobs, level }) {
-  const l = mobs.length ? Math.floor(lo.sumBy(mobs, 'level') / mobs.length) : level;
+  const plainMobs = lo.filter(mobs, mob => mobType(mob) !== 'champion');
+  // debug('maxLevelHelpers', plainMobs);
+  const l = mobs.length ? Math.floor(lo.sumBy(plainMobs, 'level') / plainMobs.length) : level;
   return l ? l + HELPER_LEVEL_RANGE : 0;
 }
 

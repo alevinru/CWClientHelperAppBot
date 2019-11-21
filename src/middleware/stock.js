@@ -55,6 +55,11 @@ export async function potionsInfo(ctx) {
 
   const { from, session } = ctx;
 
+  if (!session.profile) {
+    await ctx.replyWithHTML('You need /auth to view potions');
+    return;
+  }
+
   const token = getAuthToken(session);
 
   if (!token) {
@@ -95,5 +100,8 @@ export async function potionsInfo(ctx) {
 
 function potionPackListItem(pack) {
   const { potionType, qty, icon } = pack;
-  return `${icon} <b>${qty}</b> ${potionType}`;
+  return [
+    `${icon} <b>${qty}</b> ${potionType}`,
+    `(${['vial', 'potion', 'bottle'].map(name => pack.items[name] || 0).join(',')})`,
+  ].join(' ');
 }

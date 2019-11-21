@@ -34,10 +34,14 @@ export function potionPackInfo(stock) {
       potionType,
       qty: items.length === 3 ? lo.min(items.map(({ qty }) => qty)) : 0,
       icon: POTIONS_ICONS_MAP.get(potionType),
+      items: lo.mapValues(lo.keyBy(items, item => {
+        const [, name] = item.name.match(POTION_RE);
+        return lo.lowerCase(name);
+      }), 'qty'),
     };
   });
 
-  return lo.orderBy(data, 'potionType');
+  return lo.orderBy(lo.filter(data, 'icon'), 'potionType');
 
 }
 

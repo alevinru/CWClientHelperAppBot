@@ -45,7 +45,10 @@ export function formatProfile(profile, userId) {
     `⚔${atk} 🛡${def} ❤️${hp}${mana ? `💧${mana}` : ''}`,
     `💰${gold || 0} 👝${pouches || 0} 🔥${expView(exp)} 🔋${stamina}`,
     '',
-    `/gear${withUserId} /stock${withUserId}`,
+    lo.filter([
+      `/gear${withUserId} /stock${withUserId}`,
+      !withUserId && '/potions',
+    ]).join(' '),
   ];
 
   return res.join('\n');

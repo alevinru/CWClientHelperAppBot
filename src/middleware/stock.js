@@ -1,7 +1,7 @@
 import lo from 'lodash';
 
 import { cw, getAuthToken } from '../services';
-import { getToken, cachedProfile } from '../services/auth';
+import { getToken, cachedProfile, guildInfo } from '../services/auth';
 import log from '../services/log';
 import { itemCodeByName } from '../services/cw';
 
@@ -93,6 +93,49 @@ export async function potionsInfo(ctx) {
       return;
     }
     ctx.replyError('/potions', e);
+  }
+
+}
+
+
+export async function guildPotionsInfo(ctx) {
+
+  const { session, from } = ctx;
+
+  if (!session.profile) {
+    return;
+  }
+
+  debug('guildPotionsInfo', from.id);
+
+  try {
+
+    const info = await guildInfo(from.id, session);
+    const { tag, castle, name } = info;
+    const reply = [
+      `${castle} [${tag}] <b>${name}</b> potions`,
+      '',
+    ];
+
+    const potions = s.potionPackInfo(info.stock);
+
+    reply.push(...potions.map(potionPackListItem));
+
+    if (!potions.length) {
+      reply.push('No potions in stock!');
+    }
+
+    await ctx.replyWithHTML(reply.join('\n'));
+
+  } catch (e) {
+
+    if (!e.message && e.requiredOperation) {
+      await ctx.replyWithHTML('You have to do /authGuild to view guild potions');
+    } else {
+      console.error(e);
+      await ctx.replyError('guildInfo', e.message || e);
+    }
+
   }
 
 }

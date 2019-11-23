@@ -106,6 +106,8 @@ ChatWars
 
 botHears('stock[ _]?(\\d*)', stock.stockInfo);
 botHears('potions', stock.potionsInfo);
+botHears('gp', stock.guildPotionsInfo);
+
 botHears('profile[ _]?(\\d*)', profile);
 botHears('gear[ _]?(\\d*)', gearInfo);
 botHears('hat', gear.hat);

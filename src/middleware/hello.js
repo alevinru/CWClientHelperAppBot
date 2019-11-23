@@ -277,6 +277,8 @@ export async function guildHp(ctx) {
     return;
   }
 
+  await refreshProfile(ctx.from.id, ctx.session);
+
   const users = await getAuthorizedUsers(ctx.session);
 
   debug('guildHp:users', users.length, prop, minValue);

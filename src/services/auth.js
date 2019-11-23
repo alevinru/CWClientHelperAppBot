@@ -147,6 +147,7 @@ export async function refreshProfile(userId, session) {
 
       if (session) {
         session.teamId = teamId;
+        session.profile = profile;
       }
 
       await hsetAsync(USERS_HASH, userId, JSON.stringify(user));

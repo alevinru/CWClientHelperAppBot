@@ -7,7 +7,7 @@ import { itemCodeByName } from '../services/cw';
 
 import * as s from '../services/stocking';
 
-const { debug } = log('mw:stock');
+const { debug, error } = log('mw:stock');
 
 export async function stockInfo(ctx) {
 
@@ -132,7 +132,7 @@ export async function guildPotionsInfo(ctx) {
     if (!e.message && e.requiredOperation) {
       await ctx.replyWithHTML('You have to do /authGuild to view guild potions');
     } else {
-      console.error(e);
+      error(e);
       await ctx.replyError('guildInfo', e.message || e);
     }
 

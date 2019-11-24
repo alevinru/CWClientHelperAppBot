@@ -1,10 +1,36 @@
 import lo from 'lodash';
 import { itemCodeByName } from './cw';
 
-export function formatStockItem(name, qty) {
-  const code = itemCodeByName(name);
-  const codeLabel = code ? `<code>${code || '??'}</code>` : '';
-  return lo.filter(['▪', codeLabel, `${name}: ${qty}`]).join(' ');
+export function formatStockItem(name, qty, itemCodes) {
+  const index = itemCodesIndex(itemCodes);
+  const codes = index[name] || [itemCodeByName(name) || '??'];
+  let qtyLeft = qty;
+  let isUncertain = false;
+  return lo.map(lo.orderBy(codes, customFirst), (code, idx) => {
+    const codeLabel = code ? `<code>${code || '??'}</code>` : '';
+
+    const isCustom = codeIsCustom(code);
+    const isLast = (idx + 1) === codes.length;
+    let localQty = (isCustom && 1) || (!isUncertain && isLast && qtyLeft);
+
+    if (localQty) {
+      qtyLeft -= localQty;
+    } else {
+      isUncertain = true;
+      localQty = `1 to ${qtyLeft}`;
+    }
+
+    return lo.filter(['▪', codeLabel, `${name}: ${localQty}`]).join(' ');
+
+  }).join('\n');
+}
+
+function codeIsCustom(code) {
+  return code.match(/^u\d+/);
+}
+
+function customFirst(code) {
+  return codeIsCustom(code) ? `_${code}` : code;
 }
 
 const POTION_RE = /(vial|potion|bottle) of ([a-z]+)/i;
@@ -47,4 +73,9 @@ export function potionPackInfo(stock) {
 
 export function stockArray(stock) {
   return lo.map(stock, (qty, name) => ({ name, qty }));
+}
+
+function itemCodesIndex(itemCodes) {
+  const mapped = lo.map(itemCodes, (name, code) => ({ name, code }));
+  return lo.mapValues(lo.groupBy(mapped, 'name'), items => lo.map(items, 'code'));
 }

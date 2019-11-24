@@ -3,6 +3,7 @@ import map from 'lodash/map';
 import get from 'lodash/get';
 import replace from 'lodash/replace';
 import orderBy from 'lodash/orderBy';
+// import flatten from 'lodash/flatten';
 import * as a from '../services/auth';
 import * as util from '../services/util';
 import * as s from '../services/stocking';
@@ -108,17 +109,21 @@ export async function guildInfo(ctx) {
 
     } else {
 
-      const { stock } = info;
+      const { itemCodes, stock } = info;
+
       const itemsFilter = stockFilter(filterItems);
+
       const matchingItems = (qty, itemName) => {
         const itemMatches = itemsFilter(qty, itemName);
-        return itemMatches && s.formatStockItem(itemName, qty);
+        return itemMatches && s.formatStockItem(itemName, qty, itemCodes);
       };
+
       const items = filter(map(stock, matchingItems));
 
       if (!items.length) {
-        reply.push(`\nNo items on stock match <b>${filterItems}</b>`);
+        reply.push(`\nNo items on stock match <code>${filterItems}</code>`);
       } else {
+        reply.push(`🔎 <code>${filterItems}</code>`);
         reply.push('', ...items);
       }
 
@@ -154,6 +159,8 @@ function stockFilter(text) {
   }
 
   const re = util.searchRe(text);
+
+  debug('stockFilter', re);
 
   return (qty, itemName) => re.test(itemName);
 

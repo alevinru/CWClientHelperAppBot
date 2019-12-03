@@ -47,6 +47,32 @@ export async function shopInfo(ctx) {
 
 }
 
+export async function guruSpecialShops(ctx) {
+
+  const [, spParam, levelParam] = ctx.match;
+
+  const re = new RegExp(`^${lo.escapeRegExp(spParam)}`);
+
+  const gurus = await shopping.gurus(parseInt(levelParam, 0));
+
+  const title = levelParam ? `${levelParam}⃣ level` : 'Top';
+
+  const matching = find(gurus, ({ specialization }) => re.test(specialization));
+
+  if (!matching) {
+    await ctx.replyWithHTML(`No gurus matching specialization <code>${spParam}</code>`);
+    return;
+  }
+
+  const reply = [
+    `<b>${title} quality</b> gurus`,
+    '',
+    specializationGuruList(matching),
+  ];
+
+  await ctx.replyWithHTML(reply.join('\n'));
+
+}
 
 export async function guruShops(ctx) {
 
@@ -125,7 +151,7 @@ export async function maintenanceShops(ctx) {
 function specializationGuruList({ specialization, level, shops }) {
 
   return [
-    `<b>${lo.upperFirst(specialization)}</b> level ${level}⃣`,
+    `<b>${shopping.specializationTitle(specialization)}</b> level ${level}⃣`,
     '',
     ...shops.map(guruAsListItem),
   ].join('\n');

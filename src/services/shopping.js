@@ -54,3 +54,13 @@ export async function lastDigestOpened() {
   const last = await Shop.findOne().sort({ lastOpened: -1 });
   return last ? last.lastOpened : null;
 }
+
+export function specializationTitle(specialization) {
+
+  if (specialization === 'shield') {
+    return 'Shield and Dagger';
+  }
+
+  return lo.upperFirst(specialization);
+
+}

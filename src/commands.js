@@ -126,6 +126,7 @@ botHears('ws[r]?_([a-z0-9]+)', shops.shopInfo);
 botHears('mnt[ _]([a-z]+)', shops.maintenanceShops);
 bot.command('mnt', shops.maintenanceShops);
 botHears('guru[ _](\\d)', shops.guruShops);
+botHears('guru[ _]([a-z]{1,10})[ _]?(\\d)?', shops.guruSpecialShops);
 botHears('guru', shops.guruShops);
 
 botHears('l_([0-9]+)', au.showItem);

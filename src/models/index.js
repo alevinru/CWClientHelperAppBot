@@ -15,6 +15,7 @@ export async function connect() {
   const connected = await mongoose.connect(`mongodb://${mongoUrl}`, {
     useNewUrlParser: true,
     useCreateIndex: true,
+    useUnifiedTopology: true,
   });
   debug('connected', mongoUrl);
   return connected;

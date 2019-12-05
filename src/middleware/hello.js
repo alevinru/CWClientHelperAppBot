@@ -10,7 +10,7 @@ import { eachSeriesAsync } from 'sistemium-telegram/services/async';
 import { refreshProfile } from '../services/auth';
 import {
   saveUser, getAuthorizedUsers, saveTrust, freshProfiles,
-  guildUsers, userSetting, NOTIFY_FOR_MOBS,
+  guildUsers, userSetting, NOTIFY_FOR_MOBS, HELPER_MIN_HP,
 } from '../services/users';
 import { BOT_ID } from '../services/bot';
 import { getSession } from '../services/session';
@@ -252,11 +252,15 @@ async function guildUsersWithHp(tag, maxLevel, minLevel, minHp = 900) {
   const fresh = await freshProfiles(users);
 
   return filter(fresh, profile => {
+
     const { lvl, hp, stamina } = profile;
+    const userMinHp = userSetting(profile, HELPER_MIN_HP);
+
     return (lvl <= maxLevel || !maxLevel)
       && (lvl >= minLevel || !minLevel)
-      && hp >= minHp
+      && hp >= (userMinHp || minHp)
       && stamina > 0;
+
   });
 
 }

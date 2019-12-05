@@ -183,9 +183,14 @@ export function applyDefaults(settings) {
 export const NOTIFY_ORDER_FAIL = 'notifyOrderFail';
 export const NOTIFY_SALES = 'notifySales';
 export const NOTIFY_FOR_MOBS = 'notifyForMobs';
+export const HELPER_MIN_HP = 'helperMinHp';
 
 export function allSettings() {
   return {
+    [HELPER_MIN_HP]: {
+      type: Number,
+      defaults: null,
+    },
     [NOTIFY_FOR_MOBS]: {
       type: Boolean,
       defaults: false,

@@ -63,6 +63,11 @@ function checkSetting(key, val) {
       return /^(0|false|off)$/.test(val) ? false : !!val;
     case String:
       return val.toString();
+    case Number:
+      if (val === 'null') {
+        return null;
+      }
+      return parseInt(val, 0);
     default:
       throw new Error('Unknown setting type');
   }

@@ -2,6 +2,7 @@ import sumBy from 'lodash/sumBy';
 import round from 'lodash/round';
 import take from 'lodash/take';
 import orderBy from 'lodash/orderBy';
+import filter from 'lodash/filter';
 import addHours from 'date-fns/add_hours';
 import addMinutes from 'date-fns/add_minutes';
 import addDays from 'date-fns/add_days';
@@ -106,7 +107,7 @@ const NAMES_LIMIT = 12;
 export async function itemBuyers(ctx) {
 
   const { match } = ctx;
-  const [, cmd, shares, itemCode, priceType, priceParam, hoursParam, hm = 'h'] = match;
+  const [, cmd, shares, castles, itemCode, priceType, priceParam, hoursParam, hm = 'h'] = match;
   const itemName = itemNameByCode(itemCode);
 
   debug(cmd, shares, itemCode, priceType, priceParam, hoursParam, itemName || 'unknown itemCode');
@@ -132,15 +133,17 @@ export async function itemBuyers(ctx) {
   };
 
   const cmdType = cmd === 'who' ? 'buyer' : 'seller';
+  const grouping = { castle: `$${cmdType}Castle` };
+
+  if (!castles) {
+    grouping.name = `$${cmdType}Name`;
+  }
 
   const pipeline = [
     { $match: dealsFilter },
     {
       $group: {
-        _id: {
-          name: `$${cmdType}Name`,
-          castle: `$${cmdType}Castle`,
-        },
+        _id: grouping,
         qty: { $sum: '$qty' },
         cnt: { $sum: 1 },
       },
@@ -168,7 +171,7 @@ export async function itemBuyers(ctx) {
 
   const operatorLabel = priceType ? eOperator(priceType).replace('$', '') : 'of';
 
-  const CROSS = shares ? ' ~ ' : ' x ';
+  const CROSS = shares ? '~' : 'x';
   const PERCENT = shares ? '%' : '';
 
   const res = [
@@ -176,7 +179,12 @@ export async function itemBuyers(ctx) {
     `for the price ${operatorLabel} <b>${dealsPrice}</b>:`,
     '',
     ...namesToShow.map(({ _id: { name, castle }, qty }) => {
-      return `${castle} ${name}${CROSS}<b>${sharePercent(qty)}</b>${PERCENT}`;
+      return filter([
+        castle,
+        name,
+        CROSS,
+        `<b>${sharePercent(qty)}</b>${PERCENT}`,
+      ]).join(' ');
     }),
   ];
 

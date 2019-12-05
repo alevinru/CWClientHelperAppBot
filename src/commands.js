@@ -42,7 +42,7 @@ bot.hears(/^\/grant[ _]trading[ _](\d*)[ ]?(\d*)$/, traders.grantTrading);
 bot.hears(/^\/t[_ ]?([a-z0-9]{1,2}\d+)[ _]?(\d+)?([hm])?$/, trades.itemStats);
 
 const who = [
-  '(who|whos)(p?)[_ ]?([a-z0-9]{1,2}\\d+)',
+  '(who|whos)(p?)(c?)[_ ]?([a-z0-9]{1,2}\\d+)',
   '[ _]([><=]{0,2})(\\d+)[ _](\\d+)([hmdw])?',
 ];
 botHears(who.join(''), trades.itemBuyers);

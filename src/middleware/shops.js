@@ -129,9 +129,11 @@ export async function maintenanceShops(ctx) {
 
     const title = `Best ${ownerCastle || ''}${ownerCastle ? ' ' : ''}maintenance`;
 
+    const sorted = orderBy(shops, shop => mntPrice(shop, ownerCastle));
+
     const reply = [
       `${title} <b>${distanceInWordsToNow(lastOpened)}</b> ago:\n`,
-      ...shops.map(shopAsMaintenanceListItem),
+      ...sorted.map(shop => shopAsMaintenanceListItem(shop, ownerCastle)),
     ];
 
     if (!shops.length) {
@@ -302,20 +304,26 @@ function castleByLetter(letter) {
 
 }
 
-function shopAsMaintenanceListItem(shop) {
+function shopAsMaintenanceListItem(shop, castle) {
 
-  const { ownerCastle, mana, maintenanceCost } = shop;
-
+  const { ownerCastle, mana } = shop;
   const link = `/wsr_${shop.link}`;
+  const cost = mntPrice(shop, castle);
 
   return [
-    `💰${maintenanceCost}`,
+    `💰${cost}`,
     `💧${mana}`,
     link,
     `${ownerCastle}`,
     shopOwnerAsLink(shop, '/wsr_'),
   ].join(' ');
 
+}
+
+function mntPrice(shop, castle) {
+  const { ownerCastle, maintenanceCost, castleDiscount } = shop;
+  return castle === ownerCastle
+    ? Math.ceil(maintenanceCost * (100.0 - castleDiscount) / 100.0) : maintenanceCost;
 }
 
 function shopOwnerAsLink({ link, ownerName }, prefix = '/ws_') {

@@ -171,7 +171,7 @@ export async function itemBuyers(ctx) {
 
   const operatorLabel = priceType ? eOperator(priceType).replace('$', '') : 'of';
 
-  const CROSS = shares ? '~' : 'x';
+  const CROSS = shares ? '~' : 'x ';
   const PERCENT = shares ? '%' : '';
 
   const res = [
@@ -182,8 +182,7 @@ export async function itemBuyers(ctx) {
       return filter([
         castle,
         name,
-        CROSS,
-        `<b>${sharePercent(qty)}</b>${PERCENT}`,
+        ` ${CROSS}<b>${sharePercent(qty)}</b>${PERCENT}`,
       ]).join(' ');
     }),
   ];
@@ -192,7 +191,7 @@ export async function itemBuyers(ctx) {
     const othersQty = totalQty - sumBy(namesToShow, 'qty');
     res.push('', [
       `<b>${deals.length - NAMES_LIMIT}</b>`,
-      `others${CROSS}<b>${sharePercent(othersQty)}</b>${PERCENT}`,
+      `others ${CROSS}<b>${sharePercent(othersQty)}</b>${PERCENT}`,
     ].join(' '));
   }
 

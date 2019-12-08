@@ -276,6 +276,11 @@ const qualityLetter = {
   Great: 'C',
   Excellent: 'B',
   Masterpiece: 'A',
+  'Epic Fine': 'SE',
+  'Epic High': 'SD',
+  'Epic Great': 'SC',
+  'Epic Excellent': 'SB',
+  'Epic Masterpiece': 'SA',
 };
 
 function conditionIcon({ condition }) {

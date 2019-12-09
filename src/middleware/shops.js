@@ -352,7 +352,7 @@ function shopAsListItem(shop) {
 
 function shopInfoText(shop, lastDigest) {
 
-  const { lastOpened, qualityCraftLevel } = shop;
+  const { lastOpened, qualityCraftLevel, castleDiscount } = shop;
 
   const openAgo = lastOpened ? distanceInWordsToNow(lastOpened) : '';
   const closedAgo = lastOpened ? distanceInWordsToNow(addMinutes(lastOpened, 5)) : 'sometime';
@@ -380,6 +380,10 @@ function shopInfoText(shop, lastDigest) {
 
   if (maintenanceEnabled) {
     reply.push(`🔧 Maintenance for <code>${shop.maintenanceCost}</code>💰`);
+  }
+
+  if (castleDiscount) {
+    reply.push(`🏰 ${castleDiscount}%`);
   }
 
   if (offers) {

@@ -322,7 +322,7 @@ function shopAsMaintenanceListItem(shop, castle) {
 
 function mntPrice(shop, castle) {
   const { ownerCastle, maintenanceCost, castleDiscount } = shop;
-  return castle === ownerCastle
+  return (castle === ownerCastle && castleDiscount)
     ? Math.ceil(maintenanceCost * (100.0 - castleDiscount) / 100.0) : maintenanceCost;
 }
 

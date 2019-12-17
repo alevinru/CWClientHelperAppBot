@@ -95,17 +95,26 @@ export async function guildInfo(ctx) {
 
     const info = await a.guildInfo(replyUserId || userId, !replyUserId && session);
     const { tag, castle, name } = info;
+    const { emoji } = info;
     const reply = [
-      `${castle} [${tag}] ${name}`,
+      filter([
+        castle,
+        emoji,
+        `[${tag}]`,
+        name,
+      ]).join(' '),
     ];
 
     if (!filterItems) {
 
-      const { stockLimit, stockSize } = info;
+      const { stockLimit, stockSize, glory } = info;
+      const { repair } = info;
       const freeStock = stockLimit - stockSize;
       const alert = freeStock < 0 ? '⚠' : '';
 
-      reply.push(`Stock available: ${alert}<b>${freeStock}</b> of <b>${stockLimit}</b>`);
+      reply.push(`\n🎖 Glory: <b>${glory}</b>`);
+      reply.push(`🛠 Guild repair: <b>${repair ? 'enabled' : 'disabled'}</b>`);
+      reply.push(`📦 Stock available: ${alert}<b>${freeStock}</b> of <b>${stockLimit}</b>`);
 
     } else {
 
@@ -115,7 +124,7 @@ export async function guildInfo(ctx) {
 
       const matchingItems = (qty, itemName) => {
         const itemMatches = itemsFilter(qty, itemName);
-        return itemMatches && s.formatStockItem(itemName, qty, itemCodes);
+        return itemMatches && s.formatStockItem(itemName, qty, itemCodes, true);
       };
 
       const items = filter(map(stock, matchingItems));

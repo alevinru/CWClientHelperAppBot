@@ -1,7 +1,7 @@
 import lo from 'lodash';
 import { itemCodeByName } from './cw';
 
-export function formatStockItem(name, qty, itemCodes) {
+export function formatStockItem(name, qty, itemCodes, withdraw = false) {
   const index = itemCodesIndex(itemCodes);
   const codes = index[name] || [itemCodeByName(name) || '??'];
   let qtyLeft = qty;
@@ -11,7 +11,8 @@ export function formatStockItem(name, qty, itemCodes) {
 
     const isCustom = codeIsCustom(code);
     const isLast = (idx + 1) === codes.length;
-    let localQty = (isCustom && 1) || (!isUncertain && isLast && qtyLeft);
+    const isOne = (codes.length - idx) === qtyLeft;
+    let localQty = (isCustom && 1) || (!isUncertain && (isLast && qtyLeft || isOne && 1));
 
     if (localQty) {
       qtyLeft -= localQty;
@@ -20,9 +21,17 @@ export function formatStockItem(name, qty, itemCodes) {
       localQty = `1 to ${qtyLeft}`;
     }
 
-    return lo.filter(['▪', codeLabel, `${name}: ${localQty}`]).join(' ');
+    return lo.filter([
+      '▪',
+      codeLabel,
+      `${name}: ${withdraw ? wdLink(code, localQty, localQty) : localQty}`,
+    ]).join(' ');
 
   }).join('\n');
+}
+
+function wdLink(code, name, qty) {
+  return `<a href="http://t.me/share/url?url=/g_withdraw ${code} ${qty}">${name}</a>`;
 }
 
 function codeIsCustom(code) {

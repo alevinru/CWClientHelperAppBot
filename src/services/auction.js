@@ -1,17 +1,22 @@
 import { distanceInWordsToNow, format } from 'date-fns';
+import lo from 'lodash';
+import * as g from './gearing';
 
 export function auctionItemView(item) {
 
   const { lotId, status, itemName } = item;
   const { sellerName, sellerCastle } = item;
   const { buyerName, buyerCastle } = item;
-  const { finishedAt, endAt } = item;
+  const { finishedAt, endAt, quality } = item;
 
   const reply = [
-    `<b>${itemName}</b>`,
+    lo.filter([
+      `<b>${itemName}</b>`,
+      quality && `(${g.qualityLetter(quality)})`,
+    ]).join(' '),
     `/l_${lotId} by ${sellerCastle}${sellerName}`,
     `Status: ${status}`,
-    `Price: ${item.price}`,
+    `Price: ${item.price}👝`,
   ];
 
   if (finishedAt) {

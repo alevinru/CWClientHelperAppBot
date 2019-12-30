@@ -7,6 +7,7 @@ import lo from 'lodash';
 import { checkViewAuth, getOwnTag } from './profile';
 import * as a from '../services/auth';
 import * as s from '../services/stocking';
+import * as g from '../services/gearing';
 import log from '../services/log';
 import { getAuthorizedUsers } from '../services/users';
 
@@ -270,40 +271,16 @@ function gearItem(gear, type) {
 }
 
 
-const qualityLetter = {
-  Fine: 'E',
-  High: 'D',
-  Great: 'C',
-  Excellent: 'B',
-  Masterpiece: 'A',
-  'Epic Fine': 'SE',
-  'Epic High': 'SD',
-  'Epic Great': 'SC',
-  'Epic Excellent': 'SB',
-  'Epic Masterpiece': 'SA',
-};
-
-function conditionIcon({ condition }) {
-  switch (condition) {
-    case 'broken':
-      return '🛠';
-    case 'reinforced':
-      return '✨';
-    default:
-      return '';
-  }
-}
-
 function gearItemHtml(gear) {
 
   const { name, icon, stam } = gear;
   const { atk, def, quality } = gear;
   const { streak } = gear;
 
-  const condition = conditionIcon(gear);
+  const condition = g.conditionIcon(gear);
 
   const stats = [
-    quality && `(${qualityLetter[quality]})`,
+    quality && `(${g.qualityLetter(quality)})`,
     atk && `⚔${atk}`,
     def && `🛡${def}`,
     streak && `🔪${streak}`,

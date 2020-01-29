@@ -115,7 +115,8 @@ botHears('hat', gear.hat);
 botHears('gi[ _](.+)', guildInfo);
 bot.command('gi', guildInfo);
 
-botHears('(craftBook|cb)[ _]?(.*)', craftBook);
+botHears('(craftBook|cb)[ _](.+)', craftBook);
+botHears('(craftBook|cb)', craftBook);
 
 botHears('wtb[ _]([a-z0-9]+)[ _](\\d+)[ _](\\d+)[ ]?(\\d*)', wtb);
 

@@ -200,17 +200,25 @@ export async function craftBook(ctx) {
     }));
 
     if (!items.length) {
-      await ctx.replyWithHTML(`No items in craft book match <b>${filterItems}</b>`);
+      await ctx.replyWithHTML(`No items in craft book match <code>${filterItems}</code>`);
       return;
     }
 
-    const reply = orderBy(items).join('\n');
-    await ctx.replyWithHTML(reply);
+    await ctx.replyWithHTML([
+      `Recipes match: <b>${items.length}</b>`,
+      '',
+      ...orderBy(items),
+    ].join('\n'));
 
     debug(`GET /craftBook/${userId}`, info.tag);
 
   } catch (e) {
-    await ctx.replyError('viewCraftBook', e);
+    if (!e.message && e.requiredOperation) {
+      await ctx.replyWithHTML('You have to do /authCraftBook to view your craft info');
+    } else {
+      error(e);
+      await ctx.replyError('viewCraftBook', e.message || e);
+    }
   }
 
 }

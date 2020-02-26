@@ -29,7 +29,12 @@ export default async function (msg, ack) {
         updateOne: {
           filter: query,
           update: {
-            $set: { ...item, lastOpened },
+            $set: {
+              castleDiscount: 0,
+              guildDiscount: 0,
+              ...item,
+              lastOpened,
+            },
             $currentDate: { ts: true },
             // $setOnInsert: { cts },
           },

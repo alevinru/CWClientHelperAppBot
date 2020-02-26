@@ -59,6 +59,7 @@ export default model('MobHunt', schema);
 export const modifiersMap = new Map([
   ['blunt resist', '🔨'],
   ['spear resist', '🔱'],
+  ['bow resist', '🏹'],
   ['enraged', '😡'],
   ['toughness', '👊'],
   ['remedy bottles', '❤️'],

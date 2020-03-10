@@ -9,7 +9,7 @@ export async function lastKnownUserID(name) {
 
   const lastDuel = await Duel.findOne({
     'players.name': name,
-  }).sort('-id');
+  }).sort({ _id: -1 });
 
   if (!lastDuel) {
     return null;

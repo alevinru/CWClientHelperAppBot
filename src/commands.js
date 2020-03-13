@@ -13,6 +13,7 @@ import * as traders from './middleware/traders';
 import * as users from './middleware/hello';
 import * as battleReports from './middleware/battleReports';
 import * as battles from './middleware/battles';
+import * as alliances from './middleware/alliances';
 import * as chat from './middleware/chat';
 import * as mobs from './middleware/mobs';
 
@@ -159,6 +160,8 @@ Battles
 botMessage(Telegraf.optional(battles.reportFilter, battles.onReportForward));
 botHears('ba[ _]([\\d]{6})[ _]([\\d]{2})', battles.showBattleByCode);
 botHears('ba', battles.showLastBattle);
+
+botHears('ab', alliances.showLastAllianceBattle);
 
 
 botMessage(Telegraf.optional(battleReports.reportFilter, battleReports.onReportForward));

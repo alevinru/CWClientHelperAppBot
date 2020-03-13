@@ -135,6 +135,52 @@ export function battleFromText(text, forwardDate) {
 
 }
 
+export function resultStatus(result) {
+
+  switch (result) {
+    case 'breached':
+      return '⚔';
+    case 'protected':
+      return '🛡';
+    default:
+      return '';
+  }
+
+}
+
+export function difficultyStatus(result) {
+
+  if (!result.gold && !result.atkLeaders) {
+    return '😴';
+  }
+
+  if (result.ga) {
+    return '🔱';
+  }
+
+  switch (result.difficulty) {
+    case 0:
+      return result.result === 'breached' ? '😎' : '👌';
+    case 1:
+      return resultStatus(result.result);
+    case 2:
+      return '⚡';
+    default:
+      return '🤷‍️';
+  }
+}
+
+const DIGEST_IDS = new Map([
+  ['c/1369273162', 'ChatWarsDigest'],
+  // ['', 'chtwrsreports'],
+]);
+
+const DIGEST_IDS_RE = new RegExp(`${[...DIGEST_IDS.keys()].join('|')}`);
+
+export function reportLinkHref(reportLink) {
+  return reportLink.replace(DIGEST_IDS_RE, id => DIGEST_IDS.get(id));
+}
+
 
 function battleEffects(results) {
 

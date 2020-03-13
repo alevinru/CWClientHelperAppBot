@@ -161,18 +161,6 @@ function gotBattleReport({ date }) {
   ];
 }
 
-
-const DIGEST_IDS = new Map([
-  ['c/1369273162', 'ChatWarsDigest'],
-  // ['', 'chtwrsreports'],
-]);
-
-const DIGEST_IDS_RE = new RegExp(`${[...DIGEST_IDS.keys()].join('|')}`);
-
-function reportLinkHref(reportLink) {
-  return reportLink.replace(DIGEST_IDS_RE, id => DIGEST_IDS.get(id));
-}
-
 export function battleView(battle) {
 
   const { date, results, reportLink } = battle;
@@ -184,7 +172,7 @@ export function battleView(battle) {
     ...map(resultsByStatus, (r, code) => {
       return [
         '',
-        `${resultStatus(code)} <b>${r.length}</b> ${code}`,
+        `${b.resultStatus(code)} <b>${r.length}</b> ${code}`,
         '',
         ...map(orderBy(r, ['score'], ['desc']), battleResultView),
       ].join('\n');
@@ -198,46 +186,11 @@ export function battleView(battle) {
   }
 
   if (reportLink) {
-    res.push('', `<a href="${reportLinkHref(reportLink)}">Full report</a>`);
+    res.push('', `<a href="${b.reportLinkHref(reportLink)}">Full report</a>`);
   }
 
   return res;
 
-}
-
-function resultStatus(result) {
-
-  switch (result) {
-    case 'breached':
-      return '⚔';
-    case 'protected':
-      return '🛡';
-    default:
-      return '';
-  }
-
-}
-
-function difficultyStatus(result) {
-
-  if (!result.gold) {
-    return '😴';
-  }
-
-  if (result.ga) {
-    return '🔱';
-  }
-
-  switch (result.difficulty) {
-    case 0:
-      return result.result === 'breached' ? '😎' : '👌';
-    case 1:
-      return resultStatus(result.result);
-    case 2:
-      return '⚡';
-    default:
-      return '🤷‍️';
-  }
 }
 
 function battleResultView(result) {
@@ -247,7 +200,7 @@ function battleResultView(result) {
   return filter([
     result.castle,
     `<code>${padStart(result.score, 2, '0')}</code>`,
-    difficultyStatus(result),
+    b.difficultyStatus(result),
     gold && `${gold > 0 ? '+' : ''}${gold}💰`,
     atk && `${Math.ceil(atk / 1000)}K👊`,
   ]).join(' ');

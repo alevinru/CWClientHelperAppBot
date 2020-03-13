@@ -3,32 +3,35 @@ import * as b from './battles';
 
 export function allianceBattleView(allianceBattle) {
 
-  const { date, reportLink } = allianceBattle;
+  const { date, reportLink, results } = allianceBattle;
 
-  const resultsByStatus = lo.groupBy(allianceBattle.results, 'result');
+  const orderedResults = lo.orderBy(results, 'name');
 
-  const resultsArray = lo.map(resultsByStatus, (results, code) => ({ results, code }));
-  const orderedResults = lo.orderBy(resultsArray, ['code'], ['desc']);
-
-  const res = [
+  return [
     `<b>${b.dateFormat(date)}</b> alliances battle`,
-    ...lo.map(orderedResults, ({ results, code }) => {
-      return [
-        '',
-        `${b.resultStatus(code)} <b>${results.length}</b> ${code}`,
-        '',
-        ...lo.map(lo.orderBy(results, 'name'), battleResultView),
-      ].join('\n');
-    }),
+    '',
+    `<a href="${b.reportLinkHref(reportLink)}">Headquarters report</a>`,
+    '',
+    ...lo.map(orderedResults, battleResultView),
   ];
 
-  if (reportLink) {
-    res.push('', `<a href="${b.reportLinkHref(reportLink)}">Full report</a>`);
-  }
+}
 
-  return res;
+
+export function allianceMapStateView(allianceMapState) {
+
+  const { reportLink, results } = allianceMapState;
+
+  const orderedResults = lo.orderBy(results, 'name');
+
+  return [
+    `<a href="${b.reportLinkHref(reportLink)}">Map state report</a>`,
+    '',
+    ...lo.map(orderedResults, mapStateResultView),
+  ];
 
 }
+
 
 function battleResultView(result) {
 
@@ -36,9 +39,22 @@ function battleResultView(result) {
 
   return lo.filter([
     b.difficultyStatus(result),
-    `${result.name}`,
+    result.name,
     stock && `<code>-${stock}</code>📦`,
     glory && `<code>-${glory}</code>🎖`,
+  ]).join(' ');
+
+}
+
+
+function mapStateResultView(result) {
+
+  const { belongsTo } = result;
+
+  return lo.filter([
+    b.difficultyStatus(result),
+    result.name,
+    belongsTo && `🚩 ${belongsTo}`,
   ]).join(' ');
 
 }

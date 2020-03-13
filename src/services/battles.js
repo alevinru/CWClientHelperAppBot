@@ -6,6 +6,7 @@ import padStart from 'lodash/padStart';
 import filter from 'lodash/filter';
 
 import fpGet from 'lodash/fp/get';
+import lo from 'lodash';
 import log from './log';
 
 const { debug } = log('battles');
@@ -135,6 +136,13 @@ export function battleFromText(text, forwardDate) {
 
 }
 
+export function battleResultsArray(battle) {
+  const resultsByStatus = lo.groupBy(battle.results, 'result');
+
+  const resultsArray = lo.map(resultsByStatus, (results, code) => ({ results, code }));
+  return lo.orderBy(resultsArray, ['code'], ['desc']);
+}
+
 export function resultStatus(result) {
 
   switch (result) {
@@ -154,7 +162,7 @@ export function difficultyStatus(result) {
     return '😴';
   }
 
-  if (result.ga) {
+  if (result.ga || result.result === 'protected' && !result.gold && result.difficulty === 2) {
     return '🔱';
   }
 
@@ -172,7 +180,7 @@ export function difficultyStatus(result) {
 
 const DIGEST_IDS = new Map([
   ['c/1369273162', 'ChatWarsDigest'],
-  // ['', 'chtwrsreports'],
+  ['c/1108112459', 'chtwrsreports'],
 ]);
 
 const DIGEST_IDS_RE = new RegExp(`${[...DIGEST_IDS.keys()].join('|')}`);

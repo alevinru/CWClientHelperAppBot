@@ -2,7 +2,6 @@ import filter from 'lodash/filter';
 import map from 'lodash/map';
 import find from 'lodash/find';
 import omit from 'lodash/omit';
-import groupBy from 'lodash/groupBy';
 import padStart from 'lodash/padStart';
 import orderBy from 'lodash/orderBy';
 import sumBy from 'lodash/sumBy';
@@ -165,11 +164,11 @@ export function battleView(battle) {
 
   const { date, results, reportLink } = battle;
 
-  const resultsByStatus = groupBy(results, 'result');
+  const resultsByStatus = b.battleResultsArray(battle);
 
   const res = [
     `<b>${b.dateFormat(date)}</b> battle`,
-    ...map(resultsByStatus, (r, code) => {
+    ...map(resultsByStatus, ({ results: r, code }) => {
       return [
         '',
         `${b.resultStatus(code)} <b>${r.length}</b> ${code}`,

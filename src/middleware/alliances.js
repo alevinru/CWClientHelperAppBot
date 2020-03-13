@@ -3,6 +3,7 @@ import * as b from '../services/battles';
 import * as a from '../services/aliancing';
 
 import AllianceBattle from '../models/AllianceBattle';
+import AllianceMapState from '../models/AllianceMapState';
 
 const { debug } = log('mw:alliances');
 
@@ -37,6 +38,12 @@ async function showAllianceBattle(ctx, date) {
     reply.push(`<code>Not found</code> ${b.dateFormat(date)} battle`);
   } else {
     reply.push(...a.allianceBattleView(battle));
+  }
+
+  const mapStateMongo = await AllianceMapState.findOne(filters);
+
+  if (mapStateMongo) {
+    reply.push('', ...a.allianceMapStateView(mapStateMongo.toObject()));
   }
 
   await ctx.replyWithHTML(reply.join('\n'), { disable_web_page_preview: true });

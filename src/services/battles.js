@@ -150,7 +150,7 @@ export function resultStatus(result) {
 
 export function difficultyStatus(result) {
 
-  if (!result.gold && !result.atkLeaders) {
+  if (!result.gold && !get(result.atkLeaders, 'length')) {
     return '😴';
   }
 

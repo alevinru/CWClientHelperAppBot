@@ -1,10 +1,26 @@
+import log from '../services/log';
 import * as b from '../services/battles';
 import * as a from '../services/aliancing';
 
 import AllianceBattle from '../models/AllianceBattle';
 
+const { debug } = log('mw:alliances');
+
 export async function showLastAllianceBattle(ctx) {
   await showAllianceBattle(ctx, b.battleDate(new Date()));
+}
+
+export async function showAllianceBattleByCode(ctx) {
+
+  const [, dateP, hourP] = ctx.match;
+  const [, year, month, day] = dateP.match(/(\d\d)(\d\d)(\d\d)/);
+
+  const date = new Date(`20${year}-${month}-${day} ${hourP}:00:00.000Z`);
+
+  debug('show', dateP, hourP, date);
+
+  await showAllianceBattle(ctx, date);
+
 }
 
 async function showAllianceBattle(ctx, date) {

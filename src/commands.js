@@ -161,8 +161,8 @@ botMessage(Telegraf.optional(battles.reportFilter, battles.onReportForward));
 botHears('ba[ _]([\\d]{6})[ _]([\\d]{2})', battles.showBattleByCode);
 botHears('ba', battles.showLastBattle);
 
+botHears('ab[ _]([\\d]{6})[ _]([\\d]{2})', alliances.showAllianceBattleByCode);
 botHears('ab', alliances.showLastAllianceBattle);
-
 
 botMessage(Telegraf.optional(battleReports.reportFilter, battleReports.onReportForward));
 

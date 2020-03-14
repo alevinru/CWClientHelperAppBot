@@ -37,15 +37,18 @@ export async function setValue(ctx) {
     return;
   }
 
-  const updatedSetting = { [key]: checkSetting(key, val) };
-
-  const { settings } = user;
-
-  user.settings = { ...settings, ...updatedSetting };
-
-  await user.save();
-
-  await ctx.replyWithHTML(formatSettings(updatedSetting));
+  try {
+    const updatedSetting = { [key]: checkSetting(key, val) };
+    const { settings } = user;
+    user.settings = { ...settings, ...updatedSetting };
+    await user.save();
+    await ctx.replyWithHTML(formatSettings(updatedSetting));
+  } catch (e) {
+    if (ctx.chat.id !== userId) {
+      return;
+    }
+    throw (e);
+  }
 
 }
 

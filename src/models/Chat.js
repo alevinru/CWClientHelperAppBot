@@ -21,6 +21,7 @@ schema.statics.findSettings = findSettings;
 
 export default model('Chat', schema);
 
+export const CHAT_SETTING_ALLIANCE_INFO = 'allianceInfo';
 export const CHAT_SETTING_PIN_MOBS = 'pinMobs';
 export const CHAT_SETTING_MOB_HUNTING = 'mobHunting';
 export const CHAT_SETTING_NOTIFY_BATTLE = 'notifyBattle';

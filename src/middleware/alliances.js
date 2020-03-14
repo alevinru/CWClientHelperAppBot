@@ -9,6 +9,7 @@ import Alliance from '../models/Alliance';
 import AllianceLocation from '../models/AllianceLocation';
 import AllianceBattle from '../models/AllianceBattle';
 import AllianceMapState from '../models/AllianceMapState';
+import Chat, * as c from '../models/Chat';
 
 const { debug } = log('mw:alliances');
 
@@ -43,6 +44,10 @@ export function foundHeadquarterFilter(ctx) {
   return text && fromCWFilter(ctx) && lo.startsWith(text, FOUND_HEADQUARTER_START);
 }
 
+async function enabledAllianceInfo(ctx) {
+  return Chat.findValue(ctx.chat.id, c.CHAT_SETTING_ALLIANCE_INFO);
+}
+
 export async function parseFoundLocation(ctx) {
 
   const { text } = ctx.message;
@@ -52,6 +57,10 @@ export async function parseFoundLocation(ctx) {
   debug('parseFoundLocation', name, lvl, code);
 
   if (!name || !lvl) {
+    return;
+  }
+
+  if (!await enabledAllianceInfo(ctx)) {
     return;
   }
 
@@ -90,6 +99,10 @@ export async function parseFoundHeadquarter(ctx) {
   debug('parseFoundHeadquarter', name, code);
 
   if (!name || !code) {
+    return;
+  }
+
+  if (!await enabledAllianceInfo(ctx)) {
     return;
   }
 

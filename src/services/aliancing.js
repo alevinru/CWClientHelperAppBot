@@ -1,5 +1,8 @@
 import lo from 'lodash';
 import * as b from './battles';
+// import log from './log';
+
+// const { debug } = log('mw:alliance');
 
 export function allianceBattleView(allianceBattle) {
 
@@ -59,13 +62,15 @@ function mapStateResultView(result) {
 
 }
 
-export function allianceTagTasksView({ tag, tasks }) {
+export function allianceTagTasksView({ tag, tasks }, targets = new Map()) {
 
   return [
     `<b>${tag}</b>`,
     tasks.map(({ target, names }) => {
+      const alliance = targets.get(target);
+      const atk = alliance ? `/ga_atk_${alliance}` : target;
       return [
-        `<a href="http://t.me/share/url?url=${target}">${target}</a>`,
+        `<a href="http://t.me/share/url?url=${atk}">${target}</a>`,
         '👉',
         names.join(', '),
       ].join(' ');
@@ -74,7 +79,7 @@ export function allianceTagTasksView({ tag, tasks }) {
 
 }
 
-const TASK_LINE_RE = /^(.{2,3})[ \t]+([^/]+)[ \t]+(\/.+)$/;
+const TASK_LINE_RE = /^(.{2,3})[ \t]+(.+)[ \t]+(.+ .+)$/;
 
 export function parseAllianceTask(text) {
 

@@ -132,9 +132,15 @@ export async function parseTasks(ctx) {
 
   const { text } = ctx.message;
 
+  const alliances = await Alliance.find();
+
+  const targetsMap = new Map(alliances.map(i => [i.name, i.code]));
+
   const tasks = a.parseAllianceTask(text);
   const byTag = a.allianceTasksByTag(tasks);
-  const res = byTag.map(a.allianceTagTasksView);
+  const res = byTag.map(t => a.allianceTagTasksView(t, targetsMap));
+
+  debug('parseTasks', alliances.length, tasks.length, byTag.length, res.length);
 
   await eachSeriesAsync(res, async tagView => {
     await ctx.replyWithHTML(tagView.join('\n\n'));

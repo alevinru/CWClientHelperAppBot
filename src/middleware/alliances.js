@@ -3,7 +3,10 @@ import { eachSeriesAsync } from 'sistemium-telegram/services/async';
 import log from '../services/log';
 import * as b from '../services/battles';
 import * as a from '../services/aliancing';
+import { fromCWFilter } from '../config/filters';
 
+import Alliance from '../models/Alliance';
+import AllianceLocation from '../models/AllianceLocation';
 import AllianceBattle from '../models/AllianceBattle';
 import AllianceMapState from '../models/AllianceMapState';
 
@@ -32,12 +35,12 @@ const FOUND_HEADQUARTER_RE = new RegExp(FOUND_HEADQUARTER);
 
 export function foundObjectiveFilter(ctx) {
   const { text } = ctx.message;
-  return text && lo.startsWith(text, FOUND_LOCATION_START);
+  return text && fromCWFilter(ctx) && lo.startsWith(text, FOUND_LOCATION_START);
 }
 
 export function foundHeadquarterFilter(ctx) {
   const { text } = ctx.message;
-  return text && lo.startsWith(text, FOUND_HEADQUARTER_START);
+  return text && fromCWFilter(ctx) && lo.startsWith(text, FOUND_HEADQUARTER_START);
 }
 
 export async function parseFoundLocation(ctx) {
@@ -52,10 +55,28 @@ export async function parseFoundLocation(ctx) {
     return;
   }
 
+  const level = parseInt(lvl, 0);
+
+  const reply = [];
+
+  const doc = { name, level };
+
+  const op = await AllianceLocation.updateOne({ code }, doc, { upsert: true });
+
+  const { upserted, nModified } = op;
+
+  if (upserted) {
+    reply.push('🆕 location');
+  } else if (nModified) {
+    reply.push('Updated location');
+  } else {
+    reply.push('Existing location');
+  }
+
   await ctx.replyWithHTML([
-    name,
-    lvl,
-    code,
+    ...reply,
+    `<b>${name} lvl.${lvl}</b>`,
+    `<code>${code}</code>`,
   ].join(' '));
 
 }
@@ -72,9 +93,24 @@ export async function parseFoundHeadquarter(ctx) {
     return;
   }
 
+  const reply = [];
+
+  const op = await Alliance.updateOne({ code }, { name }, { upsert: true });
+
+  const { upserted, nModified } = op;
+
+  if (upserted) {
+    reply.push('🆕 headquarter');
+  } else if (nModified) {
+    reply.push('Updated headquarter');
+  } else {
+    reply.push('Existing headquarter');
+  }
+
   await ctx.replyWithHTML([
-    name,
-    code,
+    ...reply,
+    `<b>${name}</b>`,
+    `<code>${code}</code>`,
   ].join(' '));
 
 }

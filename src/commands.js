@@ -157,14 +157,11 @@ bot.command('du', ownArena);
 Battles
  */
 
-botMessage(Telegraf.optional(battles.reportFilter, battles.onReportForward));
+botMessageIf(battles.reportFilter, battles.onReportForward);
 botHears('ba[ _]([\\d]{6})[ _]([\\d]{2})', battles.showBattleByCode);
 botHears('ba', battles.showLastBattle);
 
-botHears('ab[ _]([\\d]{6})[ _]([\\d]{2})', alliances.showAllianceBattleByCode);
-botHears('ab', alliances.showLastAllianceBattle);
-
-botMessage(Telegraf.optional(battleReports.reportFilter, battleReports.onReportForward));
+botMessageIf(battleReports.reportFilter, battleReports.onReportForward);
 
 botHears('rb', battleReports.userReportForPeriod);
 botHears('rb[ _](\\d{1,4})[ _](\\d{1,4})', battleReports.userReportForPeriod);
@@ -176,6 +173,18 @@ botHears('bm[ _]([\\da-h]{24})[ _](.+)', battles.setMaster);
 botHears('rbg[ _]([^ ]+)', battleReports.guildReport);
 botHears('rbg', battleReports.guildReport);
 botHears('rbgw[ _](\\d+)', battleReports.guildReport);
+
+/*
+Alliances
+ */
+
+botMessageIf(alliances.tasksFilter, alliances.parseTasks);
+botMessageIf(alliances.foundObjectiveFilter, alliances.parseFoundLocation);
+botMessageIf(alliances.foundHeadquarterFilter, alliances.parseFoundHeadquarter);
+
+botHears('ab[ _]([\\d]{6})[ _]([\\d]{2})', alliances.showAllianceBattleByCode);
+botHears('ab', alliances.showLastAllianceBattle);
+
 
 /*
 Mobs
@@ -200,4 +209,8 @@ bot.on('message', require('./middleware/message').default);
 
 function botMessage(mw) {
   bot.on('message', mw);
+}
+
+function botMessageIf(filter, mw) {
+  botMessage(Telegraf.optional(filter, mw));
 }

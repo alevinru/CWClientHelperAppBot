@@ -58,3 +58,53 @@ function mapStateResultView(result) {
   ]).join(' ');
 
 }
+
+export function allianceTagTasksView({ tag, tasks }) {
+
+  return [
+    `<b>${tag}</b>`,
+    tasks.map(({ target, names }) => {
+      return [
+        `<a href="http://t.me/share/url?url=${target}">${target}</a>`,
+        '👉',
+        names.join(', '),
+      ].join(' ');
+    }).join('\n\n'),
+  ];
+
+}
+
+const TASK_LINE_RE = /^(.{2,3})[ \t]+([^/]+)[ \t]+(\/.+)$/;
+
+export function parseAllianceTask(text) {
+
+  const lines = text.split('\n');
+
+  const tasks = lines.map(line => {
+    const [, tag, name, target] = line.match(TASK_LINE_RE) || [];
+    return tag && name && target && { tag, name, target };
+  });
+
+  return lo.filter(tasks);
+
+}
+
+export function allianceTasksByTag(tasks) {
+
+  const byTag = lo.groupBy(tasks, 'tag');
+
+  const res = lo.map(byTag, (tagTasks, tag) => {
+    const byTarget = lo.groupBy(tagTasks, 'target');
+    const byTargetArray = lo.map(byTarget, (names, target) => ({
+      target,
+      names: lo.map(lo.orderBy(names, 'name'), ({ name }) => lo.trim(name)),
+    }));
+    return {
+      tag,
+      tasks: lo.orderBy(byTargetArray, 'target'),
+    };
+  });
+
+  return lo.orderBy(res, 'tag');
+
+}

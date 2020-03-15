@@ -1,5 +1,5 @@
 import lo from 'lodash';
-import { eachSeriesAsync } from 'sistemium-telegram/services/async';
+import { eachSeriesAsync, mapSeriesAsync } from 'sistemium-telegram/services/async';
 import log from '../services/log';
 import * as b from '../services/battles';
 import * as a from '../services/aliancing';
@@ -108,7 +108,7 @@ export async function parseFoundLocation(ctx) {
 
   const reply = [header.join(' ')];
 
-  const owner = await a.locationOwner({ name: fullName });
+  const owner = await a.locationOwner(fullName);
 
   if (owner) {
     reply.push(`🚩 <b>${owner.name}</b> since ${b.dateFormat(owner.date)}`);
@@ -180,6 +180,31 @@ export async function parseTasks(ctx) {
 
 export async function showLastAllianceBattle(ctx) {
   await showAllianceBattle(ctx, b.battleDate(new Date()));
+}
+
+export async function showLocations(ctx) {
+
+  const alliances = await AllianceLocation.find({ expired: { $eq: null } })
+    .sort({ name: 1 });
+
+  const list = await mapSeriesAsync(alliances, async al => {
+    const fullName = `${al.name} lvl.${al.level}`;
+    const owner = await a.locationOwner(fullName);
+    let res = `<code>${al.code}</code> ${fullName}`;
+    if (owner) {
+      res += `\n ╰${owner.name} since ${b.dateFormat(owner.date)}`;
+    }
+    return res;
+  });
+
+  const reply = [
+    '<b>Alliance locations</b>',
+    '',
+    ...list,
+  ];
+
+  await ctx.replyWithHTML(reply.join('\n'));
+
 }
 
 export async function showAlliances(ctx) {

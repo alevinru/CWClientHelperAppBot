@@ -34,10 +34,10 @@ export async function allianceLocations(alliance) {
 }
 
 
-export async function locationOwner(location) {
+export async function locationOwner(name) {
 
   const battle = await AllianceMapState.findOne({
-    results: { $elemMatch: { name: location.name, belongsTo: { $ne: null } } },
+    results: { $elemMatch: { name, belongsTo: { $ne: null } } },
   }, { 'results.$': 1, date: 1 })
     .sort({ date: -1 });
 

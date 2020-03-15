@@ -3,11 +3,10 @@ import * as b from './battles';
 
 // import Alliance from '../models/Alliance';
 // import AllianceLocation from '../models/AllianceLocation';
-// import AllianceBattle from '../models/AllianceBattle';
+import AllianceBattle from '../models/AllianceBattle';
 import AllianceMapState from '../models/AllianceMapState';
 
 import log from './log';
-import AllianceBattle from '../models/AllianceBattle';
 
 const { debug } = log('mw:alliance');
 
@@ -28,11 +27,30 @@ export async function allianceLocations(alliance) {
 
   const names = lo.keyBy(namesArray, 'name');
 
-  // debug(lo.map(names, lo.identity));
+  // debug(battles);
 
   return lo.map(names);
 
 }
+
+
+export async function locationOwner(location) {
+
+  const battle = await AllianceMapState.findOne({
+    results: { $elemMatch: { name: location.name, belongsTo: { $ne: null } } },
+  }, { 'results.$': 1, date: 1 })
+    .sort({ date: -1 });
+
+  if (!battle) {
+    return null;
+  }
+
+  // debug(battle.results);
+
+  return { date: battle.date, name: battle.results[0].belongsTo };
+
+}
+
 
 export async function allianceTags(alliance) {
 

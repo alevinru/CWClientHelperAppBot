@@ -39,7 +39,7 @@ export function tasksFilter(ctx) {
 }
 
 const FOUND_LOCATION_START = 'You found hidden location';
-const FOUND_LOCATION = `${FOUND_LOCATION_START} (.+) lvl\\.(\\d+)\\n.* ([^ ]+)$`;
+const FOUND_LOCATION = `${FOUND_LOCATION_START} (.+) lvl\\.(\\d+) .+: ([^ ]+)$`;
 const FOUND_LOCATION_RE = new RegExp(FOUND_LOCATION);
 
 const FOUND_HEADQUARTER_START = 'You found hidden headquarter';
@@ -70,11 +70,12 @@ export async function parseFoundLocation(ctx) {
 
   const { text } = ctx.message;
 
-  const [, name, lvl, code] = text.match(FOUND_LOCATION_RE) || [];
+  const joined = text.replace(/\n/g, ' ');
+  const [, name, lvl, code] = joined.match(FOUND_LOCATION_RE) || [];
 
   debug('parseFoundLocation', name, lvl, code);
 
-  if (!name || !lvl) {
+  if (!name || !lvl || !code) {
     return;
   }
 
@@ -84,27 +85,36 @@ export async function parseFoundLocation(ctx) {
 
   const level = parseInt(lvl, 0);
 
-  const reply = [];
-
   const doc = { name, level };
 
   const op = await AllianceLocation.updateOne({ code }, doc, { upsert: true });
 
   const { upserted, nModified } = op;
 
+  const header = [];
+
   if (upserted) {
-    reply.push('🆕 location');
+    header.push('🆕 location');
   } else if (nModified) {
-    reply.push('Updated location');
+    header.push('Updated location');
   } else {
-    reply.push('Existing location');
+    header.push('Existing location');
   }
 
-  await ctx.replyWithHTML([
-    ...reply,
-    `<b>${name} lvl.${lvl}</b>`,
-    `<code>${code}</code>`,
-  ].join(' '));
+  const fullName = `${name} lvl.${lvl}`;
+
+  header.push(`<b>${fullName}</b>`);
+  header.push(`<code>${code}</code>`);
+
+  const reply = [header.join(' ')];
+
+  const owner = await a.locationOwner({ name: fullName });
+
+  if (owner) {
+    reply.push(`🚩 <b>${owner.name}</b> since ${b.dateFormat(owner.date)}`);
+  }
+
+  await ctx.replyWithHTML(reply.join('\n'));
 
 }
 

@@ -1,9 +1,13 @@
 import lo from 'lodash';
 import * as b from './battles';
 
+// import Alliance from '../models/Alliance';
+// import AllianceLocation from '../models/AllianceLocation';
+// import AllianceBattle from '../models/AllianceBattle';
 import AllianceMapState from '../models/AllianceMapState';
 
 import log from './log';
+import AllianceBattle from '../models/AllianceBattle';
 
 const { debug } = log('mw:alliance');
 
@@ -26,10 +30,38 @@ export async function allianceLocations(alliance) {
 
   // debug(lo.map(names, lo.identity));
 
-  return lo.map(names, lo.identity);
+  return lo.map(names);
 
 }
 
+export async function allianceTags(alliance) {
+
+  if (!alliance) {
+    return null;
+  }
+
+  const battles = await AllianceBattle.find({
+    results: { $elemMatch: { name: alliance.name, defLeaders: { $ne: null } } },
+  }, { 'results.$': 1, date: 1 })
+    .sort({ date: -1 });
+
+  const tagsArray = battles.map(({ date, results: [{ defLeaders }] }) => ({
+    tags: defLeaders.map(tagFromLeader),
+    date,
+  }));
+
+  const tags = lo.uniq(lo.flatMap(tagsArray, 'tags'));
+
+  // debug(tags);
+
+  return lo.orderBy(tags);
+
+}
+
+function tagFromLeader(leader) {
+  const [, tag] = leader.match(/\[(.+)]/);
+  return tag;
+}
 
 export function allianceBattleView(allianceBattle) {
 

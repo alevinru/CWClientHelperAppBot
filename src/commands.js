@@ -178,17 +178,19 @@ botHears('rbgw[ _](\\d+)', battleReports.guildReport);
 Alliances
  */
 
+botHears('ab[ _]([\\d]{6})[ _]([\\d]{2})', alliances.showAllianceBattleByCode);
+botHears('ab', alliances.showLastAllianceBattle);
+
 botMessageIf(alliances.tasksFilter, alliances.parseTasks);
 botMessageIf(alliances.foundObjectiveFilter, alliances.parseFoundLocation);
 botMessageIf(alliances.foundHeadquarterFilter, alliances.parseFoundHeadquarter);
 
-botHears('ab[ _]([\\d]{6})[ _]([\\d]{2})', alliances.showAllianceBattleByCode);
-botHears('ab', alliances.showLastAllianceBattle);
+const { authAlliances } = alliances;
 
-botHears('alliances', alliances.showAlliances);
-botHears('af[ _]([\\da-z]{6})', alliances.showAlliance);
-botHears('af ([a-z]+ [a-z]+)', alliances.showAllianceByName);
-botHears('ga_atk[ _]([\\da-z]{6})', alliances.showAlliance);
+botHearsIf(authAlliances, 'alliances', alliances.showAlliances);
+botHearsIf(authAlliances, 'af[ _]([\\da-z]{6})', alliances.showAllianceByCode);
+botHearsIf(authAlliances, 'af ([a-z]+ [a-z]+)', alliances.showAllianceByName);
+botHearsIf(authAlliances, 'ga_atk[ _]([\\da-z]{6})', alliances.showAllianceByCode);
 
 /*
 Mobs
@@ -217,4 +219,8 @@ function botMessage(mw) {
 
 function botMessageIf(filter, mw) {
   botMessage(Telegraf.optional(filter, mw));
+}
+
+function botHearsIf(filter, command, mw) {
+  botHears(command, Telegraf.optional(filter, mw));
 }

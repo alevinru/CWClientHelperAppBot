@@ -10,8 +10,19 @@ import AllianceLocation from '../models/AllianceLocation';
 import AllianceBattle from '../models/AllianceBattle';
 import AllianceMapState from '../models/AllianceMapState';
 import Chat, * as c from '../models/Chat';
+import globalSetting from '../services/globalSetting';
 
 const { debug } = log('mw:alliances');
+
+export function authAlliances(ctx) {
+  const { profile } = ctx.session;
+  if (!profile) {
+    return false;
+  }
+  const { tags = [] } = globalSetting.getValue('alliances') || {};
+  debug('authAlliances', tags, profile.guild_tag);
+  return tags.indexOf(profile.guild_tag) >= 0;
+}
 
 export function tasksFilter(ctx) {
 
@@ -22,7 +33,8 @@ export function tasksFilter(ctx) {
     return false;
   }
 
-  return lo.startsWith(text, '/allianceTasks');
+  return lo.startsWith(text, '/allianceTasks')
+    && authAlliances(ctx);
 
 }
 
@@ -36,16 +48,22 @@ const FOUND_HEADQUARTER_RE = new RegExp(FOUND_HEADQUARTER);
 
 export function foundObjectiveFilter(ctx) {
   const { text } = ctx.message;
-  return text && fromCWFilter(ctx) && lo.startsWith(text, FOUND_LOCATION_START);
+  return text
+    && fromCWFilter(ctx)
+    && lo.startsWith(text, FOUND_LOCATION_START)
+    && authAlliances(ctx);
 }
 
 export function foundHeadquarterFilter(ctx) {
   const { text } = ctx.message;
-  return text && fromCWFilter(ctx) && lo.startsWith(text, FOUND_HEADQUARTER_START);
+  return text
+    && fromCWFilter(ctx)
+    && lo.startsWith(text, FOUND_HEADQUARTER_START)
+    && authAlliances(ctx);
 }
 
 async function enabledAllianceInfo(ctx) {
-  return Chat.findValue(ctx.chat.id, c.CHAT_SETTING_ALLIANCE_INFO);
+  return authAlliances(ctx) && Chat.findValue(ctx.chat.id, c.CHAT_SETTING_ALLIANCE_INFO);
 }
 
 export async function parseFoundLocation(ctx) {
@@ -130,13 +148,15 @@ export async function parseFoundHeadquarter(ctx) {
 
 export async function parseTasks(ctx) {
 
-  const { text } = ctx.message;
+  const { text, reply_to_message: replyTo } = ctx.message;
+
+  const tasksText = replyTo ? replyTo.text : text;
 
   const alliances = await Alliance.find();
 
   const targetsMap = new Map(alliances.map(i => [i.name, i.code]));
 
-  const tasks = a.parseAllianceTask(text);
+  const tasks = a.parseAllianceTask(tasksText);
   const byTag = a.allianceTasksByTag(tasks);
   const res = byTag.map(t => a.allianceTagTasksView(t, targetsMap));
 
@@ -165,7 +185,8 @@ export async function showAlliances(ctx) {
     '<b>Alliances</b>',
     '',
     ...alliances.map(al => {
-      return `<code>${al.code}</code> ${al.name}`;
+      // return `<code>${al.code}</code> ${al.name}`;
+      return `/af_${al.code} ${al.name}`;
     }),
   ];
 
@@ -181,41 +202,44 @@ export async function showAllianceByName(ctx) {
   const alliance = await Alliance.findOne({ name: { $regex } });
 
   if (!alliance) {
-    await ctx.replyWithHTML(`Not found alliance with name <b>${name}/b>`);
+    await ctx.replyWithHTML(`Not found alliance with name <b>${name}</b>`);
     return;
   }
 
   const locations = await a.allianceLocations(alliance);
+  alliance.tags = await a.allianceTags(alliance);
 
-  await ctx.replyWithHTML(allianceView(alliance, alliance.code, locations).join('\n'));
+  await ctx.replyWithHTML(allianceView(alliance, locations).join('\n'));
 
 }
 
-export async function showAlliance(ctx) {
+export async function showAllianceByCode(ctx) {
 
   const [, code] = ctx.match;
   const alliance = await Alliance.findOne({ code });
 
-  const locations = await a.allianceLocations(alliance);
+  if (!alliance) {
+    await ctx.replyWithHTML(`Not found alliance with code <code>${code}</code>`);
+    return;
+  }
 
-  await ctx.replyWithHTML(allianceView(alliance, code, locations).join('\n'));
+  const locations = await a.allianceLocations(alliance);
+  alliance.tags = await a.allianceTags(alliance);
+
+  await ctx.replyWithHTML(allianceView(alliance, locations).join('\n'));
 
 }
 
 
-function allianceView(alliance, code, locations = []) {
+function allianceView(alliance, locations = []) {
 
-  if (!alliance) {
-    return [`Not found alliance with code <code>${code}</code>`];
-  }
-
-  const { tags = [], name } = alliance.toObject();
+  const { tags = [], name, code } = alliance.toObject();
 
   const res = [
     `<b>${name}</b> ${a.atkLink('⚔️', code)}`,
     '',
-    `code: <code>${code}</code>`,
-    `tags: ${tags.length ? tags.join(', ') : 'no information'}`,
+    `🆔 <code>${code}</code>`,
+    `🏷 ${tags.length ? tags.join(', ') : 'no information'}`,
   ];
 
   if (locations.length) {

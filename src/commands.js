@@ -185,6 +185,10 @@ botMessageIf(alliances.foundHeadquarterFilter, alliances.parseFoundHeadquarter);
 botHears('ab[ _]([\\d]{6})[ _]([\\d]{2})', alliances.showAllianceBattleByCode);
 botHears('ab', alliances.showLastAllianceBattle);
 
+botHears('alliances', alliances.showAlliances);
+botHears('af[ _]([\\da-z]{6})', alliances.showAlliance);
+botHears('af ([a-z]+ [a-z]+)', alliances.showAllianceByName);
+botHears('ga_atk[ _]([\\da-z]{6})', alliances.showAlliance);
 
 /*
 Mobs

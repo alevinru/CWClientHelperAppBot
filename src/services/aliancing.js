@@ -1,8 +1,35 @@
 import lo from 'lodash';
 import * as b from './battles';
-// import log from './log';
 
-// const { debug } = log('mw:alliance');
+import AllianceMapState from '../models/AllianceMapState';
+
+import log from './log';
+
+const { debug } = log('mw:alliance');
+
+debug('alliance-ing');
+
+export async function allianceLocations(alliance) {
+
+  if (!alliance) {
+    return null;
+  }
+
+  const battles = await AllianceMapState.find({
+    results: { $elemMatch: { belongsTo: alliance.name } },
+  }, { 'results.$': 1, date: 1 })
+    .sort({ date: -1 });
+
+  const namesArray = battles.map(({ date, results: [{ name }] }) => ({ name, date }));
+
+  const names = lo.keyBy(namesArray, 'name');
+
+  // debug(lo.map(names, lo.identity));
+
+  return lo.map(names, lo.identity);
+
+}
+
 
 export function allianceBattleView(allianceBattle) {
 
@@ -77,6 +104,10 @@ export function allianceTagTasksView({ tag, tasks }, targets = new Map()) {
     }).join('\n\n'),
   ];
 
+}
+
+export function atkLink(name, code) {
+  return `<a href="http://t.me/share/url?url=/ga_atk_${code}">${name}</a>`;
 }
 
 const TASK_LINE_RE = /^(.{2,3})[ \t]+(.+)[ \t]+(.+ .+)$/;

@@ -152,6 +152,80 @@ export async function showLastAllianceBattle(ctx) {
   await showAllianceBattle(ctx, b.battleDate(new Date()));
 }
 
+export async function showAlliances(ctx) {
+
+  if (!await enabledAllianceInfo(ctx)) {
+    return;
+  }
+
+  const alliances = await Alliance.find()
+    .sort({ name: 1 });
+
+  const reply = [
+    '<b>Alliances</b>',
+    '',
+    ...alliances.map(al => {
+      return `<code>${al.code}</code> ${al.name}`;
+    }),
+  ];
+
+  await ctx.replyWithHTML(reply.join('\n'));
+
+}
+
+
+export async function showAllianceByName(ctx) {
+
+  const [, name] = ctx.match;
+  const $regex = new RegExp(lo.escapeRegExp(name), 'i');
+  const alliance = await Alliance.findOne({ name: { $regex } });
+
+  if (!alliance) {
+    await ctx.replyWithHTML(`Not found alliance with name <b>${name}/b>`);
+    return;
+  }
+
+  const locations = await a.allianceLocations(alliance);
+
+  await ctx.replyWithHTML(allianceView(alliance, alliance.code, locations).join('\n'));
+
+}
+
+export async function showAlliance(ctx) {
+
+  const [, code] = ctx.match;
+  const alliance = await Alliance.findOne({ code });
+
+  const locations = await a.allianceLocations(alliance);
+
+  await ctx.replyWithHTML(allianceView(alliance, code, locations).join('\n'));
+
+}
+
+
+function allianceView(alliance, code, locations = []) {
+
+  if (!alliance) {
+    return [`Not found alliance with code <code>${code}</code>`];
+  }
+
+  const { tags = [], name } = alliance.toObject();
+
+  const res = [
+    `<b>${name}</b> ${a.atkLink('⚔️', code)}`,
+    '',
+    `code: <code>${code}</code>`,
+    `tags: ${tags.length ? tags.join(', ') : 'no information'}`,
+  ];
+
+  if (locations.length) {
+    res.push('', ...locations.map(l => `${b.dateFormat(l.date)} 🚩 ${l.name}`));
+  }
+
+  return res;
+
+}
+
 export async function showAllianceBattleByCode(ctx) {
 
   const [, dateP, hourP] = ctx.match;

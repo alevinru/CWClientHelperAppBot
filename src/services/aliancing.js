@@ -18,12 +18,17 @@ export async function allianceLocations(alliance) {
     return null;
   }
 
-  const battles = await AllianceMapState.find({
-    results: { $elemMatch: { belongsTo: alliance.name } },
-  }, { 'results.$': 1, date: 1 })
+  const $match = { 'results.belongsTo': alliance.name };
+
+  const battles = await AllianceMapState.aggregate([
+    { $match },
+    { $sort: { date: 1 } },
+    { $unwind: '$results' },
+    { $match },
+  ])
     .sort({ date: -1 });
 
-  const namesArray = battles.map(({ date, results: [{ name }] }) => ({ name, date }));
+  const namesArray = battles.map(({ date, results: { name } }) => ({ name, date }));
 
   const names = lo.keyBy(namesArray, 'name');
 

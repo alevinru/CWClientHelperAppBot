@@ -257,6 +257,20 @@ export async function showAllianceByName(ctx) {
 
 }
 
+export async function showAllianceLocationByName(ctx) {
+
+  const [, name, level] = ctx.match;
+  const allianceLocation = await AllianceLocation.findOne({ name, level });
+
+  if (!allianceLocation) {
+    await ctx.replyWithHTML(`Not found location <b>${name} lvl.${level}</b>`);
+    return;
+  }
+
+  await showAllianceLocation(ctx, allianceLocation);
+
+}
+
 export async function showAllianceLocation(ctx, allianceLocation) {
 
   const owners = await a.locationOwners(allianceLocation);

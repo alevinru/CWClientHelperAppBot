@@ -56,6 +56,18 @@ export async function locationOwner(name) {
 
 }
 
+export async function allianceNameByTag(tag) {
+
+  const $regex = new RegExp(`\\[${tag}]`, 'i');
+
+  const battle = await AllianceBattle.findOne({
+    results: { $elemMatch: { defLeaders: { $regex } } },
+  }, { 'results.$': 1, date: 1 })
+    .sort({ date: -1 });
+
+  return battle && battle.results[0].name;
+
+}
 
 export async function allianceTags(alliance) {
 

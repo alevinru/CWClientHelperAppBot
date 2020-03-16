@@ -223,10 +223,28 @@ export async function showAlliances(ctx) {
 
 }
 
+export async function showAllianceByTag(ctx) {
+
+  const [, tag] = ctx.match;
+
+  debug('showAllianceByTag', tag);
+
+  const name = await a.allianceNameByTag(tag);
+
+  if (!name) {
+    await ctx.replyWithHTML(`Not found alliance with tag <b>${tag}</b>`);
+    return;
+  }
+
+  ctx.state.allianceName = name;
+
+  await showAllianceByName(ctx);
+
+}
 
 export async function showAllianceByName(ctx) {
 
-  const [, name] = ctx.match;
+  const name = ctx.state.allianceName || ctx.match[1];
   const $regex = new RegExp(lo.escapeRegExp(name), 'i');
   const alliance = await Alliance.findOne({ name: { $regex } });
 

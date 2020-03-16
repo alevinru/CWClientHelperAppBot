@@ -189,6 +189,7 @@ const { authAlliances } = alliances;
 
 botHearsIf(authAlliances, 'alliances', alliances.showAlliances);
 botHearsIf(authAlliances, 'af[ _]([\\da-z]{6})', alliances.showAllianceByCode);
+botHearsIf(authAlliances, 'af[ _](.{2,3})', alliances.showAllianceByTag);
 botHearsIf(authAlliances, 'af ([a-z]+ [a-z]+)', alliances.showAllianceByName);
 botHearsIf(authAlliances, 'ga_atk[ _]([\\da-z]{6})', alliances.showAllianceByCode);
 botHearsIf(authAlliances, 'ga_locations', alliances.showLocations);

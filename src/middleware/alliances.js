@@ -20,7 +20,7 @@ export function authAlliances(ctx) {
     return false;
   }
   const { tags = [] } = globalSetting.getValue('alliances') || {};
-  debug('authAlliances', tags, profile.guild_tag);
+  // debug('authAlliances', tags, profile.guild_tag);
   return tags.indexOf(profile.guild_tag) >= 0;
 }
 
@@ -50,20 +50,18 @@ export function foundObjectiveFilter(ctx) {
   const { text } = ctx.message;
   return text
     && fromCWFilter(ctx)
-    && lo.startsWith(text, FOUND_LOCATION_START)
-    && authAlliances(ctx);
+    && lo.startsWith(text, FOUND_LOCATION_START);
 }
 
 export function foundHeadquarterFilter(ctx) {
   const { text } = ctx.message;
   return text
     && fromCWFilter(ctx)
-    && lo.startsWith(text, FOUND_HEADQUARTER_START)
-    && authAlliances(ctx);
+    && lo.startsWith(text, FOUND_HEADQUARTER_START);
 }
 
 async function enabledAllianceInfo(ctx) {
-  return authAlliances(ctx) && Chat.findValue(ctx.chat.id, c.CHAT_SETTING_ALLIANCE_INFO);
+  return Chat.findValue(ctx.chat.id, c.CHAT_SETTING_ALLIANCE_INFO);
 }
 
 export async function parseFoundLocation(ctx) {
@@ -208,10 +206,6 @@ export async function showLocations(ctx) {
 }
 
 export async function showAlliances(ctx) {
-
-  if (!await enabledAllianceInfo(ctx)) {
-    return;
-  }
 
   const alliances = await Alliance.find()
     .sort({ name: 1 });

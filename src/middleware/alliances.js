@@ -185,15 +185,35 @@ export async function showLocations(ctx) {
   const locations = await AllianceLocation.find({ expired: { $eq: null } })
     .sort({ name: 1 });
 
+  const lastBattleTime = b.battleDate(new Date()).getTime();
+
   const list = await mapSeriesAsync(locations, async al => {
+
     const { fullName, code } = al;
     const ownerInfo = await a.locationOwner(fullName);
-    let res = `<code>${code}</code> ${a.atkLink('⚔️', code)} ${fullName}`;
+    const [lastBattle] = await a.locationBattles(fullName).limit(1);
+
+    const header = [
+      `<code>${code}</code>`,
+      a.atkLink('⚔️', code),
+      fullName,
+    ];
+
+    if (lastBattle) {
+      if (lastBattle.date.getTime() !== lastBattleTime) {
+        header.push('⚠️');
+      }
+    }
+
+    const res = [header.join(' ')];
+
     if (ownerInfo) {
       const { name, date } = ownerInfo;
-      res += `\n ╰${b.dateFormat(date)} 🚩 ${a.atkLink(name, name, '/af ')}`;
+      res.push(` ╰${b.dateFormat(date)} 🚩 ${a.atkLink(name, name, '/af ')}`);
     }
-    return res;
+
+    return res.join('\n');
+
   });
 
   const reply = [

@@ -67,6 +67,14 @@ export async function locationOwners(allianceLocation) {
 
 }
 
+export function locationBattles(fullName) {
+
+  return AllianceMapState.find({
+    'results.name': fullName,
+  }).sort({ date: -1 });
+
+}
+
 export async function locationOwner(name) {
 
   const battle = await AllianceMapState.findOne({

@@ -71,7 +71,7 @@ export function locationBattles(fullName) {
 
   return AllianceMapState.find({
     'results.name': fullName,
-  }).sort({ date: -1 });
+  }, { 'results.$': 1, date: 1 }).sort({ date: -1 });
 
 }
 

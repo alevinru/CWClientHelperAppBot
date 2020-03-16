@@ -294,14 +294,14 @@ export async function showAllianceLocationByName(ctx) {
 
 export async function showAllianceLocation(ctx, allianceLocation) {
 
-  const owners = await a.locationOwners(allianceLocation);
-  const reply = allianceLocationView(allianceLocation, owners);
+  const battles = await a.locationBattles(allianceLocation.fullName);
+  const reply = allianceLocationView(allianceLocation, battles);
   await ctx.replyWithHTML(reply.join('\n'));
 
 }
 
 
-function allianceLocationView(allianceLocation, owners = []) {
+function allianceLocationView(allianceLocation, battles = []) {
 
   const { name, code, level } = allianceLocation.toObject();
 
@@ -315,8 +315,18 @@ function allianceLocationView(allianceLocation, owners = []) {
     // `🏷 ${tags.length ? tags.join(', ') : 'no information'}`,
   ];
 
-  if (owners.length) {
-    res.push('', ...owners.map(l => `${b.dateFormat(l.date)} 🚩 ${l.name}`));
+  if (battles.length) {
+    res.push('', ...battles.map(l => {
+      const { results: [results] } = l;
+      const line = [
+        b.dateFormat(l.date),
+        b.difficultyStatus(results),
+      ];
+      if (results.belongsTo) {
+        line.push(`🚩 ${results.belongsTo}`);
+      }
+      return line.join(' ');
+    }));
   }
 
   return res;

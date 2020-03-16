@@ -5,7 +5,6 @@ const allianceLocation = {
   name: String,
   code: String,
   level: Number,
-  fullName: String,
 
   ts: Date,
   cts: Date,
@@ -18,5 +17,13 @@ export const schema = new Schema(allianceLocation, { collection: 'AllianceLocati
 schema
   .index({ code: 1 })
   .index({ name: 1 });
+
+
+schema.virtual('fullName')
+  .get(fullName);
+
+function fullName() {
+  return `${this.name} lvl.${this.level}`;
+}
 
 export default model('AllianceLocation', schema);

@@ -1,4 +1,5 @@
 import lo from 'lodash';
+import { filterSeriesAsync } from 'sistemium-telegram/services/async';
 import * as b from './battles';
 
 // import Alliance from '../models/Alliance';
@@ -12,7 +13,7 @@ const { debug } = log('mw:alliance');
 
 debug('alliance-ing');
 
-export async function allianceLocations(alliance) {
+export async function locationsOfAlliance(alliance) {
 
   if (!alliance) {
     return null;
@@ -31,13 +32,40 @@ export async function allianceLocations(alliance) {
   const namesArray = battles.map(({ date, results: { name } }) => ({ name, date }));
 
   const names = lo.keyBy(namesArray, 'name');
-
-  // debug(battles);
-
-  return lo.map(names);
+  return filterSeriesAsync(lo.map(names), async ({ name }) => {
+    const owner = await locationOwner(name);
+    return owner && owner.name === alliance.name;
+  });
 
 }
 
+export async function locationOwners(allianceLocation) {
+
+  if (!allianceLocation) {
+    return null;
+  }
+
+  const $elemMatch = {
+    belongsTo: { $ne: null },
+    name: allianceLocation.fullName,
+  };
+
+  const $match = { results: { $elemMatch } };
+
+  const battles = await AllianceMapState.aggregate([
+    { $match },
+    { $sort: { date: 1 } },
+    { $unwind: '$results' },
+    { $match: lo.mapKeys($elemMatch, (val, key) => `results.${key}`) },
+  ])
+    .sort({ date: -1 });
+
+  const namesArray = battles.map(({ date, results: { belongsTo: name } }) => ({ name, date }));
+
+  const names = lo.keyBy(namesArray, 'name');
+  return lo.map(names);
+
+}
 
 export async function locationOwner(name) {
 
@@ -175,6 +203,10 @@ export function allianceTagTasksView({ tag, tasks }, targets = new Map()) {
 
 export function atkLink(name, code) {
   return `<a href="http://t.me/share/url?url=/ga_atk_${code}">${name}</a>`;
+}
+
+export function defLink(name, code) {
+  return `<a href="http://t.me/share/url?url=/ga_def_${code}">${name}</a>`;
 }
 
 const TASK_LINE_RE = /^(.{2,3})[ \t]+(.+)[ \t]+(.+ .+)$/;

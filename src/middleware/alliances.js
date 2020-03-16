@@ -182,13 +182,13 @@ export async function showLastAllianceBattle(ctx) {
 
 export async function showLocations(ctx) {
 
-  const alliances = await AllianceLocation.find({ expired: { $eq: null } })
+  const locations = await AllianceLocation.find({ expired: { $eq: null } })
     .sort({ name: 1 });
 
-  const list = await mapSeriesAsync(alliances, async al => {
-    const fullName = `${al.name} lvl.${al.level}`;
+  const list = await mapSeriesAsync(locations, async al => {
+    const { fullName, code } = al;
     const owner = await a.locationOwner(fullName);
-    let res = `<code>${al.code}</code> ${fullName}`;
+    let res = `<code>${code}</code> ${fullName} ${a.atkLink('⚔️', code)}`;
     if (owner) {
       res += `\n ╰${owner.name} since ${b.dateFormat(owner.date)}`;
     }
@@ -253,10 +253,38 @@ export async function showAllianceByName(ctx) {
     return;
   }
 
-  const locations = await a.allianceLocations(alliance);
-  alliance.tags = await a.allianceTags(alliance);
+  await showAlliance(ctx, alliance);
 
-  await ctx.replyWithHTML(allianceView(alliance, locations).join('\n'));
+}
+
+export async function showAllianceLocation(ctx, allianceLocation) {
+
+  const owners = await a.locationOwners(allianceLocation);
+  const reply = allianceLocationView(allianceLocation, owners);
+  await ctx.replyWithHTML(reply.join('\n'));
+
+}
+
+
+function allianceLocationView(allianceLocation, owners = []) {
+
+  const { name, code, level } = allianceLocation.toObject();
+
+  const res = [
+    [
+      `<b>${name} lvl.${level}</b>`,
+      `${a.atkLink('⚔️', code)}`,
+      `${a.defLink('🛡️', code)}`,
+    ].join(' '),
+    `🆔 <code>${code}</code>`,
+    // `🏷 ${tags.length ? tags.join(', ') : 'no information'}`,
+  ];
+
+  if (owners.length) {
+    res.push('', ...owners.map(l => `${b.dateFormat(l.date)} 🚩 ${l.name}`));
+  }
+
+  return res;
 
 }
 
@@ -266,21 +294,37 @@ export async function showAllianceByCode(ctx) {
   const alliance = await Alliance.findOne({ code });
 
   if (!alliance) {
+    const location = await AllianceLocation.findOne({ code });
+    if (location) {
+      await showAllianceLocation(ctx, location);
+      return;
+    }
     await ctx.replyWithHTML(`Not found alliance with code <code>${code}</code>`);
     return;
   }
 
-  const locations = await a.allianceLocations(alliance);
-  alliance.tags = await a.allianceTags(alliance);
-
-  await ctx.replyWithHTML(allianceView(alliance, locations).join('\n'));
+  await showAlliance(ctx, alliance);
 
 }
 
+async function showAlliance(ctx, alliance) {
+  const view = allianceView({
+    ...alliance.toObject(),
+    locations: await a.locationsOfAlliance(alliance),
+    tags: await a.allianceTags(alliance),
+  });
+  await ctx.replyWithHTML(view.join('\n'));
+}
 
-function allianceView(alliance, locations = []) {
 
-  const { tags = [], name, code } = alliance.toObject();
+function allianceView(alliance) {
+
+  const {
+    tags = [],
+    name,
+    code,
+    locations,
+  } = alliance;
 
   const res = [
     `<b>${name}</b> ${a.atkLink('⚔️', code)}`,

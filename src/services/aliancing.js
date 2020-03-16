@@ -201,12 +201,12 @@ export function allianceTagTasksView({ tag, tasks }, targets = new Map()) {
 
 }
 
-export function atkLink(name, code) {
-  return `<a href="http://t.me/share/url?url=/ga_atk_${code}">${name}</a>`;
+export function atkLink(name, code, cmd = '/ga_atk_') {
+  return `<a href="http://t.me/share/url?url=${cmd}${code}">${name}</a>`;
 }
 
 export function defLink(name, code) {
-  return `<a href="http://t.me/share/url?url=/ga_def_${code}">${name}</a>`;
+  return atkLink(name, code, '/ga_def_');
 }
 
 const TASK_LINE_RE = /^(.{2,3})[ \t]+(.+)[ \t]+(.+ .+)$/;

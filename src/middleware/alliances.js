@@ -187,10 +187,11 @@ export async function showLocations(ctx) {
 
   const list = await mapSeriesAsync(locations, async al => {
     const { fullName, code } = al;
-    const owner = await a.locationOwner(fullName);
-    let res = `<code>${code}</code> ${fullName} ${a.atkLink('⚔️', code)}`;
-    if (owner) {
-      res += `\n ╰${owner.name} since ${b.dateFormat(owner.date)}`;
+    const ownerInfo = await a.locationOwner(fullName);
+    let res = `<code>${code}</code> ${a.atkLink('⚔️', code)} ${fullName}`;
+    if (ownerInfo) {
+      const { name, date } = ownerInfo;
+      res += `\n ╰${b.dateFormat(date)} 🚩 ${a.atkLink(name, name, '/af ')}`;
     }
     return res;
   });

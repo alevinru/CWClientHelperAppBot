@@ -34,9 +34,16 @@ export async function locationsOfAlliance(alliance) {
   const names = lo.keyBy(namesArray, 'name');
   return filterSeriesAsync(lo.map(names), async ({ name }) => {
     const owner = await locationOwner(name);
-    return owner && owner.name === alliance.name;
+    const seemExpired = await locationSeemsExpired(name);
+    return owner && owner.name === alliance.name && !seemExpired;
   });
 
+}
+
+export async function locationSeemsExpired(fullName) {
+  const lastBattleTime = b.battleDate(new Date()).getTime();
+  const [lastBattle] = await locationBattles(fullName).limit(1);
+  return lastBattle && lastBattle.date.getTime() !== lastBattleTime;
 }
 
 export async function locationOwners(allianceLocation) {

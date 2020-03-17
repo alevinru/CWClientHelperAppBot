@@ -5,6 +5,7 @@ const alliance = {
   name: String,
   code: String,
   tags: [String],
+  expired: Boolean,
 
   ts: Date,
   cts: Date,

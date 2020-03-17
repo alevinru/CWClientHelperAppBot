@@ -5,6 +5,7 @@ const allianceLocation = {
   name: String,
   code: String,
   level: Number,
+  expired: Boolean,
 
   ts: Date,
   cts: Date,

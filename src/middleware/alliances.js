@@ -19,7 +19,8 @@ export function authAlliances(ctx) {
   if (!profile) {
     return false;
   }
-  const { tags = [] } = globalSetting.getValue('alliances') || {};
+  const { tags = [], admins = [] } = globalSetting.getValue('alliances') || {};
+  ctx.state.allianceAdmins = admins;
   // debug('authAlliances', tags, profile.guild_tag);
   return tags.indexOf(profile.guild_tag) >= 0;
 }
@@ -202,7 +203,7 @@ export async function showLocations(ctx) {
 
     if (lastBattle) {
       if (lastBattle.date.getTime() !== lastBattleTime) {
-        header.push('⚠️');
+        header.push(a.atkLink('⚠️', code, '/ga_expire_'));
       }
     }
 
@@ -218,7 +219,7 @@ export async function showLocations(ctx) {
   });
 
   const reply = [
-    '<b>Alliance locations</b>',
+    '🏛 <b>Alliance locations</b>',
     '',
     ...list,
   ];
@@ -333,6 +334,42 @@ function allianceLocationView(allianceLocation, battles = []) {
   return res;
 
 }
+
+function isAdmin(ctx) {
+  const { state: { allianceAdmins }, from: { id } } = ctx;
+  return allianceAdmins.indexOf(id) >= 0;
+}
+
+export async function expireLocation(ctx) {
+
+  if (!isAdmin(ctx)) {
+    await ctx.replyWithHTML(`🚫 Expiring is not permitted for <code>${ctx.from.id}</code>`);
+    return;
+  }
+
+  const [, code] = ctx.match;
+
+  if (!code) {
+    return;
+  }
+
+  const item = await AllianceLocation.findOne({ code })
+    || await Alliance.findOne(({ code }));
+
+  if (!item) {
+    await ctx.replyWithHTML(`Not found alliance or location with code <code>${code}</code>`);
+    return;
+  }
+
+  item.expired = true;
+  item.ts = new Date();
+
+  await item.save();
+
+  await ctx.replyWithHTML(`✅ Set expired ${item.fullName || item.name} <code>${code}</code>`);
+
+}
+
 
 export async function showAllianceByCode(ctx) {
 

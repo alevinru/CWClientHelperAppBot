@@ -157,17 +157,20 @@ export async function parseFoundHeadquarter(ctx) {
 
 export async function parseTasks(ctx) {
 
-  const { text, reply_to_message: replyTo } = ctx.message;
-
-  const tasksText = replyTo ? replyTo.text : text;
-
+  const { reply_to_message: replyTo } = ctx.message;
+  const tasksText = replyTo.text;
+  const [, title] = ctx.match;
   const alliances = await Alliance.find();
+  const locations = await AllianceLocation.find();
 
-  const targetsMap = new Map(alliances.map(i => [i.name, i.code]));
+  const targetsMap = new Map([
+    ...alliances.map(i => [i.name, i.code]),
+    ...locations.map(l => [l.fullName, l.code]),
+  ]);
 
   const tasks = a.parseAllianceTask(tasksText);
   const byTag = a.allianceTasksByTag(tasks);
-  const res = byTag.map(t => a.allianceTagTasksView(t, targetsMap));
+  const res = byTag.map(t => a.allianceTagTasksView(t, targetsMap, title));
 
   debug('parseTasks', alliances.length, tasks.length, byTag.length, res.length);
 

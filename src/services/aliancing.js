@@ -199,10 +199,10 @@ function mapStateResultView(result) {
 
 }
 
-export function allianceTagTasksView({ tag, tasks }, targets = new Map()) {
+export function allianceTagTasksView({ tag, tasks }, targets = new Map(), title) {
 
   return [
-    `<b>${tag}</b>`,
+    `${title || ''}<b>${tag}</b>`,
     tasks.map(({ target, names }) => {
       const alliance = targets.get(target);
       const atk = alliance ? `/ga_atk_${alliance}` : target;

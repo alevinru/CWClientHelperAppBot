@@ -181,12 +181,12 @@ Alliances
 botHears('ab[ _]([\\d]{6})[ _]([\\d]{2})', alliances.showAllianceBattleByCode);
 botHears('ab', alliances.showLastAllianceBattle);
 
-botMessageIf(alliances.tasksFilter, alliances.parseTasks);
 botMessageIf(alliances.foundObjectiveFilter, alliances.parseFoundLocation);
 botMessageIf(alliances.foundHeadquarterFilter, alliances.parseFoundHeadquarter);
 
 const { authAlliances } = alliances;
 
+botHearsIf(authAlliances, 'allianceTasks[ ]?(.*)?', alliances.parseTasks);
 botHearsIf(authAlliances, 'alliances', alliances.showAlliances);
 botHearsIf(authAlliances, 'af[ _]([\\da-z]{6})', alliances.showAllianceByCode);
 botHearsIf(authAlliances, 'af[ _](.{2,3})', alliances.showAllianceByTag);

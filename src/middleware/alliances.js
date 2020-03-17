@@ -187,15 +187,16 @@ export async function showLocations(ctx) {
 
   const lastBattleTime = b.battleDate(new Date()).getTime();
 
-  const list = await mapSeriesAsync(locations, async al => {
+  const sortedLocations = lo.orderBy(locations, ['locationBonus', 'name']);
+
+  const list = await mapSeriesAsync(sortedLocations, async al => {
 
     const { fullName, code } = al;
     const ownerInfo = await a.locationOwner(fullName);
     const [lastBattle] = await a.locationBattles(fullName).limit(1);
 
     const header = [
-      `<code>${code}</code>`,
-      a.atkLink('⚔️', code),
+      a.atkLink(al.locationIcon, code),
       fullName,
     ];
 

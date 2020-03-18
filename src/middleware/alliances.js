@@ -1,6 +1,8 @@
 import lo from 'lodash';
 import { eachSeriesAsync, mapSeriesAsync } from 'sistemium-telegram/services/async';
+import chunk from 'lodash/chunk';
 import log from '../services/log';
+import * as usr from '../services/users';
 import * as b from '../services/battles';
 import * as a from '../services/aliancing';
 import { fromCWFilter } from '../config/filters';
@@ -11,6 +13,7 @@ import AllianceBattle from '../models/AllianceBattle';
 import AllianceMapState from '../models/AllianceMapState';
 import Chat, * as c from '../models/Chat';
 import globalSetting from '../services/globalSetting';
+import { isChatAdmin } from '../services/util';
 
 const { debug } = log('mw:alliances');
 
@@ -463,5 +466,40 @@ async function showAllianceBattle(ctx, date) {
   }
 
   await ctx.replyWithHTML(reply.join('\n'), { disable_web_page_preview: true });
+
+}
+
+
+export async function notifyForTask(ctx) {
+
+  const { reply_to_message: { text } = {} } = ctx.message;
+
+  if (!text) {
+    return;
+  }
+
+  const lines = lo.filter(text.split('\n'));
+
+  const namesMap = lines.map(line => {
+    const [, namesText] = line.match(/👉(.+)$/) || [];
+    return namesText && namesText.split(', ');
+  });
+
+  const names = lo.filter(lo.flatten(namesMap).map(lo.trim));
+
+  if (!names.length) {
+    return;
+  }
+
+  if (!await isChatAdmin(ctx)) {
+    return;
+  }
+
+  const users = await usr.usersFromCWNames(names);
+
+  await eachSeriesAsync(chunk(users.map(u => `@${u.username}`), 3), async replyChunk => {
+    await ctx.replyWithHTML(replyChunk.join(' '));
+    await new Promise(resolve => setTimeout(resolve, 500));
+  });
 
 }

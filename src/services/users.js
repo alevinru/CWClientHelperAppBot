@@ -2,6 +2,7 @@ import filter from 'lodash/filter';
 import mapValues from 'lodash/mapValues';
 import diffMinutes from 'date-fns/difference_in_minutes';
 import { eachSeriesAsync, mapSeriesAsync } from 'sistemium-telegram/services/async';
+
 import User from '../models/User';
 import {
   getToken, refreshProfile, safeUserId, rmAuth,
@@ -204,4 +205,11 @@ export function allSettings() {
       defaults: false,
     },
   };
+}
+
+export async function usersFromCWNames(names) {
+  return User.find({
+    username: { $ne: null },
+    'profile.userName': { $in: names },
+  });
 }

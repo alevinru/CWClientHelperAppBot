@@ -1,5 +1,6 @@
 import replace from 'lodash/replace';
 import escapeRegExp from 'lodash/escapeRegExp';
+import lo from 'lodash';
 
 const MAX_REGEX_LENGTH = 50;
 
@@ -15,4 +16,14 @@ export function searchRe(text) {
 
   return new RegExp(reText, 'i');
 
+}
+
+
+export async function isChatAdmin(ctx) {
+  const { chat, from } = ctx;
+  if (chat.id === from.id) {
+    return true;
+  }
+  const admins = await ctx.telegram.getChatAdministrators(chat.id);
+  return !lo.find(admins, { id: from.id });
 }

@@ -314,17 +314,7 @@ async function showBattle(ctx, date) {
 
   }
 
-  const prevDate = b.prevDate(date);
-  const nextDate = b.nextDate(date);
-
-  reply.push(...[
-    '',
-    `${b.battleIcon(prevDate)} ${battleCommand(prevDate)}`,
-  ]);
-
-  if (nextDate <= b.battleDate(new Date())) {
-    reply.push(`${b.battleIcon(nextDate)} ${battleCommand(nextDate)}`);
-  }
+  b.battleNavs(date, reply, 'ba');
 
   await ctx.replyWithHTML(reply.join('\n'), { disable_web_page_preview: true });
 

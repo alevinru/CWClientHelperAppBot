@@ -465,6 +465,8 @@ async function showAllianceBattle(ctx, date) {
     reply.push('', ...a.allianceMapStateView(mapStateMongo.toObject()));
   }
 
+  b.battleNavs(date, reply, 'ab');
+
   await ctx.replyWithHTML(reply.join('\n'), { disable_web_page_preview: true });
 
 }

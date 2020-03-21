@@ -258,3 +258,25 @@ export function effectInfo(val, e) {
   ]).join(' ');
 
 }
+
+
+export function battleNavs(date, reply, cmd) {
+
+  const prev = prevDate(date);
+  const next = nextDate(date);
+
+  reply.push(...[
+    '',
+    `${battleIcon(prev)} ${battleCommand(prev, cmd)}`,
+  ]);
+
+  if (next <= battleDate(new Date())) {
+    reply.push(`${battleIcon(next)} ${battleCommand(next, cmd)}`);
+  }
+
+}
+
+
+function battleCommand(date, cmd = 'ba') {
+  return `/${cmd}_${dateCode(date)}`;
+}

@@ -224,7 +224,7 @@ export function defLink(name, code) {
   return atkLink(name, code, '/ga_def_');
 }
 
-const TASK_LINE_RE = /^(.{2,3})[ \t]+(.+)[ \t]+(.+ .+)$/;
+const TASK_LINE_RE = /^(.{2,3})[ \t]{2,}(.+)[ \t]{2,}(.+ .+)$/;
 
 export function parseAllianceTask(text) {
 

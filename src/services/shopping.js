@@ -31,7 +31,7 @@ export async function gurus(level) {
 
   const byGuruOf = lo.groupBy(topGurus, 'guruOf');
 
-  debug('gurus', byGuruOf);
+  // debug('gurus', byGuruOf);
 
   return lo.map(byGuruOf, (shops, guruOf) => ({
     specialization: guruOf,

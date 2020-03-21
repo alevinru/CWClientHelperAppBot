@@ -9,8 +9,7 @@ import { fromCWFilter } from '../config/filters';
 
 import Alliance from '../models/Alliance';
 import AllianceLocation from '../models/AllianceLocation';
-import AllianceBattle from '../models/AllianceBattle';
-import AllianceMapState from '../models/AllianceMapState';
+
 import Chat, * as c from '../models/Chat';
 import globalSetting from '../services/globalSetting';
 import { isChatAdmin } from '../services/util';
@@ -445,25 +444,7 @@ export async function showAllianceBattleByCode(ctx) {
 
 async function showAllianceBattle(ctx, date) {
 
-  const filters = { date };
-
-  const battleMongo = await AllianceBattle.findOne(filters);
-
-  const battle = battleMongo && battleMongo.toObject();
-
-  const reply = [];
-
-  if (!battle) {
-    reply.push(`<code>Not found</code> ${b.dateFormat(date)} battle`);
-  } else {
-    reply.push(...a.allianceBattleView(battle));
-  }
-
-  const mapStateMongo = await AllianceMapState.findOne(filters);
-
-  if (mapStateMongo) {
-    reply.push('', ...a.allianceMapStateView(mapStateMongo.toObject()));
-  }
+  const reply = await a.allianceBattleFullView(date);
 
   b.battleNavs(date, reply, 'ab');
 

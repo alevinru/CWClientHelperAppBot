@@ -11,7 +11,7 @@ import log from './log';
 
 const { debug } = log('battles');
 
-export const BATTLE_HOUR = parseInt(process.env.BATTLE_HOUR || '1', 0);
+export const BATTLE_HOUR = parseInt(process.env.BATTLE_HOUR || '2', 0);
 export const CASTLES_HASH = JSON.parse(process.env.CASTLES);
 
 const BATTLE_EFFECTS = {

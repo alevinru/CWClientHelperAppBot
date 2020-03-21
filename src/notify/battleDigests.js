@@ -1,12 +1,20 @@
 import { eachSeriesAsync } from 'sistemium-telegram/services/async';
+import lo from 'lodash';
 
 import { battleView } from '../middleware/battles';
 import { battleDate } from '../services/battles';
+import { allianceBattleFullView } from '../services/aliancing';
+
 import Battle from '../models/Battle';
+import AllianceBattle from '../models/AllianceBattle';
+import AllianceMapState from '../models/AllianceMapState';
 import Chat from '../models/Chat';
 import log from '../services/log';
 
 const { debug, error } = log('battleDigests');
+
+const TYPE_HQ = 'headquarters';
+const TYPE_MS = 'mapState';
 
 export default class BattleDigests {
 
@@ -21,10 +29,24 @@ export default class BattleDigests {
 
     debug('init', chats.length);
 
+    this.allianceReady = {};
+
     this.battleWatch = Battle.watch()
       .on('change', ({ operationType, fullDocument }) => {
         debug(operationType);
         return operationType === 'insert' && this.onBattle(fullDocument);
+      });
+
+    this.allianceWatch = AllianceBattle.watch()
+      .on('change', ({ operationType, fullDocument }) => {
+        debug(operationType);
+        return operationType === 'insert' && this.onAllianceBattle(fullDocument, TYPE_HQ);
+      });
+
+    this.allianceWatch = AllianceMapState.watch()
+      .on('change', ({ operationType, fullDocument }) => {
+        debug(operationType);
+        return operationType === 'insert' && this.onAllianceBattle(fullDocument, TYPE_MS);
       });
 
   }
@@ -33,10 +55,23 @@ export default class BattleDigests {
     return Chat.find({ 'setting.notifyBattle': true, botId: this.botId });
   }
 
+  chatsToNotifyAlliance() {
+    return Chat.find({ 'setting.notifyAllianceBattle': true, botId: this.botId });
+  }
+
   async notifyBattle(battle) {
     const msg = battleView(battle).join('\n');
     const chats = await this.chatsToNotify();
     debug('notifyBattle', chats.length);
+    await eachSeriesAsync(chats, async chat => {
+      await this.notify(chat.id, msg);
+    });
+  }
+
+  async notifyAllianceBattle(date) {
+    const msg = await allianceBattleFullView(date).join('\n');
+    const chats = await this.chatsToNotifyAlliance();
+    debug('notifyAllianceBattle', chats.length);
     await eachSeriesAsync(chats, async chat => {
       await this.notify(chat.id, msg);
     });
@@ -50,6 +85,25 @@ export default class BattleDigests {
     }
     this.notifyBattle(battle)
       .catch(error);
+  }
+
+  onAllianceBattle(battle, type) {
+    const now = battleDate(new Date());
+    if (now > battle.date) {
+      debug('ignore', battle.date);
+      return;
+    }
+    this.checkAllianceDigestReady(battle, type);
+  }
+
+  checkAllianceDigestReady(battle, type) {
+    this.allianceReady[type] = battle;
+    const dateHQ = lo.get(this.allianceReady[TYPE_HQ], 'date') || TYPE_HQ;
+    const dateMS = lo.get(this.allianceReady[TYPE_MS], 'date') || TYPE_MS;
+    if (dateHQ === dateMS) {
+      this.notifyAllianceBattle(dateMS)
+        .catch(error);
+    }
   }
 
   async notify(userId, msg) {

@@ -258,3 +258,29 @@ export function allianceTasksByTag(tasks) {
   return lo.orderBy(res, 'tag');
 
 }
+
+export async function allianceBattleFullView(date) {
+
+  const filters = { date };
+
+  const battleMongo = await AllianceBattle.findOne(filters);
+
+  const battle = battleMongo && battleMongo.toObject();
+
+  const reply = [];
+
+  if (!battle) {
+    reply.push(`<code>Not found</code> ${b.dateFormat(date)} battle`);
+  } else {
+    reply.push(...allianceBattleView(battle));
+  }
+
+  const mapStateMongo = await AllianceMapState.findOne(filters);
+
+  if (mapStateMongo) {
+    reply.push('', ...allianceMapStateView(mapStateMongo.toObject()));
+  }
+
+  return reply;
+
+}

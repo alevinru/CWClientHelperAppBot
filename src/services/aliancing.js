@@ -150,7 +150,7 @@ export function allianceBattleView(allianceBattle) {
   return [
     `<b>${b.dateFormat(date)}</b> alliances battle`,
     '',
-    `<a href="${b.reportLinkHref(reportLink)}">Headquarters report</a>`,
+    `🤝 <a href="${b.reportLinkHref(reportLink)}">Headquarters report</a>`,
     '',
     ...lo.map(orderedResults, battleResultView),
   ];
@@ -165,7 +165,7 @@ export function allianceMapStateView(allianceMapState) {
   const orderedResults = lo.orderBy(results, 'name');
 
   return [
-    `<a href="${b.reportLinkHref(reportLink)}">Map state report</a>`,
+    `🗺 <a href="${b.reportLinkHref(reportLink)}">Map state report</a>`,
     '',
     ...lo.map(orderedResults, mapStateResultView),
   ];

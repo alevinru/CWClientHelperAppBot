@@ -39,13 +39,13 @@ export default class BattleDigests {
 
     this.allianceWatch = AllianceBattle.watch()
       .on('change', ({ operationType, fullDocument }) => {
-        debug(operationType);
+        debug('allianceWatch', operationType);
         return operationType === 'insert' && this.onAllianceBattle(fullDocument, TYPE_HQ);
       });
 
-    this.allianceWatch = AllianceMapState.watch()
+    this.allianceMapWatch = AllianceMapState.watch()
       .on('change', ({ operationType, fullDocument }) => {
-        debug(operationType);
+        debug('allianceMapWatch', operationType);
         return operationType === 'insert' && this.onAllianceBattle(fullDocument, TYPE_MS);
       });
 
@@ -69,9 +69,10 @@ export default class BattleDigests {
   }
 
   async notifyAllianceBattle(date) {
-    const msg = await allianceBattleFullView(date).join('\n');
+    const reply = await allianceBattleFullView(date);
     const chats = await this.chatsToNotifyAlliance();
     debug('notifyAllianceBattle', chats.length);
+    const msg = reply.join('\n');
     await eachSeriesAsync(chats, async chat => {
       await this.notify(chat.id, msg);
     });
@@ -98,9 +99,10 @@ export default class BattleDigests {
 
   checkAllianceDigestReady(battle, type) {
     this.allianceReady[type] = battle;
-    const dateHQ = lo.get(this.allianceReady[TYPE_HQ], 'date') || TYPE_HQ;
-    const dateMS = lo.get(this.allianceReady[TYPE_MS], 'date') || TYPE_MS;
-    if (dateHQ === dateMS) {
+    const dateHQ = lo.get(this.allianceReady[TYPE_HQ], 'date');
+    const dateMS = lo.get(this.allianceReady[TYPE_MS], 'date');
+    debug('checkAllianceDigestReady', type, dateMS, dateHQ);
+    if (dateHQ && dateMS && dateHQ.getTime() === dateMS.getTime()) {
       this.notifyAllianceBattle(dateMS)
         .catch(error);
     }

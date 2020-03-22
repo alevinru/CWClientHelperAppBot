@@ -148,7 +148,7 @@ export function allianceBattleView(allianceBattle) {
   const orderedResults = lo.orderBy(results, 'name');
 
   return [
-    `<b>${b.dateFormat(date)}</b> alliances battle`,
+    `${b.dateFormat(date)} <b>Alliances battle</b>`,
     '',
     `🤝 <a href="${b.reportLinkHref(reportLink)}">Headquarters report</a>`,
     '',

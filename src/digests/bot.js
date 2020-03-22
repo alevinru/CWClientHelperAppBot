@@ -8,6 +8,7 @@ import BattleDigests from '../notify/battleDigests';
 import * as mw from './start';
 import * as battles from '../middleware/battles';
 import * as chat from '../middleware/chat';
+import * as alliances from '../middleware/alliances';
 
 const { debug, error } = log('digests');
 
@@ -28,6 +29,8 @@ bot.on('supergroup_chat_created', ({ update: { message } }) => {
 
 botHears('ba[ _]([\\d]{6})[ _]([\\d]{2})', battles.showBattleByCode);
 botHears('ba', battles.showLastBattle);
+botHears('ab[ _]([\\d]{6})[ _]([\\d]{2})', alliances.showAllianceBattleByCode);
+botHears('ab', alliances.showLastAllianceBattle);
 
 run().catch(error);
 

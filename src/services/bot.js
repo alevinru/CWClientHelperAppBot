@@ -30,7 +30,7 @@ const bot = new Telegraf(BOT_TOKEN, options);
 
 export default bot;
 
-debug('Starting bot id:', BOT_ID, SOCKS_HOST);
+debug('Starting bot id:', BOT_ID, BOT_USER_NAME, SOCKS_HOST);
 
 export function exceptionHandler(ctx, next) {
 

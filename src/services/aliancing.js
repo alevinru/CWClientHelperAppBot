@@ -203,11 +203,11 @@ export function allianceTagTasksView({ tag, tasks }, targets = new Map(), title)
 
   return [
     `${title || ''}<b>${tag}</b>`,
-    tasks.map(({ target, names }) => {
+    tasks.map(({ target, type, names }) => {
       const alliance = targets.get(target);
-      const atk = alliance ? `/ga_atk_${alliance}` : target;
+      const atk = alliance ? `/ga_${type === '⚔️' ? 'atk' : 'def'}_${alliance}` : target;
       return [
-        `<a href="http://t.me/share/url?url=${atk}">${target}</a>`,
+        `<a href="http://t.me/share/url?url=${atk}">${type}${target}</a>`,
         '👉',
         names.join(', '),
       ].join(' ');
@@ -224,15 +224,17 @@ export function defLink(name, code) {
   return atkLink(name, code, '/ga_def_');
 }
 
-const TASK_LINE_RE = /^(.{2,3})[ \t]{2,}(.+)[ \t]{2,}(.+ .+)$/;
+const TASK_LINE_RE = /^(.{2,3})[ \t]{2,}(.+)[ \t]{2,}(🛡|⚔️)(.+ .+)$/;
 
 export function parseAllianceTask(text) {
 
   const lines = text.split('\n');
 
   const tasks = lines.map(line => {
-    const [, tag, name, target] = line.match(TASK_LINE_RE) || [];
-    return tag && name && target && { tag, name, target };
+    const [, tag, name, type, target] = line.match(TASK_LINE_RE) || [];
+    return tag && name && target && {
+      tag, name, type, target,
+    };
   });
 
   return lo.filter(tasks);
@@ -247,6 +249,7 @@ export function allianceTasksByTag(tasks) {
     const byTarget = lo.groupBy(tagTasks, 'target');
     const byTargetArray = lo.map(byTarget, (names, target) => ({
       target,
+      type: names[0].type,
       names: lo.map(lo.orderBy(names, 'name'), ({ name }) => lo.trim(name)),
     }));
     return {

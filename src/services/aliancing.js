@@ -1,10 +1,10 @@
 import lo from 'lodash';
-import { filterSeriesAsync } from 'sistemium-telegram/services/async';
+import { mapSeriesAsync } from 'sistemium-telegram/services/async';
 import { addDays } from 'date-fns';
 import * as b from './battles';
 
 // import Alliance from '../models/Alliance';
-import * as al from '../models/AllianceLocation';
+import AllianceLocation, * as al from '../models/AllianceLocation';
 import AllianceBattle from '../models/AllianceBattle';
 import AllianceMapState from '../models/AllianceMapState';
 import Duel from '../models/Duel';
@@ -33,11 +33,25 @@ export async function locationsOfAlliance(alliance) {
   const namesArray = battles.map(({ date, results: { name } }) => ({ name, date }));
 
   const names = lo.keyBy(namesArray, 'name');
-  return filterSeriesAsync(lo.map(names), async ({ name }) => {
-    const owner = await locationOwner(name);
-    const seemExpired = await locationSeemsExpired(name);
-    return owner && owner.name === alliance.name && !seemExpired;
+  const res = await mapSeriesAsync(lo.map(names), async location => {
+    const { name: fullName } = location;
+    const owner = await locationOwner(fullName);
+    if (!owner || owner.name !== alliance.name) {
+      return false;
+    }
+    const seemsExpired = await locationSeemsExpired(fullName);
+    const [, name, level] = fullName.match(/([a-z0-9 ]+) lvl\.([0-9]{2})/i);
+    const isExpired = await AllianceLocation.findOne({ name, level, expired: true });
+    if (isExpired) {
+      debug(isExpired.toObject());
+    }
+    if (seemsExpired && isExpired) {
+      return false;
+    }
+    return { ...location, seemsExpired };
   });
+
+  return lo.filter(res);
 
 }
 

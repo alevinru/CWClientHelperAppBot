@@ -301,6 +301,7 @@ export async function showAllianceLocationByName(ctx) {
 
 export async function showAllianceLocation(ctx, allianceLocation) {
 
+  await ctx.replyWithChatAction('typing');
   const battles = await a.locationBattles(allianceLocation.fullName);
   const reply = allianceLocationView(allianceLocation, battles);
   await ctx.replyWithHTML(reply.join('\n'));
@@ -422,7 +423,11 @@ function allianceView(alliance) {
   ];
 
   if (locations.length) {
-    res.push('', ...locations.map(l => `${b.dateFormat(l.date)} 🚩 ${l.name}`));
+    res.push('', ...locations.map(l => lo.filter([
+      b.dateFormat(l.date),
+      `🚩 ${l.name}`,
+      l.seemsExpired && '⚠️',
+    ]).join(' ')));
   }
 
   return res;

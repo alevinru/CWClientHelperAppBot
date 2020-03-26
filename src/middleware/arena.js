@@ -3,16 +3,12 @@ import get from 'lodash/get';
 import uniq from 'lodash/uniq';
 import groupBy from 'lodash/groupBy';
 import orderBy from 'lodash/orderBy';
-import maxBy from 'lodash/maxBy';
 import sumBy from 'lodash/sumBy';
 import mapKeys from 'lodash/mapKeys';
 import filter from 'lodash/filter';
 import last from 'lodash/last';
-import isEqual from 'lodash/isEqual';
-import pick from 'lodash/pick';
-import fpGet from 'lodash/fp/get';
 
-import { format, addDays, addHours } from 'date-fns';
+import { format } from 'date-fns';
 
 import log from '../services/log';
 import Duel from '../models/Duel';
@@ -22,7 +18,6 @@ import * as ar from '../services/arena';
 
 const { debug, error } = log('mw:arena');
 
-const DUEL_RESET_HOUR = parseFloat(process.env.DUEL_RESET_HOUR) || 10.25;
 
 export async function arena(ctx) {
 
@@ -49,7 +44,7 @@ export async function arena(ctx) {
 
     if (tag) {
 
-      const { period, res: data } = await guildDuels(tag, shift, shiftTo);
+      const { period, res: data } = await ar.guildDuels(tag, shift, shiftTo);
 
       const reply = [
         `<b>[${tag}]</b> duels ${period}`,
@@ -73,7 +68,7 @@ export async function arena(ctx) {
       }
 
       const cond = {
-        ...duelTimeFilter(shift, shiftTo),
+        ...ar.duelTimeFilter(shift, shiftTo),
         'players.id': cwId,
       };
 
@@ -250,115 +245,19 @@ function formatGuildMemberDuels(duels) {
 }
 
 
-function formatPeriod(duels) {
-
-  const { ts: maxTs } = duels[0];
-  const { ts: minTs } = last(duels);
-
-  const minDate = dateFormat(minTs);
-  const maxDate = dateFormat(maxTs);
-
-  return minDate !== maxDate
-    ? `from <b>${minDate}</b> to <b>${maxDate}</b>` : `on <b>${minDate}</b>`;
-
-}
-
-
-async function guildDuels(tag, shift, shiftTo) {
-
-  const cond = { 'players.tag': tag };
-
-  const tf = duelTimeFilter(shift, shiftTo);
-
-  Object.assign(cond, tf);
-
-  const duels = await Duel.find(cond);
-
-  if (!duels.length) {
-    throw new Error('not found duels');
-  }
-
-  const opponents = duelOpponents(duels, { tag });
-
-  debug('guildDuels', opponents.length);
-
-  const byName = groupBy(opponents, fpGet('player.name'));
-
-
-  const res = map(byName, (nameDuels, name) => {
-
-    const { wins = [], loses = [] } = groupBy(nameDuels, ({ isWinner }) => (isWinner ? 'wins' : 'loses'));
-    const { player: { level } } = maxBy(nameDuels, fpGet('player.level'));
-
-    const won = wins.length;
-    const lost = loses.length;
-
-    return {
-      // gain: gainTotal(nameDuels),
-      // gainInfo: gainInfo(nameDuels),
-      level,
-      name,
-      won,
-      lost,
-      rate: won - lost,
-    };
-  });
-
-  const period = formatPeriod(duels);
-
-  return {
-    period,
-    opponents,
-    res: orderBy(res, ['rate', 'level'], ['desc', 'desc']),
-  };
-
-}
-
-const hours = Math.floor(DUEL_RESET_HOUR);
-const minutes = (DUEL_RESET_HOUR - hours) * 60;
-
-debug('DUEL_RESET_HOUR', hours, minutes);
-
-function duelTimeFilter(shift, shiftTo = shift) {
-
-  const today = addDays(new Date(), -shiftTo);
-  let $lt = addDays(new Date(), -shiftTo);
-
-  $lt.setHours(hours, minutes, 0, 0);
-
-  if ($lt < today) {
-    $lt = addDays($lt, 1);
-  }
-
-  const $gt = addDays($lt, shiftTo - shift - 1);
-
-  debug('duelTimeFilter', shift, shiftTo, $gt, $lt);
-
-  return { ts: { $gt, $lt } };
-
-}
-
-function dateFormat(date) {
-  return format(date, 'DD/MM');
-}
-
-function dateToCW(date) {
-  return addHours(date, -DUEL_RESET_HOUR);
-}
-
 function formatDuels(duels, id, primaryName) {
 
   if (!duels.length) {
     return `Duels of <b>${primaryName}</b> not found`;
   }
 
-  const opponents = duelOpponents(duels, { id });
+  const opponents = ar.duelOpponents(duels, { id });
 
   const { ts: maxTs, player: duelPlayer } = opponents[0];
   const { ts: minTs } = last(opponents);
 
-  const minDate = dateFormat(minTs);
-  const maxDate = dateFormat(maxTs);
+  const minDate = ar.dateFormat(minTs);
+  const maxDate = ar.dateFormat(maxTs);
 
   const isPeriod = minDate !== maxDate && opponents.length > 10;
 
@@ -390,7 +289,7 @@ function formatDuels(duels, id, primaryName) {
 
   function statsByDate() {
 
-    const byDate = groupBy(opponents, ({ ts }) => dateFormat(ts));
+    const byDate = groupBy(opponents, ({ ts }) => ar.dateFormat(ts));
 
     if (Object.keys(byDate).length < 60) {
       return statsByDatePart(byDate);
@@ -455,35 +354,6 @@ function wonOver(opponents) {
 
 function lostTo(opponents) {
   return filter(opponents, { isWinner: false });
-}
-
-function duelOpponents(duels, cond) {
-
-  return filter(map(duels, duel => {
-
-    const { winner, loser, isChallenge } = duel;
-
-    const isWinner = isEqual(cond, pick(winner, Object.keys(cond)));
-
-    const player = isWinner ? winner : loser;
-    const opponent = isWinner ? loser : winner;
-
-    const { hp: undamaged } = opponent;
-
-    return {
-      isWinner,
-      opponent,
-      player,
-      ...opponent,
-      isChallenge,
-      undamaged,
-      saved: player.hp,
-      // ts: duel.ts,
-      ts: dateToCW(duel.ts),
-    };
-
-  }));
-
 }
 
 

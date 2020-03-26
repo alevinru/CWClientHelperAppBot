@@ -199,6 +199,7 @@ botHearsIf(authAlliances, 'ga_locations', alliances.showLocations);
 botHearsIf(authAlliances, 'ga[_ ]expire[ _]([\\da-z]{6})', alliances.expireLocation);
 botHearsIf(authAlliances, 'gpin', alliances.notifyForTask);
 
+botHearsIf(authAlliances, 'leagues ([a-zа-я0-9, ]+)', alliances.tagsPlayersInfo);
 
 /*
 Mobs

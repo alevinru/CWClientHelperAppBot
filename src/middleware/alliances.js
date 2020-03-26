@@ -486,3 +486,34 @@ export async function notifyForTask(ctx) {
   });
 
 }
+
+
+export async function tagsPlayersInfo(ctx) {
+
+  const [, tagsList] = ctx.match;
+
+  const tags = lo.split(tagsList, /[, ]+/)
+    .map(lo.trim)
+    .map(lo.toUpper);
+
+  await ctx.replyWithChatAction('typing');
+
+  const players = await a.tagsPlayers(tags);
+
+  const byLeague = lo.groupBy(players, a.playerLeague);
+
+  const res = lo.map(byLeague, (leaguePlayers, league) => ({
+    league,
+    count: leaguePlayers.length,
+  }));
+
+  const reply = [
+    '<b>Guild league info</b>',
+    `<code>${tags.join(' ')}</code>`,
+    '',
+    ...lo.orderBy(res.map(i => `<code>${i.league}</code> ${i.count}`)),
+  ];
+
+  await ctx.replyWithHTML(reply.join('\n'));
+
+}

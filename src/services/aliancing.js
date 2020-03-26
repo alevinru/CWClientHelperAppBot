@@ -1,11 +1,13 @@
 import lo from 'lodash';
 import { filterSeriesAsync } from 'sistemium-telegram/services/async';
+import { addDays } from 'date-fns';
 import * as b from './battles';
 
 // import Alliance from '../models/Alliance';
 import * as al from '../models/AllianceLocation';
 import AllianceBattle from '../models/AllianceBattle';
 import AllianceMapState from '../models/AllianceMapState';
+import Duel from '../models/Duel';
 
 import log from './log';
 
@@ -301,5 +303,49 @@ export async function allianceBattleFullView(date) {
   }
 
   return reply;
+
+}
+
+export function playerLeague({ level }) {
+
+  if (level >= 60) {
+    return '60-79';
+  }
+
+  if (level >= 40) {
+    return '40-59';
+  }
+
+  if (level >= 20) {
+    return '20-39';
+  }
+
+  return null;
+
+}
+
+export async function tagsPlayers(tags) {
+
+  const $gt = addDays(new Date(), -14);
+
+  const $match = {
+    'players.tag': { $in: tags },
+    ts: { $gt },
+  };
+
+  const duels = await Duel.aggregate([{ $match }, { $sort: { ts: 1 } }]);
+
+  const data = duels.map(({ winner, loser }) => matchPlayer(winner) || matchPlayer(loser));
+
+  const playersById = lo.keyBy(data, 'id');
+
+  return lo.map(playersById);
+
+  function matchPlayer(player) {
+    if (tags.indexOf(player.tag) < 0) {
+      return null;
+    }
+    return player;
+  }
 
 }

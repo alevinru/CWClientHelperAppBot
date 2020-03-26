@@ -3,7 +3,7 @@ import { filterSeriesAsync } from 'sistemium-telegram/services/async';
 import * as b from './battles';
 
 // import Alliance from '../models/Alliance';
-// import AllianceLocation from '../models/AllianceLocation';
+import * as al from '../models/AllianceLocation';
 import AllianceBattle from '../models/AllianceBattle';
 import AllianceMapState from '../models/AllianceMapState';
 
@@ -26,8 +26,7 @@ export async function locationsOfAlliance(alliance) {
     { $sort: { date: 1 } },
     { $unwind: '$results' },
     { $match },
-  ])
-    .sort({ date: -1 });
+  ]);
 
   const namesArray = battles.map(({ date, results: { name } }) => ({ name, date }));
 
@@ -164,10 +163,27 @@ export function allianceMapStateView(allianceMapState) {
 
   const orderedResults = lo.orderBy(results, 'name');
 
+  const withTypes = lo.map(orderedResults, l => {
+    const locationType = al.locationType.call(l);
+    return {
+      ...l,
+      locationType,
+      locationBonus: al.locationBonus.call({ locationType }),
+    };
+  });
+
+  const byType = lo.groupBy(withTypes, 'locationBonus');
+
+  const res = lo.map(byType, (typeResults, locationBonus) => ({ typeResults, locationBonus }));
+
   return [
     `🗺 <a href="${b.reportLinkHref(reportLink)}">Map state report</a>`,
     '',
-    ...lo.map(orderedResults, mapStateResultView),
+    res.map(({ typeResults, locationBonus }) => [
+      `<b>${lo.upperFirst(locationBonus)}</b>`,
+      // '',
+      ...lo.map(typeResults, mapStateResultView),
+    ].join('\n')).join('\n\n'),
   ];
 
 }
@@ -194,7 +210,7 @@ function mapStateResultView(result) {
   return lo.filter([
     b.difficultyStatus(result),
     result.name,
-    belongsTo && `🚩 ${belongsTo}`,
+    belongsTo && `\n ╰ 🚩 ${belongsTo}`,
   ]).join(' ');
 
 }

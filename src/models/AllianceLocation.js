@@ -36,17 +36,17 @@ function fullName() {
   return `${this.name} lvl.${this.level}`;
 }
 
-function locationType() {
-  const [, type] = this.name.match(/([^ ]+$)/);
+export function locationType() {
+  const [, type] = this.name.match(/([^ ]+)( lvl|$)/);
   return type.toLowerCase();
 }
 
-function locationIcon() {
+export function locationIcon() {
   switch (this.locationBonus) {
     case 'glory':
       return '🎖';
     case 'magic':
-      return '✨';
+      return '💍';
     case 'resources':
       return '📦';
     default:
@@ -54,7 +54,7 @@ function locationIcon() {
   }
 }
 
-function locationBonus() {
+export function locationBonus() {
   switch (this.locationType) {
     case 'fort':
     case 'tower':

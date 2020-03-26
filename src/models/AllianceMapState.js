@@ -35,6 +35,8 @@ const battle = {
 
 export const schema = new Schema(battle, { collection: 'AllianceMapState' });
 
-schema.index({ date: 1 });
+schema
+  .index({ 'results.belongsTo': 1, date: -1 })
+  .index({ date: 1 });
 
 export default model('AllianceMapState', schema);

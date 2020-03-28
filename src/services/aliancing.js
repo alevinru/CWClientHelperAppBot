@@ -3,7 +3,7 @@ import { mapSeriesAsync } from 'sistemium-telegram/services/async';
 import { addDays } from 'date-fns';
 import * as b from './battles';
 
-// import Alliance from '../models/Alliance';
+import Alliance from '../models/Alliance';
 import AllianceLocation, * as al from '../models/AllianceLocation';
 import AllianceBattle from '../models/AllianceBattle';
 import AllianceMapState from '../models/AllianceMapState';
@@ -361,5 +361,45 @@ export async function tagsPlayers(tags) {
     }
     return player;
   }
+
+}
+
+export function targetsFromText(text) {
+
+  const locationTasksRe = /([ad]) ([A-z ]+ lvl[.]\d{2}|[A-Z][a-z]+ [A-Z][a-z]+)/g;
+
+  const tasks = text.match(locationTasksRe) || [];
+
+  if (!tasks) {
+    return null;
+  }
+
+  return tasks.map(task => {
+    const [, type, fullName] = task.match(/([ad]) (.+)/i);
+    return { type, fullName };
+  });
+
+}
+
+export async function findByTasks(tasks) {
+
+  const alliances = await Alliance.find({ expired: { $ne: true } });
+  const locations = await AllianceLocation.find({ expired: { $ne: true } });
+
+  const res = tasks.map(({ fullName, type }) => {
+
+    const target = lo.find(alliances, t => t.name === fullName)
+      || lo.find(locations, t => t.fullName === fullName);
+
+    return target && {
+      fullName,
+      type,
+      code: target.code,
+      league: playerLeague({ level: target.level }),
+    };
+
+  });
+
+  return lo.filter(res);
 
 }

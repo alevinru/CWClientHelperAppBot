@@ -201,6 +201,8 @@ botHearsIf(authAlliances, 'gpin', alliances.notifyForTask);
 
 botHearsIf(authAlliances, 'leagues ([a-zа-я0-9, ]+)', alliances.tagsPlayersInfo);
 
+botHearsIf(authAlliances, 'apin ([a-z0-9. ]+)', alliances.alliancePin);
+
 /*
 Mobs
  */

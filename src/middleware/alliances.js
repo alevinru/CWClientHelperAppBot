@@ -522,3 +522,40 @@ export async function tagsPlayersInfo(ctx) {
   await ctx.replyWithHTML(reply.join('\n'));
 
 }
+
+export async function alliancePin(ctx) {
+
+  const [, targetsText] = ctx.match;
+
+  const targets = a.targetsFromText(targetsText);
+
+  if (!targets) {
+    await ctx.replyWithHTML('⚠️ can\'t parse targets');
+    return;
+  }
+
+  const tasks = await a.findByTasks(targets);
+
+  const res = [
+    b.battleIcon(b.nextDate(b.battleDate(new Date()))),
+    '',
+    ...tasks.map(taskListItem),
+  ];
+
+  await ctx.replyWithHTML(res.join('\n'));
+
+}
+
+function taskListItem(task) {
+
+  const { fullName, league, code } = task;
+
+  debug(fullName, code.length);
+
+  return lo.filter([
+    league && `<code>${league}</code>`,
+    task.type === 'a' ? '⚔' : '🛡',
+    task.type === 'a' ? a.atkLink(fullName, code) : a.defLink(fullName, code),
+  ]).join(' ');
+
+}

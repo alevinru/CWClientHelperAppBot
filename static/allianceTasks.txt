@@ -1,118 +1,81 @@
-ГИ	Перс	Цель
-13G	ахуэлла
-13G	в ЛС	/ga_def_dIk789
-13G	Диавел
-13G	Корованолифтер
-13G	Кузоман 	/ga_def
-13G	пенка-хуенка
-13G	Сударыня
-13G	Alchomaker 	/ga_def_dK8Gur
-13G	AvrilLion
-13G	BorovkovEA
-13G	cherrypie 	/ga_def_xfPOoI
-13G	Flash_Gordon
-13G	Francis Drake	/ga_def
-13G	Jeremy Fender	/ga_def
-13G	josephbeast 	/ga_def_dK8Gur
-13G	Kashtanero 	/ga_def_dK8Gur
-13G	Kidnapper 	/ga_def_dK8Gur
-13G	luci 	/ga_def
-13G	Maris Villghalm
-13G	mexicangrunge
-13G	Nahamako 	/ga_def
-13G	soulsucksxx
-13G	SpaceShark 	/ga_def_dIk789
-13G	StyuAtt
-13G	timmidy
-13G	trueflawy 	/ga_def
-ЫЫЫ	АНАЛЬНАЯ ПЮРЕШКА	/ga_def_dK8Gur
-ЫЫЫ	Вихрь Сисек	/ga_def_dK8Gur
-ЫЫЫ	ГАВНО ИБАНОЕ
-ЫЫЫ	Мастер Шифу	/ga_def
-ЫЫЫ	Молот Вошёл	/ga_def_xfPOoI
-ЫЫЫ	Птенец-мышееб
-ЫЫЫ	akasada
-ЫЫЫ	Akulamel 	/ga_def_xfPOoI
-ЫЫЫ	bewareus 	/ga_def_dK8Gur
-ЫЫЫ	Hokori
-ЫЫЫ	Kawaii 	/ga_def_dIk789
-ЫЫЫ	Lacerta 	/ga_def_xfPOoI
-ЫЫЫ	midoriya
-ЫЫЫ	NiyazG 	/ga_def_xfPOoI
-ЫЫЫ	Phonky Monk
-ЫЫЫ	Vovcharon 	/ga_def
-HOT	Булочка с маком
-HOT	Джейми Ланнистер
-HOT	Лама Савахфани	/ga_def_xfPOoI
-HOT	Луцсий из мышей
-HOT	мята помята
-HOT	Ололошечки
-HOT	Супчик
-HOT	щи короля
-HOT	ЯдерныйПотент
-HOT	Adam_azz
-HOT	Elpmatsid
-HOT	foile 	/ga_def_dK8Gur
-HOT	Hardline
-HOT	Josh Dies	/ga_def_dK8Gur
-HOT	Lime Mohito
-HOT	PeanutHeart
-HOT	RenniMoS
-HOT	Rocinante 	/ga_def_xfPOoI
-HOT	SeventhSon
-HOT	Yakitori
-JR	Артемида 	/ga_def
-JR	Кривой
-JR	Твоя мамаша
-JR	Хомяк 	/ga_def_dIk789
-JR	Astronaut
-JR	bahmosova 	/ga_def_dK8Gur
-JR	BlackElf 	/ga_def
-JR	Esya 	/ga_def
-JR	Notebaff
-JR	PinYan 	/ga_def_xfPOoI
-JR	Pivovardlyatatar 	/ga_def_dIk789
-JR	RickSanches 	/ga_def_dK8Gur
-JR	Tyron
-JR	Wall 	/ga_def_xfPOoI
-LA	Воробей
-LA	Краник Джан	/ga_def
-LA	Назар
-LA	член во рту
-LA	Annunziata 	/ga_def
-LA	Atalain
-LA	DA Granta
-LA	Da Priora
-LA	DDace 	/ga_def
-LA	Eanod
-LA	HolyLoony 	/ga_def_dK8Gur
-LA	Lydorie
-LA	MiniSatana 	/ga_def
-LA	p00z0 	/ga_def
-LA	Run Baby	/ga_def_dK8Gur
-LA	SolasDaar 	/ga_def_xfPOoI
-LA	VanoIDoL 	/ga_def
-LA	vash
-LA	xrptrtm 	/ga_def_dK8Gur
-RS6	АзЕсмь
-RS6	Бабуина 	/ga_def_xfPOoI
-RS6	Мафрозий 	/ga_def_dIk789
-RS6	Насу но Еити	/ga_def
-RS6	Поросёнка 	/ga_def
-RS6	Посыпаю асфальт	/ga_def_dIk789
-RS6	Старый Король	/ga_def_xfPOoI
-RS6	ТАПКОМ
-RS6	Толстяка
-RS6	Botanic 	/ga_def_xfPOoI
-RS6	GALYCH 	/ga_def_xfPOoI
-RS6	Irversent
-RS6	JoniStar 	/ga_def_dIk789
-RS6	KaBaSkA 	/ga_def_dIk789
-RS6	SirNick 	/ga_def_xfPOoI
-RS6	VLDiator DA	/ga_def_dIk789
-RS6	xp_defender
-SAY	Прометей
-SAY	El' Puchino Pio
-SAY	Gamardgoba1
-SAY	Leonardo
-SAY	s1mple 	
+13G  ахуэлла   ⚔️Tower lvl.64
+13G  в ЛС  ⚔️Outpost lvl.58
+13G  Кузоман   ⚔️Tower lvl.64
+13G  Сударыня   ⚔️Tower lvl.64
+13G  BorovkovEA   ⚔️Tower lvl.64
+13G  cherrypie   ⚔️Outpost lvl.58
+13G  Jeremy Fender  ⚔️Tower lvl.64
+13G  josephbeast   ⚔️Tower lvl.30
+13G  luci   ⚔️Tower lvl.64
+13G  Maris Villghalm  ⚔️Tower lvl.64
+13G  mexicangrunge   ⚔️Tower lvl.64
+13G  SpaceShark   ⚔️Tower lvl.30
+13G  StyuAtt   ⚔️Tower lvl.64
+13G  timmidy   ⚔️Tower lvl.64
+13G  trueflawy   ⚔️Tower lvl.64
+ЫЫЫ  АНАЛЬНАЯ ПЮРЕШКА  ⚔️Tower lvl.64
+ЫЫЫ  Вихрь Сисек  ⚔️Tower lvl.64
+ЫЫЫ  ГАВНО ИБАНОЕ  ⚔️Tower lvl.64
+ЫЫЫ  Птенец-мышееб   ⚔️Tower lvl.64
+ЫЫЫ  Akulamel   ⚔️Outpost lvl.58
+ЫЫЫ  bewareus   ⚔️Tower lvl.64
+ЫЫЫ  Hokori   ⚔️Tower lvl.64
+ЫЫЫ  midoriya   ⚔️Tower lvl.64
+ЫЫЫ  Vovcharon   ⚔️Tower lvl.64
+HOT  Булочка с маком  ⚔️Tower lvl.64
+HOT  Лама Савахфани  ⚔️Outpost lvl.58
+HOT  Луцсий из мышей  ⚔️Tower lvl.30
+HOT  Tam7039  ⚔️Tower lvl.30
+HOT  Ололошечки   ⚔️Tower lvl.64
+HOT  щи короля  ⚔️Tower lvl.64
+HOT  ЯдерныйПотент   ⚔️Tower lvl.64
+HOT  Adam_azz   ⚔️Tower lvl.64
+HOT  Elpmatsid   ⚔️Tower lvl.64
+HOT  foile   ⚔️Tower lvl.64
+HOT  Hardline   ⚔️Outpost lvl.58
+HOT  Josh Dies  ⚔️Tower lvl.64
+HOT  Lime Mohito  ⚔️Tower lvl.64
+HOT  PeanutHeart   ⚔️Tower lvl.64
+HOT  SeventhSon   ⚔️Tower lvl.64
+HOT  Yakitori   ⚔️Tower lvl.64
+JR  Хомяк   ⚔️Tower lvl.30
+JR  bahmosova   ⚔️Tower lvl.64
+JR  Notebaff   ⚔️Tower lvl.64
+JR  Pivovardlyatatar   ⚔️Tower lvl.30
+JR  RickSanches   ⚔️Tower lvl.64
+JR  Wall   ⚔️Tower lvl.64
+LA  Воробей   ⚔️Tower lvl.64
+LA  Назар   ⚔️Tower lvl.64
+LA  член во рту  ⚔️Tower lvl.64
+LA  Atalain   ⚔️Tower lvl.64
+LA  DA Granta  ⚔️Tower lvl.64
+LA  Eanod   ⚔️Tower lvl.64
+LA  HolyLoony   ⚔️Tower lvl.64
+LA  Lydorie   ⚔️Tower lvl.64
+LA  Run Baby  ⚔️Tower lvl.64
+LA  vash   ⚔️Tower lvl.64
+LA  xrptrtm   ⚔️Tower lvl.64
+RS6  АзЕсмь   ⚔️Tower lvl.64
+RS6  Мафрозий   ⚔️Tower lvl.30
+RS6  Насу но Еити  ⚔️Tower lvl.64
+RS6  Посыпаю асфальт  ⚔️Outpost lvl.58
+RS6  Толстяка   ⚔️Tower lvl.64
+RS6  GALYCH   ⚔️Outpost lvl.58
+RS6  Irversent   ⚔️Tower lvl.64
+RS6  KaBaSkA   ⚔️Tower lvl.30
+RS6  SirNick   ⚔️Outpost lvl.58
+RS6  VLDiator DA  ⚔️Tower lvl.30
+RS6  xp_defender   ⚔️Tower lvl.30
+LOL  LIPOP FAIRY  ⚔️Tower lvl.64
+LOL  NY BUNNY  ⚔️Tower lvl.64
+LOL  Евгений   ⚔️Tower lvl.64
+LOL  Pagfer 69  ⚔️Tower lvl.64
+LOL  Сразивший Бога  ⚔️Tower lvl.64
+LOL  Amera   ⚔️Outpost lvl.58
+LOL  Lavender   ⚔️Outpost lvl.58
+LOL  Azatotik   ⚔️Outpost lvl.58
+LOL  Ананас   ⚔️Outpost lvl.58
+LOL  Horned   ⚔️Tower lvl.30
+LOL  Gogashe   ⚔️Tower lvl.30
+LOL  mana Лютик  ⚔️Tower lvl.30
+LOL  Капитан Эф  ⚔️Tower lvl.30

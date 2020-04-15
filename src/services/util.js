@@ -25,5 +25,5 @@ export async function isChatAdmin(ctx) {
     return true;
   }
   const admins = await ctx.telegram.getChatAdministrators(chat.id);
-  return !lo.find(admins, { id: from.id });
+  return !!lo.find(admins, { user: { id: from.id } });
 }

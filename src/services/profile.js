@@ -61,3 +61,17 @@ const THOUSANDS = 1000.0;
 export function expView(exp) {
   return exp > BILLIONS ? `${lo.round(exp / THOUSANDS, 0)}K` : (exp || 0);
 }
+
+export function getOwnGuild(ctx) {
+
+  const { profile: ownProfile } = ctx.session;
+
+  if (!ownProfile) {
+    return null;
+  }
+
+  const { guild } = ownProfile;
+
+  return guild;
+
+}

@@ -35,6 +35,8 @@ const BATTLE_STATS_RE = new RegExp(`(${CASTLES_ICONS.join('|')})(.*) ⚔:(.+) �
 
 const MOB_BATTLE_REPORT = /👾Encounter/i;
 
+debug('battleDate:', battleDate(new Date()));
+
 export function castleCode(castle) {
   return get(find(CASTLES, { castle }), 'code');
 }

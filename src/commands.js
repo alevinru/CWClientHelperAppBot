@@ -16,6 +16,7 @@ import * as battles from './middleware/battles';
 import * as alliances from './middleware/alliances';
 import * as chat from './middleware/chat';
 import * as mobs from './middleware/mobs';
+import * as guild from './middleware/guild';
 
 import start from './middleware/start';
 import * as stock from './middleware/stock';
@@ -100,6 +101,12 @@ Chats
 botHears('chat[ _]set[ _]([a-z]+)[ _](on|off|\\d+)', chat.setting);
 botHears('chat[ _]get[ _]([a-z]+)', chat.viewSetting);
 botHears('chat[ _]settings', chat.viewSettings);
+
+/*
+Guilds
+ */
+
+botHears('gpin[ _]?(silent)?', guild.guildPin);
 
 /*
 ChatWars
@@ -197,7 +204,7 @@ botHearsIf(authAlliances, 'ga_def[ _]([\\da-z]{6})', alliances.showAllianceByCod
 botHearsIf(authAlliances, 'ga_locations', alliances.showLocations);
 
 botHearsIf(authAlliances, 'ga[_ ]expire[ _]([\\da-z]{6})', alliances.expireLocation);
-botHearsIf(authAlliances, 'gpin', alliances.notifyForTask);
+// botHearsIf(authAlliances, 'gpin', alliances.notifyForTask);
 
 botHearsIf(authAlliances, 'leagues ([a-zа-я0-9, ]+)', alliances.tagsPlayersInfo);
 

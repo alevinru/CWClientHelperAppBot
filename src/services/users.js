@@ -208,6 +208,9 @@ export function allSettings() {
 }
 
 export async function usersFromCWNames(names) {
+  if (!names.length) {
+    return [];
+  }
   return User.find({
     username: { $ne: null },
     'profile.userName': { $in: names },

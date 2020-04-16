@@ -4,6 +4,18 @@ import lo from 'lodash';
 
 const MAX_REGEX_LENGTH = 50;
 
+
+const HTML_REPLACERS = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+};
+
+export function escapeName(name) {
+  return name
+    .replace(/[&<>]/g, x => HTML_REPLACERS[x]);
+}
+
 export function searchRe(text) {
 
   if (text.length > MAX_REGEX_LENGTH) {

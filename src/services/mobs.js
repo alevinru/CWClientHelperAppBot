@@ -1,6 +1,7 @@
 import lo from 'lodash';
 import Markup from 'telegraf/markup';
 import Chat from '../models/Chat';
+import { escapeName } from './util';
 // import log from './log';
 import { modifiersMap, secondsToFight } from '../models/MobHunt';
 
@@ -212,17 +213,6 @@ function maxHelpers({ isCheaters, isAmbush }) {
     return 3;
   }
   return 1;
-}
-
-const HTML_REPLACERS = {
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;',
-};
-
-function escapeName(name) {
-  return name
-    .replace(/[&<>]/g, x => HTML_REPLACERS[x]);
 }
 
 export async function chatMobHunting(chatId) {

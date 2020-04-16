@@ -11,6 +11,7 @@ import * as s from '../services/stocking';
 import { isTrusted } from '../services/users';
 import log from '../services/log';
 import * as p from '../services/profile';
+import { itemCodeByName } from '../services/cw';
 
 const { debug, error } = log('mw:profile');
 
@@ -132,7 +133,7 @@ export async function guildInfo(ctx) {
       if (!items.length) {
         reply.push(`\nNo items on stock match <code>${filterItems}</code>`);
       } else {
-        reply.push(`🔎 <code>${filterItems}</code>`);
+        reply.push(`🔎 <code>${util.escapeName(filterItems)}</code>`);
         reply.push('', ...items);
       }
 
@@ -160,11 +161,28 @@ export async function guildInfo(ctx) {
 
 function stockFilter(text) {
 
-  const [, size] = text.match(/>[ ]?(\d+)$/) || [];
+  const [, op, size, withHerbs] = text.match(/([><])[ ]?(\d+)($|[ ]?h)/) || [];
 
-  if (size) {
+  if (op && size) {
     const sizeNumber = parseInt(size, 0);
-    return qty => qty >= sizeNumber;
+    return (qty, name) => {
+      const code = itemCodeByName(name);
+      const numCode = parseInt(code, 0);
+      if (!numCode || numCode > 99 || (!withHerbs && numCode >= 39)) {
+        return false;
+      }
+      return op === '>' ? qty >= sizeNumber : qty <= sizeNumber;
+    };
+  }
+
+  const herbs = text.match(/^(herbs?|alch)$/i);
+
+  if (herbs) {
+    return (qty, name) => {
+      const code = itemCodeByName(name);
+      const numCode = parseInt(code, 0);
+      return numCode && numCode >= 39 && numCode <= 69;
+    };
   }
 
   const re = util.searchRe(text);

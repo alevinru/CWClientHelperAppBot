@@ -188,48 +188,71 @@ export async function showLastAllianceBattle(ctx) {
 
 export async function showLocations(ctx) {
 
+  const [, filter] = ctx.match;
+
   const locations = await AllianceLocation.find({ expired: { $eq: null } })
     .sort({ name: 1 });
 
   const lastBattleTime = b.battleDate(new Date()).getTime();
 
-  const sortedLocations = lo.orderBy(locations, ['locationBonus', 'name']);
+  // const sortedLocations = lo.orderBy(locations, ['locationBonus', 'name']);
 
-  const list = await mapSeriesAsync(sortedLocations, async al => {
+  const byType = lo.groupBy(locations, 'locationBonus');
 
-    const { fullName, code } = al;
-    const ownerInfo = await a.locationOwner(fullName);
-    const [lastBattle] = await a.locationBattles(fullName).limit(1);
+  let types = lo.map(byType, (typeResults, locationBonus) => ({
+    sortedLocations: lo.orderBy(typeResults, 'name'),
+    locationBonus,
+  }));
 
-    const header = [
-      a.atkLink(al.locationIcon, code),
-      fullName,
-    ];
-
-    if (lastBattle) {
-      if (lastBattle.date.getTime() !== lastBattleTime) {
-        header.push(a.atkLink('⚠️', code, '/ga_expire_'));
-      }
-    }
-
-    const res = [header.join(' ')];
-
-    if (ownerInfo) {
-      const { name, date } = ownerInfo;
-      res.push(` ╰${b.dateFormat(date)} 🚩 ${a.atkLink(name, name, '/af ')}`);
-    }
-
-    return res.join('\n');
-
-  });
+  if (filter) {
+    types = lo.filter(types, ({ locationBonus }) => locationBonus === filter);
+  }
 
   const reply = [
-    '🏛 <b>Alliance locations</b>',
-    '',
-    ...list,
+    lo.filter(['🏛 <b>Alliance', filter, 'locations</b>']).join(' '),
   ];
 
+  await eachSeriesAsync(types, async ({ locationBonus, sortedLocations }) => {
+    const list = await mapSeriesAsync(sortedLocations, async al => {
+      const item = await locationListItem(al, lastBattleTime);
+      return item;
+    });
+    if (!filter) {
+      reply.push('', `<b>${lo.upperFirst(locationBonus)}</b>`);
+    }
+    reply.push('', ...list);
+  });
+
+
   await ctx.replyWithHTML(reply.join('\n'));
+
+}
+
+async function locationListItem(location, lastBattleTime) {
+
+  const { fullName, code } = location;
+  const ownerInfo = await a.locationOwner(fullName);
+  const [lastBattle] = await a.locationBattles(fullName).limit(1);
+
+  const header = [
+    a.atkLink(fullName, code),
+    // fullName,
+  ];
+
+  if (lastBattle) {
+    if (lastBattle.date.getTime() !== lastBattleTime) {
+      header.push(a.atkLink('⚠️', code, '/ga_expire_'));
+    }
+  }
+
+  const res = [header.join(' ')];
+
+  if (ownerInfo) {
+    const { name, date } = ownerInfo;
+    res.push(` ╰${b.dateFormat(date)} 🚩 ${a.atkLink(name, name, '/af ')}`);
+  }
+
+  return res.join('\n');
 
 }
 

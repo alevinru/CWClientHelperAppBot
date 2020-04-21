@@ -203,6 +203,7 @@ botHearsIf(authAlliances, 'af ([a-z0-9 ]+) lvl\\.([0-9]{2})', alliances.showAlli
 botHearsIf(authAlliances, 'ga_atk[ _]([\\da-z]{6})', alliances.showAllianceByCode);
 botHearsIf(authAlliances, 'ga_def[ _]([\\da-z]{6})', alliances.showAllianceByCode);
 botHearsIf(authAlliances, 'ga_locations', alliances.showLocations);
+botHearsIf(authAlliances, 'ga[_ ](magic|glory|resources)', alliances.showLocations);
 
 botHearsIf(authAlliances, 'ga[_ ]expire[ _]([\\da-z]{6})', alliances.expireLocation);
 // botHearsIf(authAlliances, 'gpin', alliances.notifyForTask);

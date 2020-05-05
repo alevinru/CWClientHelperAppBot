@@ -353,6 +353,9 @@ function allianceLocationView(allianceLocation, battles = []) {
         b.dateFormat(l.date),
         b.difficultyStatus(results),
       ];
+      // if (results.defLeaders) {
+      //   line.push(`x ${results.defLeaders.length}`);
+      // }
       if (results.belongsTo) {
         line.push(`🚩 ${results.belongsTo}`);
       }

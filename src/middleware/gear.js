@@ -27,6 +27,36 @@ const GEAR_ICONS = [
   { amulet: '🧿', showIcon: true },
 ];
 
+export async function guildBalls(ctx) {
+  const { session } = ctx;
+  const users = lo.filter(await getAuthorizedUsers(session), 'profile');
+
+  const promises = lo.orderBy(users, [({ profile: { lvl } }) => lvl], ['desc'])
+    .map(user => {
+      return a.stockInfo(user.id)
+        .then(({ stock }) => ({ balls: stockBalls(stock), user }))
+        .catch(() => false);
+    });
+
+  const ballsByUser = lo.filter(await Promise.all(promises), ({ balls }) => balls && balls.length);
+
+  if (!ballsByUser.length) {
+    await ctx.replyWithHTML('Your guild has no balls');
+    return;
+  }
+
+  const reply = ballsByUser.map(({ user, balls }) => {
+    const { profile: { lvl, class: cls, userName } } = user;
+    return [
+      `<code>${lvl}</code> ${cls} <b>${userName}</b>`,
+      balls.map(({ ball }) => ball).join(' '),
+    ].join(' ');
+  });
+
+  await ctx.replyWithHTML(reply.join('\n'));
+
+}
+
 export async function guildGear(ctx) {
 
   const { session, match } = ctx;
@@ -108,6 +138,22 @@ function applyEventInfo(gear, profile) {
 
 }
 
+const BALL_RE = /([^ ]+)[ ]ball/;
+
+function stockBalls(stock) {
+  const arr = s.stockArray(stock);
+  const ballStock = lo.filter(arr, ({ name }) => name.match(/ball/));
+  // debug(ballStock);
+  return lo.map(ballStock, ({ name, qty }) => {
+    const [, ball] = name.match(BALL_RE);
+    return { qty, ball };
+  });
+}
+
+function ballView({ qty, ball }) {
+  return `${ball} ${qty}`;
+}
+
 export async function hat(ctx) {
 
   const { session, from: { id: fromUserId } } = ctx;
@@ -138,13 +184,15 @@ export async function hat(ctx) {
     const { stock } = await a.stockInfo(fromUserId, session);
     const { '🎃Pumpkin': pump } = stock;
     const potions = s.potionPackInfo(stock);
+    const balls = stockBalls(stock);
 
     // stats = `${stats}\n🎃${pump || 0} 🍾${p09 || 0} 🎩${hats || 0}`;
     stats = [
       `❤${hp} 🔋${stamina} 🎃${pump || 0}`,
       lo.filter(potions, hatPotions).map(({ icon, qty }) => `${icon} ${qty}`)
         .join(' '),
-    ].join('\n');
+      ...balls.map(ballView),
+    ];
 
   } catch (e) {
     if (e.requiredOperation) {
@@ -176,7 +224,7 @@ export async function hat(ctx) {
   const reply = [
     `<code>${profile.lvl}</code> ${title}`,
     '',
-    stats,
+    stats.join('\n'),
   ];
 
   if (errors.length) {

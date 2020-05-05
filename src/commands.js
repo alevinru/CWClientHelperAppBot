@@ -120,6 +120,7 @@ botHears('gp', stock.guildPotionsInfo);
 botHears('profile[ _]?(\\d*)', profile);
 botHears('gear[ _]?(\\d*)', gearInfo);
 botHears('hat', gear.hat);
+botHears('g_?balls', gear.guildBalls);
 
 botHears('gi[ _](.+)', guildInfo);
 bot.command('gi', guildInfo);

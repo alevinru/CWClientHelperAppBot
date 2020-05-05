@@ -34,14 +34,14 @@ debug('Starting bot id:', BOT_ID, BOT_USER_NAME, SOCKS_HOST);
 
 export function exceptionHandler(ctx, next) {
 
-  // debug('userId', 'start');
-
-  return next()
-  // .then(() => debug('exceptionHandler', 'end'))
-    .catch(({ name, message }) => {
-      error('exceptionHandler', name, message);
-      return ctx.replyWithHTML(`Error: ${message}`, { disable_notification: true });
-    });
+  setImmediate(() => {
+    return next()
+      // .then(() => debug('exceptionHandler', 'end'))
+      .catch(({ name, message }) => {
+        error('exceptionHandler', name, message);
+        return ctx.replyWithHTML(`Error: ${message}`, { disable_notification: true });
+      });
+  });
 
 }
 

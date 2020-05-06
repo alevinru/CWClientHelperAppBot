@@ -49,7 +49,7 @@ export async function guildBalls(ctx) {
     const { profile: { lvl, class: cls, userName } } = user;
     return [
       `<code>${lvl}</code> ${cls} <b>${userName}</b>`,
-      balls.map(({ ball }) => ball).join(' '),
+      balls.map(ballView).join(' '),
     ].join(' ');
   });
 
@@ -151,7 +151,7 @@ function stockBalls(stock) {
 }
 
 function ballView({ qty, ball }) {
-  return `${ball} ${qty}`;
+  return lo.repeat(ball, qty);
 }
 
 export async function hat(ctx) {
@@ -191,8 +191,9 @@ export async function hat(ctx) {
       `❤${hp} 🔋${stamina} 🎃${pump || 0}`,
       lo.filter(potions, hatPotions).map(({ icon, qty }) => `${icon} ${qty}`)
         .join(' '),
-      ...balls.map(ballView),
-    ];
+      balls.map(ballView)
+        .join(''),
+    ].join('\n');
 
   } catch (e) {
     if (e.requiredOperation) {
@@ -224,7 +225,7 @@ export async function hat(ctx) {
   const reply = [
     `<code>${profile.lvl}</code> ${title}`,
     '',
-    stats.join('\n'),
+    stats,
   ];
 
   if (errors.length) {

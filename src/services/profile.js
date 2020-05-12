@@ -1,6 +1,7 @@
 import lo from 'lodash';
 import { BOT_ID } from './bot';
 import { getSession } from './session';
+import { numberKM } from './util';
 
 const PROP_ICONS_MAP = new Map([
   ['atk', '⚔'],
@@ -55,11 +56,8 @@ export function formatProfile(profile, userId) {
 
 }
 
-const BILLIONS = 1000000.0;
-const THOUSANDS = 1000.0;
-
 export function expView(exp) {
-  return exp > BILLIONS ? `${lo.round(exp / THOUSANDS, 0)}K` : (exp || 0);
+  return numberKM(exp);
 }
 
 export function getOwnGuild(ctx) {

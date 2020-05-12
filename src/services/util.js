@@ -3,13 +3,18 @@ import escapeRegExp from 'lodash/escapeRegExp';
 import lo from 'lodash';
 
 const MAX_REGEX_LENGTH = 50;
-
+const BILLIONS = 1000000.0;
+const THOUSANDS = 1000.0;
 
 const HTML_REPLACERS = {
   '&': '&amp;',
   '<': '&lt;',
   '>': '&gt;',
 };
+
+export function numberKM(exp) {
+  return exp > BILLIONS ? `${lo.round(exp / THOUSANDS, 0)}K` : (exp || 0);
+}
 
 export function escapeName(name) {
   return name

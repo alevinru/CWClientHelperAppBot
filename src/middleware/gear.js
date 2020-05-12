@@ -10,6 +10,7 @@ import * as s from '../services/stocking';
 import * as g from '../services/gearing';
 import log from '../services/log';
 import { getAuthorizedUsers } from '../services/users';
+import { numberKM } from '../services/util';
 
 const { debug, error } = log('mw:gear');
 
@@ -27,6 +28,8 @@ const GEAR_ICONS = [
   { amulet: '🧿', showIcon: true },
 ];
 
+const MAGIC_DUST = 'Magic dust';
+
 export async function guildBalls(ctx) {
   const { session } = ctx;
   const users = lo.filter(await getAuthorizedUsers(session), 'profile');
@@ -34,22 +37,26 @@ export async function guildBalls(ctx) {
   const promises = lo.orderBy(users, [({ profile: { lvl } }) => lvl], ['desc'])
     .map(user => {
       return a.stockInfo(user.id)
-        .then(({ stock }) => ({ balls: stockBalls(stock), user }))
+        .then(({ stock }) => ({
+          user,
+          balls: stockBalls(stock),
+          dust: stock[MAGIC_DUST],
+        }))
         .catch(() => false);
     });
-
-  const ballsByUser = lo.filter(await Promise.all(promises), ({ balls }) => balls && balls.length);
+  const allData = await Promise.all(promises);
+  const ballsByUser = lo.filter(allData, ({ balls, dust }) => balls && balls.length || dust);
 
   if (!ballsByUser.length) {
     await ctx.replyWithHTML('Your guild has no balls');
     return;
   }
 
-  const reply = ballsByUser.map(({ user, balls }) => {
+  const reply = ballsByUser.map(({ user, balls, dust }) => {
     const { profile: { lvl, class: cls, userName } } = user;
     return [
       `<code>${lvl}</code> ${cls} <b>${userName}</b>`,
-      balls.map(ballView).join(' '),
+      [...balls.map(ballView), dustView(dust)].join(' '),
     ].join(' ');
   });
 
@@ -154,6 +161,10 @@ function ballView({ qty, ball }) {
   return lo.repeat(ball, qty);
 }
 
+function dustView(dust) {
+  return dust && `✨${numberKM(dust)}`;
+}
+
 export async function hat(ctx) {
 
   const { session, from: { id: fromUserId } } = ctx;
@@ -185,13 +196,14 @@ export async function hat(ctx) {
     const { '🎃Pumpkin': pump } = stock;
     const potions = s.potionPackInfo(stock);
     const balls = stockBalls(stock);
+    const dust = stock[MAGIC_DUST];
 
     // stats = `${stats}\n🎃${pump || 0} 🍾${p09 || 0} 🎩${hats || 0}`;
     stats = [
       `❤${hp} 🔋${stamina} 🎃${pump || 0}`,
       lo.filter(potions, hatPotions).map(({ icon, qty }) => `${icon} ${qty}`)
         .join(' '),
-      balls.map(ballView)
+      lo.filter([...balls.map(ballView), dustView(dust)])
         .join(''),
     ].join('\n');
 

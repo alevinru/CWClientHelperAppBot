@@ -22,7 +22,8 @@ export const STATES = {
   SWAMP: 'swamp',
 };
 
-const ROSTER_LINE_RE = /^#(\d+) ([^\d]+)(\d+) \[(.+)] (.+)$/;
+export const ROSTER_LINE_RE = /^#(\d+) ([^\d]+)(\d+) \[(.+)] (.+)$/;
+export const ROSTER_HEADER_RE = /^[^0-9a-zа-я]+(.+)$/i;
 
 const STATE_ICON_NAME_MAP = new Map([
   ['💤', STATES.SNOOZE],
@@ -74,7 +75,7 @@ export function parseRoster(text) {
     return [];
   }
 
-  const [, guildName] = lines[0].match(/[^0-9a-zа-я]+(.+)$/i);
+  const [, guildName] = lines[0].match(ROSTER_HEADER_RE);
 
   const playersMatch = lines.map(line => line.match(ROSTER_LINE_RE));
 

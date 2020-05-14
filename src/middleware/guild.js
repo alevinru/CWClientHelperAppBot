@@ -7,6 +7,7 @@ import * as b from '../services/battles';
 import { getOwnGuild } from '../services/profile';
 import { isChatAdmin } from '../services/util';
 import { fromCWFilter } from '../config/filters';
+import Chat, { CHAT_SETTING_GPIN_AUTO } from '../models/Chat';
 
 const STATES_TO_NOT_NOTIFY = [gi.STATES.ATTACK, gi.STATES.DEFEND, gi.STATES.SNOOZE];
 
@@ -52,8 +53,6 @@ export async function guildPin(ctx) {
 
   const [, silent] = ctx.match;
 
-  const ownGuild = getOwnGuild(ctx);
-
   const { reply_to_message: { text: rosterText } = {} } = ctx.message;
 
   if (!rosterText) {
@@ -70,7 +69,32 @@ export async function guildPin(ctx) {
     return;
   }
 
+  await doGuildPin(ctx, rosterText, silent);
+
+}
+
+export function rosterFilter(ctx) {
+  const { message: { text } = {}, state } = ctx;
+  if (!text || !fromCWFilter(ctx)) {
+    return false;
+  }
+  const lines = text.split('\n');
+  state.rosterText = text;
+  return gi.ROSTER_HEADER_RE.test(lines[0]) && gi.ROSTER_LINE_RE.test(lines[1]);
+}
+
+export async function onRosterForward(ctx) {
+  const { rosterText } = ctx.state;
+  if (!await Chat.findValue(ctx.chat.id, CHAT_SETTING_GPIN_AUTO)) {
+    return;
+  }
+  await doGuildPin(ctx, rosterText);
+}
+
+async function doGuildPin(ctx, rosterText, silent = false) {
+
   const { guildName, players } = gi.parseRoster(rosterText);
+  const ownGuild = getOwnGuild(ctx);
 
   if (ownGuild !== guildName) {
     await ctx.replyWithHTML('️🚫 not your guild');

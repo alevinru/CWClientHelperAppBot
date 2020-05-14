@@ -29,6 +29,7 @@ export const CHAT_SETTING_NOTIFY_ALLIANCE_BATTLE = 'notifyAllianceBattle';
 export const CHAT_SETTING_HELPERS_MIN_HP = 'helpersMinHp';
 export const CHAT_SETTING_CALL_HELPERS = 'callHelpers';
 export const CHAT_SETTING_HELPERS_LOW_THRESHOLD = 'helpersLowThreshold';
+export const CHAT_SETTING_GPIN_AUTO = 'gpinAuto';
 
 function saveValue(chatId, name, value) {
   const key = { id: chatId, botId: BOT_ID };

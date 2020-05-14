@@ -108,6 +108,7 @@ Guilds
 
 botHears('gpin[ _]?(silent)?', guild.guildPin);
 botMessageIf(guild.daFilterFromCW, guild.guildDAInfo);
+botMessageIf(guild.rosterFilter, guild.onRosterForward);
 
 /*
 ChatWars

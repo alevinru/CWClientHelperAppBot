@@ -33,7 +33,7 @@ const CASTLES = map(CASTLES_HASH, (castle, code) => ({ castle, code }));
 const CASTLES_ICONS = map(CASTLES_HASH);
 const BATTLE_STATS_RE = new RegExp(`(${CASTLES_ICONS.join('|')})(.*) ⚔:(.+) 🛡:(.+) Lvl: (\\d+)`);
 
-const MOB_BATTLE_REPORT = /👾Encounter/i;
+const MOB_BATTLE_REPORT = /👾(Encounter|Встреча)/i;
 
 debug('battleDate:', battleDate(new Date()));
 

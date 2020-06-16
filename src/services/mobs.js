@@ -2,10 +2,12 @@ import lo from 'lodash';
 import Markup from 'telegraf/markup';
 import Chat from '../models/Chat';
 import { escapeName } from './util';
-// import log from './log';
+import log from './log';
 import { modifiersMap, secondsToFight } from '../models/MobHunt';
 
-// const { debug } = log('mobs');
+const { debug } = log('mobs');
+
+debug('init');
 
 const MOBS_HEADERS = [
   'You met some hostile creatures. Be careful:',
@@ -183,8 +185,10 @@ export function mobOfferView(mobHunt) {
 
 export function maxLevelHelpers({ mobs, level }) {
   const plainMobs = lo.filter(mobs, mob => mobType(mob) !== 'champion');
-  // debug('maxLevelHelpers', plainMobs);
-  const l = mobs.length ? Math.floor(lo.sumBy(plainMobs, 'level') / plainMobs.length) : level;
+  const levels = mobs.length ? lo.sumBy(plainMobs, m => m.level * m.cnt) : level;
+  const cnt = mobs.length ? lo.sumBy(plainMobs, 'cnt') : 1;
+  // debug('maxLevelHelpers', levels, cnt);
+  const l = Math.floor(levels / cnt);
   return l ? l + HELPER_LEVEL_RANGE : 0;
 }
 

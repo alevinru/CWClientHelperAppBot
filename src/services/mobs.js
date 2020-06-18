@@ -50,7 +50,7 @@ export function mobsFromText(text) {
 
   const mobs = isCheaters ? [] : mobsArray.map((mobText, idx) => {
 
-    const [, cntText, name, lvl] = mobText.match(/(\d* x )?([a-z ]*) lvl\.(\d+)/i) || [];
+    const [, cntText, name, lvl] = mobText.match(/(\d* x )?([a-zа-я ]*) lvl\.(\d+)/i) || [];
 
     if (!name) {
       return false;

@@ -571,7 +571,7 @@ export async function castlePlayersInfo(ctx) {
 
 async function playersInfo(ctx, players, title) {
 
-  const byTag = lo.groupBy(players, 'tag');
+  const byTag = lo.groupBy(players, ({ tag }) => tag || '-');
   const byLeague = lo.map(byTag, (tagPlayers, tag) => ({
     tag,
     tagByLeague: lo.groupBy(tagPlayers, a.playerLeague),
@@ -600,16 +600,30 @@ async function playersInfo(ctx, players, title) {
 
   const footer = lo.map(totals, t => lo.padStart(t.toString(), 3, ' '));
 
-  const reply = [
+  const lines = lo.orderBy(results, ['total'], ['desc'])
+    .map(({ line }) => line);
+
+  const chunks = lo.chunk(lines, 20);
+
+  const reply0 = [
     title,
     '',
     `<code>   ${header.join(' ')}</code>`,
-    ...lo.orderBy(results, ['total'], ['desc'])
-      .map(({ line }) => line),
-    `<code>∑   ${footer.join(' | ')}</code>`,
+    ...chunks[0],
   ];
 
-  await ctx.replyWithHTML(reply.join('\n'));
+  const replies = lo.filter([
+    reply0,
+    ...lo.takeRight(chunks, chunks.length - 1),
+  ], 'length');
+
+  lo.last(replies).push(`<code>∑   ${footer.join(' | ')}</code>`);
+  debug(replies);
+
+  await eachSeriesAsync(replies, async reply => {
+    debug(reply);
+    await ctx.replyWithHTML(reply.join('\n'));
+  });
 
 }
 

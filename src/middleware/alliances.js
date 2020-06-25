@@ -520,35 +520,54 @@ export async function notifyForTask(ctx) {
 
 export async function castlesPlayers(ctx) {
 
-  const allCastlesPlayers = await mapSeriesAsync(b.CASTLE_CODES, async code => {
+  const allCastlesPlayers = [];
+  const { id: chatId } = ctx.chat;
+  const waiting = '⏳ calculating castles info';
+
+  const { message_id: messageId } = await ctx.replyWithHTML(waiting);
+
+  await eachSeriesAsync(b.CASTLE_CODES, async code => {
+
     const castle = b.castleByCode(code);
     await ctx.replyWithChatAction('typing');
+
     const players = await a.castlePlayers(castle);
     const byLeague = lo.groupBy(players, a.playerLeague);
-    await ctx.replyWithHTML(`${castle} ${players.length}`);
-    return {
+
+    allCastlesPlayers.push({
       castle,
       code,
       byLeague,
       total: players.length,
-    };
+    });
+
+    await showResults();
+
   });
 
-  const results = allCastlesPlayers.map(({ castle, byLeague, total }) => {
-    return pivotLeagues(castle, byLeague, total);
-  });
+  async function showResults() {
+    const results = allCastlesPlayers.map(({ castle, byLeague, total }) => {
+      return pivotLeagues(castle, byLeague, total);
+    });
 
-  const header = a.LEAGUES.map(league => `${league}`);
+    const header = a.LEAGUES.map(league => `${league}`);
 
-  const reply = [
-    '<b>Active arena players</b>',
-    '',
-    `<code>   ${header.join(' ')}</code>`,
-    ...lo.orderBy(results, ['total'], ['desc'])
-      .map(({ line }) => line),
-  ];
+    const reply = [
+      inProgress() ? waiting : '<b>Active arena players</b>',
+      '',
+      `<code>   ${header.join(' ')}</code>`,
+      ...lo.orderBy(results, ['total'], ['desc'])
+        .map(({ line }) => line),
+    ];
 
-  await ctx.replyWithHTML(reply.join('\n'));
+    await ctx.telegram
+      .editMessageText(chatId, messageId, null, reply.join('\n'), { parse_mode: 'HTML' });
+
+  }
+
+  function inProgress() {
+    return b.CASTLE_CODES.length > allCastlesPlayers.length;
+  }
 
 }
 

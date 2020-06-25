@@ -534,34 +534,16 @@ export async function castlesPlayers(ctx) {
     };
   });
 
-  const leagues = [
-    '01-19',
-    '20-39',
-    '40-59',
-    '60-79',
-  ];
-
   const results = allCastlesPlayers.map(({ castle, byLeague, total }) => {
-
-    const values = leagues.map(league => {
-      const count = lo.get(byLeague[league], 'length');
-      return lo.padStart(count, 3, ' ');
-    }).join(' | ');
-
-    return {
-      total,
-      line: [
-        castle,
-        ' ',
-        `<code>${lo.padStart(total, 3, ' ')} = ${values}</code>`,
-      ].join(' '),
-    };
-
+    return pivotLeagues(castle, byLeague, total);
   });
 
+  const header = a.LEAGUES.map(league => `${league}`);
+
   const reply = [
-    'Active arena players',
+    '<b>Active arena players</b>',
     '',
+    `<code>   ${header.join(' ')}</code>`,
     ...lo.orderBy(results, ['total'], ['desc'])
       .map(({ line }) => line),
   ];
@@ -589,21 +571,63 @@ export async function castlePlayersInfo(ctx) {
 
 async function playersInfo(ctx, players, title) {
 
-  const byLeague = lo.groupBy(players, a.playerLeague);
-
-  const res = lo.map(byLeague, (leaguePlayers, league) => ({
-    league,
-    count: leaguePlayers.length,
+  const byTag = lo.groupBy(players, 'tag');
+  const byLeague = lo.map(byTag, (tagPlayers, tag) => ({
+    tag,
+    tagByLeague: lo.groupBy(tagPlayers, a.playerLeague),
+    total: tagPlayers.length,
   }));
+
+  const playersLeagues = lo.map(byLeague, ({ tagByLeague }) => {
+    const res = lo.map(tagByLeague, (p, league) => league);
+    return lo.uniq(res);
+  });
+
+  const leagues = lo.orderBy(lo.uniq(lo.flatten(playersLeagues)));
+
+  const results = byLeague.map(({ tag, tagByLeague, total }) => {
+    const name = lo.padEnd(`${tag}`, 3, ' ');
+    return pivotLeagues(`<code>${name}</code>`, tagByLeague, total, leagues);
+  });
+
+  const header = leagues.map(league => `${league}`);
+
+  const totals = leagues.map(league => {
+    return lo.sumBy(byLeague, ({ tagByLeague }) => {
+      return lo.get(tagByLeague[league], 'length') || 0;
+    });
+  });
+
+  const footer = lo.map(totals, t => lo.padStart(t.toString(), 3, ' '));
 
   const reply = [
     title,
     '',
-    ...lo.orderBy(res.map(i => `<code>${i.league}</code> ${i.count}`)),
+    `<code>   ${header.join(' ')}</code>`,
+    ...lo.orderBy(results, ['total'], ['desc'])
+      .map(({ line }) => line),
+    `<code>∑   ${footer.join(' | ')}</code>`,
   ];
 
   await ctx.replyWithHTML(reply.join('\n'));
 
+}
+
+function pivotLeagues(rowName, byLeague, total, leagues = a.LEAGUES) {
+
+  const values = leagues.map(league => {
+    const count = lo.get(byLeague[league], 'length');
+    return lo.padStart(count, 3, ' ');
+  }).join(' | ');
+
+  return {
+    total,
+    line: [
+      rowName,
+      `<code> ${values} | </code>`,
+      `<b>${total}</b>`,
+    ].join(''),
+  };
 }
 
 export async function tagsPlayersInfo(ctx) {
@@ -619,7 +643,7 @@ export async function tagsPlayersInfo(ctx) {
   const players = await a.tagsPlayers(tags);
   const title = [
     '<b>Guild league info</b>',
-    `<code>${tags.join(' ')}</code>`,
+    // `<code>${tags.join(' ')}</code>`,
   ];
 
   await playersInfo(ctx, players, title.join('\n'));

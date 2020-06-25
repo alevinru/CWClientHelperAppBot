@@ -320,6 +320,13 @@ export async function allianceBattleFullView(date) {
 
 }
 
+export const LEAGUES = [
+  '01-19',
+  '20-39',
+  '40-59',
+  '60-79',
+];
+
 export function playerLeague({ level }) {
 
   if (level >= 60) {

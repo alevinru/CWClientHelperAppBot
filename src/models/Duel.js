@@ -22,8 +22,9 @@ schema.index({ 'loser.tag': 1, ts: -1 });
 schema.index({ 'players.tag': 1, ts: -1 });
 schema.index({ 'players.name': 1, ts: -1 });
 schema.index({ 'players.id': 1, ts: -1 });
+schema.index({ 'players.castle': 1, ts: -1 });
 
-const playerColumns = pick(['id', 'name', 'tag']);
+const playerColumns = pick(['id', 'name', 'tag', 'castle']);
 
 schema.pre('save', setPlayers);
 

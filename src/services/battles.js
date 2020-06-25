@@ -37,6 +37,8 @@ const MOB_BATTLE_REPORT = /👾(Encounter|Встреча)/i;
 
 debug('battleDate:', battleDate(new Date()));
 
+export const CASTLE_CODES = CASTLES.map(({ code }) => code);
+
 export function castleCode(castle) {
   return get(find(CASTLES, { castle }), 'code');
 }

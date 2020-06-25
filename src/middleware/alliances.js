@@ -518,6 +518,93 @@ export async function notifyForTask(ctx) {
 
 }
 
+export async function castlesPlayers(ctx) {
+
+  const allCastlesPlayers = await mapSeriesAsync(b.CASTLE_CODES, async code => {
+    const castle = b.castleByCode(code);
+    await ctx.replyWithChatAction('typing');
+    const players = await a.castlePlayers(castle);
+    const byLeague = lo.groupBy(players, a.playerLeague);
+    await ctx.replyWithHTML(`${castle} ${players.length}`);
+    return {
+      castle,
+      code,
+      byLeague,
+      total: players.length,
+    };
+  });
+
+  const leagues = [
+    '01-19',
+    '20-39',
+    '40-59',
+    '60-79',
+  ];
+
+  const results = allCastlesPlayers.map(({ castle, byLeague, total }) => {
+
+    const values = leagues.map(league => {
+      const count = lo.get(byLeague[league], 'length');
+      return lo.padStart(count, 3, ' ');
+    }).join(' | ');
+
+    return {
+      total,
+      line: [
+        castle,
+        ' ',
+        `<code>${lo.padStart(total, 3, ' ')} = ${values}</code>`,
+      ].join(' '),
+    };
+
+  });
+
+  const reply = [
+    'Active arena players',
+    '',
+    ...lo.orderBy(results, ['total'], ['desc'])
+      .map(({ line }) => line),
+  ];
+
+  await ctx.replyWithHTML(reply.join('\n'));
+
+}
+
+export async function castlePlayersInfo(ctx) {
+
+  const [, code] = ctx.match;
+
+  const castle = b.castleByCode(code);
+
+  if (!castle) {
+    await ctx.replyWithHTML(`⚠️ Invalid castle code ${code}`);
+    return;
+  }
+
+  await ctx.replyWithChatAction('typing');
+  const players = await a.castlePlayers(castle);
+  await playersInfo(ctx, players, `${castle} arena players`);
+
+}
+
+async function playersInfo(ctx, players, title) {
+
+  const byLeague = lo.groupBy(players, a.playerLeague);
+
+  const res = lo.map(byLeague, (leaguePlayers, league) => ({
+    league,
+    count: leaguePlayers.length,
+  }));
+
+  const reply = [
+    title,
+    '',
+    ...lo.orderBy(res.map(i => `<code>${i.league}</code> ${i.count}`)),
+  ];
+
+  await ctx.replyWithHTML(reply.join('\n'));
+
+}
 
 export async function tagsPlayersInfo(ctx) {
 
@@ -530,22 +617,12 @@ export async function tagsPlayersInfo(ctx) {
   await ctx.replyWithChatAction('typing');
 
   const players = await a.tagsPlayers(tags);
-
-  const byLeague = lo.groupBy(players, a.playerLeague);
-
-  const res = lo.map(byLeague, (leaguePlayers, league) => ({
-    league,
-    count: leaguePlayers.length,
-  }));
-
-  const reply = [
+  const title = [
     '<b>Guild league info</b>',
     `<code>${tags.join(' ')}</code>`,
-    '',
-    ...lo.orderBy(res.map(i => `<code>${i.league}</code> ${i.count}`)),
   ];
 
-  await ctx.replyWithHTML(reply.join('\n'));
+  await playersInfo(ctx, players, title.join('\n'));
 
 }
 

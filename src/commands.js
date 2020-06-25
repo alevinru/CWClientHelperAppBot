@@ -1,6 +1,7 @@
 import Telegraf from 'telegraf';
 
 import bot, { botHears } from './services/bot';
+import { CASTLE_CODES } from './services/battles';
 import { fromCWFilter } from './config/filters';
 
 import * as auth from './middleware/auth';
@@ -213,6 +214,9 @@ botHearsIf(authAlliances, 'ga[_ ]expire[ _]([\\da-z]{6})', alliances.expireLocat
 botHearsIf(authAlliances, 'leagues ([a-zа-я0-9, ]+)', alliances.tagsPlayersInfo);
 
 botHearsIf(authAlliances, 'apin ([a-z0-9. ]+)', alliances.alliancePin);
+const castleLeagues = `leagues[ _](${CASTLE_CODES.join('|')})`;
+botHearsIf(authAlliances, castleLeagues, alliances.castlePlayersInfo);
+botHearsIf(authAlliances, 'leagues', alliances.castlesPlayers);
 
 /*
 Mobs

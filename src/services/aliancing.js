@@ -11,7 +11,7 @@ import Duel from '../models/Duel';
 
 import log from './log';
 
-const { debug } = log('mw:alliance');
+const { debug } = log('alliancing');
 
 debug('alliance-ing');
 
@@ -334,29 +334,48 @@ export function playerLeague({ level }) {
     return '20-39';
   }
 
-  return null;
+  return '01-19';
 
 }
 
-export async function tagsPlayers(tags) {
+export async function activePlayers(duelFilter, matchPlayerFn) {
 
   const $gt = addDays(new Date(), -14);
 
   const $match = {
-    'players.tag': { $in: tags },
+    ...duelFilter,
     ts: { $gt },
   };
 
   const duels = await Duel.aggregate([{ $match }, { $sort: { ts: 1 } }]);
 
-  const data = duels.map(({ winner, loser }) => matchPlayer(winner) || matchPlayer(loser));
+  const data = duels.map(({ winner, loser }) => matchPlayerFn(winner) || matchPlayerFn(loser));
 
   const playersById = lo.keyBy(data, 'id');
 
   return lo.map(playersById);
 
+}
+
+export async function tagsPlayers(tags) {
+
+  return activePlayers({ 'players.tag': { $in: tags } }, matchPlayer);
+
   function matchPlayer(player) {
     if (tags.indexOf(player.tag) < 0) {
+      return null;
+    }
+    return player;
+  }
+
+}
+
+export async function castlePlayers(castle) {
+
+  return activePlayers({ 'players.castle': castle }, matchPlayer);
+
+  function matchPlayer(player) {
+    if (player.castle !== castle) {
       return null;
     }
     return player;

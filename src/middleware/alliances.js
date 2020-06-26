@@ -636,8 +636,9 @@ async function playersInfo(ctx, players, title) {
     ...lo.takeRight(chunks, chunks.length - 1),
   ], 'length');
 
-  lo.last(replies).push(`<code>∑   ${footer.join(' | ')}</code>`);
-  debug(replies);
+  if (lines.length > 1) {
+    lo.last(replies).push(`<code>∑   ${footer.join(' | ')}</code>`);
+  }
 
   await eachSeriesAsync(replies, async reply => {
     debug(reply);
@@ -674,6 +675,12 @@ export async function tagsPlayersInfo(ctx) {
   await ctx.replyWithChatAction('typing');
 
   const players = await a.tagsPlayers(tags);
+
+  if (!players.length) {
+    await ctx.replyWithHTML(`No arena activity data for <b>${tags.join(' ')}</b>`);
+    return;
+  }
+
   const title = [
     '<b>Guild league info</b>',
     // `<code>${tags.join(' ')}</code>`,

@@ -103,7 +103,7 @@ async function doGuildPin(ctx, rosterText, silent = false) {
 
   const toNotify = players.filter(({ state }) => STATES_TO_NOT_NOTIFY.indexOf(state) === -1);
 
-  const users = await usr.usersFromCWNames(lo.map(toNotify, 'name'));
+  const users = await usr.usersFromCWNames(lo.map(toNotify, 'name'), guildName);
 
   if (!toNotify.length) {
     await ctx.replyWithHTML('👍 nobody to pin');

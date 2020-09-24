@@ -207,12 +207,13 @@ export function allSettings() {
   };
 }
 
-export async function usersFromCWNames(names) {
+export async function usersFromCWNames(names, guild) {
   if (!names.length) {
     return [];
   }
   return User.find({
     username: { $ne: null },
     'profile.userName': { $in: names },
+    'profile.guild': guild,
   });
 }

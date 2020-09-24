@@ -30,6 +30,7 @@ export default async function (msg, ack) {
           filter: query,
           update: {
             $set: {
+              specialization: null,
               castleDiscount: 0,
               guildDiscount: 0,
               ...item,

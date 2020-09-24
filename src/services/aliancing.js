@@ -341,7 +341,11 @@ export function playerLeague({ level }) {
     return '20-39';
   }
 
-  return '01-19';
+  if (level >= 1) {
+    return '01-19';
+  }
+
+  return null;
 
 }
 
@@ -414,11 +418,13 @@ export async function findByTasks(tasks) {
 
   const res = tasks.map(({ fullName, type }) => {
 
-    const target = lo.find(alliances, t => t.name === fullName)
-      || lo.find(locations, t => t.fullName === fullName);
+    const re = new RegExp(lo.escapeRegExp(fullName), 'i');
+
+    const target = lo.find(alliances, t => re.test(t.name))
+      || lo.find(locations, t => re.test(t.fullName));
 
     return target && {
-      fullName,
+      fullName: target.fullName || target.name,
       type,
       code: target.code,
       league: playerLeague({ level: target.level }),

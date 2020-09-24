@@ -8,13 +8,13 @@ while (cursor.hasNext()) {
 
   const { _id, winner, loser, players: hasPlayers } = cursor.next();
 
-  if (hasPlayers) {
-    continue;
-  }
+  // if (hasPlayers) {
+  //   continue;
+  // }
 
   const players = [
-    { name: winner.name, id: winner.id, tag: winner.tag },
-    { name: loser.name, id: loser.id, tag: loser.tag },
+    { name: winner.name, id: winner.id, tag: winner.tag, castle: winner.castle },
+    { name: loser.name, id: loser.id, tag: loser.tag, castle: loser.castle },
   ];
 
   ops.push({

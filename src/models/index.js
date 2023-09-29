@@ -9,14 +9,10 @@ if (process.env.MONGOOSE_DEBUG) {
   mongoose.set('debug', true);
 }
 
-mongoose.set('useCreateIndex', true);
+mongoose.set('strictQuery', false);
 
 export async function connect() {
-  const connected = await mongoose.connect(`mongodb://${mongoUrl}`, {
-    useNewUrlParser: true,
-    useCreateIndex: true,
-    useUnifiedTopology: true,
-  });
+  const connected = await mongoose.connect(`mongodb://${mongoUrl}`);
   debug('connected', mongoUrl);
   return connected;
 }

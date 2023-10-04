@@ -31,7 +31,7 @@ const BATTLE_TEXT_RE = new RegExp(BATTLE_TEXT);
 const CASTLES = map(CASTLES_HASH, (castle, code) => ({ castle, code }));
 
 const CASTLES_ICONS = map(CASTLES_HASH);
-const BATTLE_STATS_RE = new RegExp(`(${CASTLES_ICONS.join('|')})(.*) ⚔:(.+) 🛡:(.+) Lvl: (\\d+)`);
+const BATTLE_STATS_RE = new RegExp(`(${CASTLES_ICONS.join('|')})(.*) (⚔|⚔️):(.+) 🛡:(.+) Lvl: (\\d+)`);
 
 const MOB_BATTLE_REPORT = /👾(Encounter|Встреча)/i;
 
@@ -98,7 +98,10 @@ export function battleFromText(text, forwardDate) {
   }
 
   const results = filter(text.split('\n'), result => result && !BATTLE_TEXT_RE.test(result));
-  const [, castle, nameFull] = text.match(BATTLE_STATS_RE) || [];
+  const [, castle, nameFull = ''] = text.match(BATTLE_STATS_RE) || [];
+  if (!nameFull || !castle) {
+    return null;
+  }
   const reportDate = new Date(forwardDate * 1000);
   const isMob = MOB_BATTLE_REPORT.test(text);
 
